@@ -1,20 +1,59 @@
-/*
+ /*
     Q-Safe Frontend
+    ----------------
 
-    IMPORTANT:
-    The values below are currently MOCK / DEMO values.
+    This frontend is prepared for FastAPI integration.
 
-    Later:
-    - Person 1 -> real Qiskit BB84 results
-    - Person 2 -> real NSL-KDD threat probability
-    - Backend -> FastAPI integration
+    CURRENT MODE:
+        MOCK API
 
-    This file is responsible only for frontend visualization.
+    FUTURE MODE:
+        FASTAPI
+
+    Architecture:
+
+        Scenario / FastAPI
+              ↓
+        Q-Safe API Response
+              ↓
+        normalizeResponse()
+              ↓
+        updateDashboard()
+              ↓
+        Dashboard + Research Graphs
 */
 
 
 /* =========================================================
-   SCENARIO DATA
+   API CONFIGURATION
+   ========================================================= */
+
+const API_CONFIG = {
+
+    /*
+        Keep this TRUE while Person 2 is developing
+        the backend.
+
+        Change to FALSE when the real FastAPI backend
+        is ready.
+    */
+    USE_MOCK_API: true,
+
+    /*
+        Expected future FastAPI URL.
+
+        Person 2 can change this later without
+        modifying the rest of the frontend.
+    */
+    BASE_URL: "http://localhost:8000",
+
+    SECURITY_ENDPOINT: "/api/security/evaluate"
+
+};
+
+
+/* =========================================================
+   MOCK SCENARIO DATA
    ========================================================= */
 
 const scenarios = {
@@ -26,7 +65,9 @@ const scenarios = {
         eveDetected: false,
         decision: "ACCEPT",
         reason:
-            "Network and quantum-channel evidence indicate a normal secure channel."
+            "Network and quantum-channel evidence indicate a normal secure channel.",
+        qubitsSent: 1000,
+        siftedKeyLength: 493
     },
 
     noise: {
@@ -36,7 +77,9 @@ const scenarios = {
         eveDetected: false,
         decision: "MONITOR",
         reason:
-            "Elevated QBER is consistent with channel noise, but the channel should be monitored."
+            "Elevated QBER is consistent with channel noise, but the channel should be monitored.",
+        qubitsSent: 1000,
+        siftedKeyLength: 491
     },
 
     network: {
@@ -46,7 +89,9 @@ const scenarios = {
         eveDetected: false,
         decision: "MONITOR",
         reason:
-            "High network threat detected, but the quantum channel currently appears stable."
+            "High network threat detected, but the quantum channel currently appears stable.",
+        qubitsSent: 1000,
+        siftedKeyLength: 496
     },
 
     eve: {
@@ -56,7 +101,9 @@ const scenarios = {
         eveDetected: true,
         decision: "MONITOR",
         reason:
-            "Quantum-channel errors are elevated, but classical network evidence is weak."
+            "Quantum-channel errors are elevated, but classical network evidence is weak.",
+        qubitsSent: 1000,
+        siftedKeyLength: 487
     },
 
     combined: {
@@ -66,7 +113,9 @@ const scenarios = {
         eveDetected: true,
         decision: "REJECT",
         reason:
-            "High network threat combined with elevated quantum-channel error indicates a likely compromise."
+            "High network threat combined with elevated quantum-channel error indicates a likely compromise.",
+        qubitsSent: 1000,
+        siftedKeyLength: 486
     }
 
 };
@@ -75,11 +124,6 @@ const scenarios = {
 /* =========================================================
    RESEARCH DATA
    ========================================================= */
-
-/*
-    Mock experiment:
-    QBER as channel noise increases.
-*/
 
 const qberNoiseData = [
     { noise: 0, qber: 0.8 },
@@ -95,11 +139,6 @@ const qberNoiseData = [
 ];
 
 
-/*
-    Mock experiment:
-    QBER as eavesdropper interception probability increases.
-*/
-
 const qberEveData = [
     { eve: 0, qber: 0.8 },
     { eve: 10, qber: 2.1 },
@@ -114,12 +153,6 @@ const qberEveData = [
     { eve: 100, qber: 21.0 }
 ];
 
-
-/*
-    Threat probability vs QBER.
-
-    This uses the five demo scenarios.
-*/
 
 const threatQberData = [
     {
@@ -150,13 +183,6 @@ const threatQberData = [
 ];
 
 
-/*
-    Classical evidence vs quantum evidence.
-
-    QBER is converted into a percentage so that
-    both values can be compared visually.
-*/
-
 const evidenceComparisonData = [
     {
         name: "Normal",
@@ -186,15 +212,6 @@ const evidenceComparisonData = [
 ];
 
 
-/*
-    Security decision distribution.
-
-    Current demo has:
-    ACCEPT  = 1
-    MONITOR = 3
-    REJECT  = 1
-*/
-
 const decisionDistributionData = [
     {
         decision: "ACCEPT",
@@ -212,7 +229,7 @@ const decisionDistributionData = [
 
 
 /* =========================================================
-   DOM HELPERS
+   DOM HELPER
    ========================================================= */
 
 function getElement(id) {
@@ -221,77 +238,341 @@ function getElement(id) {
 
 
 /* =========================================================
-   SCENARIO UPDATE
+   MOCK API
    ========================================================= */
 
-function runScenario(name) {
+/*
+    This function behaves like a real API request.
 
-    const scenario = scenarios[name];
+    Later, it will be replaced internally with:
 
-    if (!scenario) {
-        return;
+        fetch(API_CONFIG.BASE_URL + API_CONFIG.SECURITY_ENDPOINT)
+
+    The dashboard will not need to change.
+*/
+
+async function mockSecurityEvaluation(scenarioName) {
+
+    return new Promise((resolve) => {
+
+        setTimeout(() => {
+
+            const scenario =
+                scenarios[scenarioName];
+
+            resolve({
+
+                success: true,
+
+                data: {
+
+                    threat_probability:
+                        scenario.threatProbability,
+
+                    qber:
+                        scenario.qber,
+
+                    channel_noise:
+                        scenario.noiseRate,
+
+                    eavesdropper_detected:
+                        scenario.eveDetected,
+
+                    decision:
+                        scenario.decision,
+
+                    reason:
+                        scenario.reason,
+
+                    qkd: {
+
+                        protocol: "BB84",
+
+                        qubits_sent:
+                            scenario.qubitsSent,
+
+                        sifted_key_length:
+                            scenario.siftedKeyLength
+
+                    },
+
+                    metadata: {
+
+                        source:
+                            "mock",
+
+                        scenario:
+                            scenarioName
+
+                    }
+
+                }
+
+            });
+
+        }, 350);
+
+    });
+
+}
+
+
+/* =========================================================
+   FUTURE FASTAPI REQUEST
+   ========================================================= */
+
+/*
+    DO NOT USE THIS YET.
+
+    When Person 2 finishes the backend, this becomes
+    the real data source.
+
+    Expected backend response:
+
+    {
+        "success": true,
+        "data": {
+            "threat_probability": 0.08,
+            "qber": 0.008,
+            "channel_noise": 0.003,
+            "eavesdropper_detected": false,
+            "decision": "ACCEPT",
+            "reason": "...",
+            "qkd": {
+                "protocol": "BB84",
+                "qubits_sent": 1000,
+                "sifted_key_length": 493
+            }
+        }
     }
+*/
+
+async function fetchSecurityEvaluation(input) {
+
+    const response = await fetch(
+        API_CONFIG.BASE_URL +
+        API_CONFIG.SECURITY_ENDPOINT,
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(input)
+        }
+    );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            `Backend returned HTTP ${response.status}`
+        );
+
+    }
+
+
+    return await response.json();
+}
+
+
+/* =========================================================
+   API ADAPTER
+   ========================================================= */
+
+/*
+    THIS IS THE MOST IMPORTANT FUNCTION FOR FUTURE
+    INTEGRATION.
+
+    Everything below this function expects the same
+    normalized response regardless of whether the source
+    is MOCK API or FastAPI.
+*/
+
+async function getSecurityEvaluation(scenarioName) {
+
+    if (API_CONFIG.USE_MOCK_API) {
+
+        return await mockSecurityEvaluation(
+            scenarioName
+        );
+
+    }
+
+
+    return await fetchSecurityEvaluation({
+
+        scenario:
+            scenarioName
+
+    });
+
+}
+
+
+/* =========================================================
+   RESPONSE VALIDATION
+   ========================================================= */
+
+function validateSecurityResponse(response) {
+
+    if (!response) {
+        throw new Error("Empty API response.");
+    }
+
+
+    if (!response.data) {
+        throw new Error("API response is missing data.");
+    }
+
+
+    const data =
+        response.data;
+
+
+    const requiredFields = [
+
+        "threat_probability",
+        "qber",
+        "channel_noise",
+        "eavesdropper_detected",
+        "decision"
+
+    ];
+
+
+    for (const field of requiredFields) {
+
+        if (
+            data[field] === undefined ||
+            data[field] === null
+        ) {
+
+            throw new Error(
+                `API response missing field: ${field}`
+            );
+
+        }
+
+    }
+
+
+    return true;
+
+}
+
+
+/* =========================================================
+   UPDATE DASHBOARD
+   ========================================================= */
+
+function updateDashboard(response) {
+
+    validateSecurityResponse(response);
+
+
+    const data =
+        response.data;
 
 
     /* ---------- Metrics ---------- */
 
     getElement("threatProbability").textContent =
-        `${(scenario.threatProbability * 100).toFixed(1)}%`;
+        `${(
+            data.threat_probability * 100
+        ).toFixed(1)}%`;
+
 
     getElement("qber").textContent =
-        `${(scenario.qber * 100).toFixed(1)}%`;
+        `${(
+            data.qber * 100
+        ).toFixed(1)}%`;
+
 
     getElement("noise").textContent =
-        `${(scenario.noiseRate * 100).toFixed(1)}%`;
+        `${(
+            data.channel_noise * 100
+        ).toFixed(1)}%`;
 
 
     /* ---------- Eavesdropper ---------- */
 
     getElement("eve").textContent =
-        scenario.eveDetected
+        data.eavesdropper_detected
             ? "DETECTED"
             : "NOT DETECTED";
 
 
     /* ---------- Threat Status ---------- */
 
-    let threatStatus = "LOW RISK";
+    let threatStatus =
+        "LOW RISK";
 
-    if (scenario.threatProbability >= 0.75) {
-        threatStatus = "HIGH RISK";
+
+    if (
+        data.threat_probability >= 0.75
+    ) {
+
+        threatStatus =
+            "HIGH RISK";
+
     }
-    else if (scenario.threatProbability >= 0.30) {
-        threatStatus = "MEDIUM RISK";
+    else if (
+        data.threat_probability >= 0.30
+    ) {
+
+        threatStatus =
+            "MEDIUM RISK";
+
     }
 
-    getElement("threatStatus").textContent = threatStatus;
+
+    getElement("threatStatus").textContent =
+        threatStatus;
 
 
-    /* ---------- Decision ---------- */
+    /* ---------- Security Decision ---------- */
 
     getElement("decision").textContent =
-        scenario.decision;
+        data.decision;
+
 
     getElement("decisionReason").textContent =
-        scenario.reason;
+        data.reason ||
+        "Security assessment completed.";
 
 
-    /* ---------- Quantum Section ---------- */
+    /* ---------- QKD ---------- */
 
     getElement("quantumQber").textContent =
-        `${(scenario.qber * 100).toFixed(1)}%`;
+        `${(
+            data.qber * 100
+        ).toFixed(1)}%`;
 
 
-    /*
-        Sifted key is currently a frontend approximation.
-        It will later come from the actual Qiskit experiment.
-    */
+    if (data.qkd) {
 
-    const siftedKey =
-        Math.round(1000 * 0.493);
+        if (
+            data.qkd.qubits_sent !== undefined
+        ) {
 
-    getElement("siftedKey").textContent =
-        `${siftedKey} bits`;
+            getElement("qubitsSent").textContent =
+                data.qkd.qubits_sent;
+
+        }
+
+
+        if (
+            data.qkd.sifted_key_length !== undefined
+        ) {
+
+            getElement("siftedKey").textContent =
+                `${data.qkd.sifted_key_length} bits`;
+
+        }
+
+    }
 
 
     /* ---------- Channel State ---------- */
@@ -299,31 +580,59 @@ function runScenario(name) {
     const connection =
         getElement("quantumConnection");
 
+
     const connectionLine =
-        connection.querySelector(".connection-line");
+        connection.querySelector(
+            ".connection-line"
+        );
+
 
     const channelStatus =
         getElement("channelStatus");
 
-    let channelText = "SECURE";
-    let channelColor = "#4ee39a";
+
+    let channelText =
+        "SECURE";
 
 
-    if (scenario.decision === "MONITOR") {
-        channelText = "MONITOR";
-        channelColor = "#e8c75c";
+    let channelColor =
+        "#4ee39a";
+
+
+    if (data.decision === "MONITOR") {
+
+        channelText =
+            "MONITOR";
+
+        channelColor =
+            "#e8c75c";
+
     }
 
-    if (scenario.decision === "REJECT") {
-        channelText = "COMPROMISED";
-        channelColor = "#e86b6b";
+
+    if (data.decision === "REJECT") {
+
+        channelText =
+            "COMPROMISED";
+
+        channelColor =
+            "#e86b6b";
+
     }
 
 
-    channelStatus.textContent = channelText;
-    channelStatus.style.color = channelColor;
+    channelStatus.textContent =
+        channelText;
 
-    connectionLine.style.background = channelColor;
+
+    channelStatus.style.color =
+        channelColor;
+
+
+    connectionLine.style.background =
+        channelColor;
+
+
     connectionLine.style.boxShadow =
         `0 0 12px ${channelColor}`;
 
@@ -333,17 +642,20 @@ function runScenario(name) {
     const decisionCard =
         getElement("decisionCard");
 
-    if (scenario.decision === "ACCEPT") {
 
-        decisionCard.style.borderColor = "#28543e";
+    if (data.decision === "ACCEPT") {
+
+        decisionCard.style.borderColor =
+            "#28543e";
 
         getElement("decision").style.color =
             "#67e59a";
 
     }
-    else if (scenario.decision === "MONITOR") {
+    else if (data.decision === "MONITOR") {
 
-        decisionCard.style.borderColor = "#66592a";
+        decisionCard.style.borderColor =
+            "#66592a";
 
         getElement("decision").style.color =
             "#e8c75c";
@@ -351,40 +663,64 @@ function runScenario(name) {
     }
     else {
 
-        decisionCard.style.borderColor = "#633535";
+        decisionCard.style.borderColor =
+            "#633535";
 
         getElement("decision").style.color =
             "#e86b6b";
+
     }
 
 
     /* ---------- Security Analysis ---------- */
 
-    let networkEvidence = "LOW THREAT";
+    let networkEvidence =
+        "LOW THREAT";
 
-    if (scenario.threatProbability >= 0.75) {
-        networkEvidence = "HIGH THREAT";
+
+    if (
+        data.threat_probability >= 0.75
+    ) {
+
+        networkEvidence =
+            "HIGH THREAT";
+
     }
-    else if (scenario.threatProbability >= 0.30) {
-        networkEvidence = "MEDIUM THREAT";
+    else if (
+        data.threat_probability >= 0.30
+    ) {
+
+        networkEvidence =
+            "MEDIUM THREAT";
+
     }
 
 
-    let quantumEvidence = "NORMAL";
+    let quantumEvidence =
+        "NORMAL";
 
-    if (scenario.qber >= 0.05) {
-        quantumEvidence = "HIGH ERROR";
+
+    if (data.qber >= 0.05) {
+
+        quantumEvidence =
+            "HIGH ERROR";
+
     }
-    else if (scenario.qber >= 0.03) {
-        quantumEvidence = "ELEVATED ERROR";
+    else if (data.qber >= 0.03) {
+
+        quantumEvidence =
+            "ELEVATED ERROR";
+
     }
 
 
     getElement("networkEvidence").textContent =
         networkEvidence;
 
+
     getElement("quantumEvidence").textContent =
         quantumEvidence;
+
 
     getElement("analysisChannel").textContent =
         channelText;
@@ -392,18 +728,106 @@ function runScenario(name) {
 
     /* ---------- Analysis Badge ---------- */
 
-    let badgeText = "NORMAL";
+    let badgeText =
+        "NORMAL";
 
-    if (scenario.decision === "MONITOR") {
-        badgeText = "MONITOR";
+
+    if (data.decision === "MONITOR") {
+
+        badgeText =
+            "MONITOR";
+
     }
 
-    if (scenario.decision === "REJECT") {
-        badgeText = "CRITICAL";
+
+    if (data.decision === "REJECT") {
+
+        badgeText =
+            "CRITICAL";
+
     }
+
 
     getElement("analysisBadge").textContent =
         badgeText;
+
+}
+
+
+/* =========================================================
+   LOADING STATE
+   ========================================================= */
+
+function setLoadingState(isLoading) {
+
+    const decision =
+        getElement("decision");
+
+
+    if (isLoading) {
+
+        decision.textContent =
+            "ANALYZING";
+
+        decision.style.color =
+            "#8fb4d9";
+
+    }
+
+}
+
+
+/* =========================================================
+   ERROR STATE
+   ========================================================= */
+
+function showApiError(error) {
+
+    console.error(
+        "Q-Safe API error:",
+        error
+    );
+
+
+    getElement("decision").textContent =
+        "ERROR";
+
+
+    getElement("decision").style.color =
+        "#e86b6b";
+
+
+    getElement("decisionReason").textContent =
+        "Security evaluation could not be completed. Check the backend connection.";
+
+
+    getElement("analysisBadge").textContent =
+        "API ERROR";
+
+
+    getElement("analysisChannel").textContent =
+        "UNAVAILABLE";
+
+
+    getElement("networkEvidence").textContent =
+        "UNAVAILABLE";
+
+
+    getElement("quantumEvidence").textContent =
+        "UNAVAILABLE";
+
+}
+
+
+/* =========================================================
+   RUN SCENARIO
+   ========================================================= */
+
+async function runScenario(name) {
+
+    if (!scenarios[name]) {
+        return;
+    }
 
 
     /* ---------- Active Button ---------- */
@@ -411,29 +835,80 @@ function runScenario(name) {
     document
         .querySelectorAll(".scenario-button")
         .forEach(button => {
-            button.classList.remove("active");
+
+            button.classList.remove(
+                "active"
+            );
+
         });
 
 
     const buttons =
-        document.querySelectorAll(".scenario-button");
+        document.querySelectorAll(
+            ".scenario-button"
+        );
+
 
     buttons.forEach(button => {
 
         const text =
-            button.textContent.trim().toLowerCase();
+            button.textContent
+                .trim()
+                .toLowerCase();
+
 
         if (
-            (name === "normal" && text === "normal") ||
-            (name === "noise" && text === "channel noise") ||
-            (name === "network" && text === "network attack") ||
-            (name === "eve" && text === "eavesdropper") ||
-            (name === "combined" && text === "combined attack")
+            (name === "normal" &&
+                text === "normal") ||
+
+            (name === "noise" &&
+                text === "channel noise") ||
+
+            (name === "network" &&
+                text === "network attack") ||
+
+            (name === "eve" &&
+                text === "eavesdropper") ||
+
+            (name === "combined" &&
+                text === "combined attack")
         ) {
-            button.classList.add("active");
+
+            button.classList.add(
+                "active"
+            );
+
         }
 
     });
+
+
+    /* ---------- Loading ---------- */
+
+    setLoadingState(true);
+
+
+    try {
+
+        const response =
+            await getSecurityEvaluation(
+                name
+            );
+
+
+        updateDashboard(
+            response
+        );
+
+
+    }
+    catch (error) {
+
+        showApiError(
+            error
+        );
+
+    }
 
 }
 
@@ -448,26 +923,42 @@ function setupCanvas(canvas) {
         return null;
     }
 
+
     const rect =
         canvas.getBoundingClientRect();
 
+
     const width =
-        Math.max(rect.width, 100);
+        Math.max(
+            rect.width,
+            100
+        );
+
 
     const height =
-        Math.max(rect.height, 180);
+        Math.max(
+            rect.height,
+            180
+        );
+
 
     const devicePixelRatio =
         window.devicePixelRatio || 1;
 
+
     canvas.width =
-        width * devicePixelRatio;
+        width *
+        devicePixelRatio;
+
 
     canvas.height =
-        height * devicePixelRatio;
+        height *
+        devicePixelRatio;
+
 
     const ctx =
         canvas.getContext("2d");
+
 
     ctx.setTransform(
         devicePixelRatio,
@@ -478,20 +969,26 @@ function setupCanvas(canvas) {
         0
     );
 
+
     return {
         canvas,
         ctx,
         width,
         height
     };
+
 }
 
 
 /* =========================================================
-   COMMON CHART HELPERS
+   CHART HELPERS
    ========================================================= */
 
-function clearCanvas(ctx, width, height) {
+function clearCanvas(
+    ctx,
+    width,
+    height
+) {
 
     ctx.clearRect(
         0,
@@ -499,6 +996,7 @@ function clearCanvas(ctx, width, height) {
         width,
         height
     );
+
 }
 
 
@@ -510,18 +1008,31 @@ function drawGrid(
     horizontalLines = 5
 ) {
 
-    ctx.strokeStyle = "#1a2b40";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle =
+        "#1a2b40";
 
-    for (let i = 0; i <= horizontalLines; i++) {
+    ctx.lineWidth =
+        1;
+
+
+    for (
+        let i = 0;
+        i <= horizontalLines;
+        i++
+    ) {
 
         const y =
             padding.top +
             (
-                (chartHeight - padding.top - padding.bottom)
-                * i
-                / horizontalLines
+                (
+                    chartHeight -
+                    padding.top -
+                    padding.bottom
+                ) *
+                i /
+                horizontalLines
             );
+
 
         ctx.beginPath();
 
@@ -531,12 +1042,15 @@ function drawGrid(
         );
 
         ctx.lineTo(
-            chartWidth - padding.right,
+            chartWidth -
+            padding.right,
             y
         );
 
         ctx.stroke();
+
     }
+
 }
 
 
@@ -547,8 +1061,12 @@ function drawAxes(
     padding
 ) {
 
-    ctx.strokeStyle = "#42566e";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle =
+        "#42566e";
+
+    ctx.lineWidth =
+        1;
+
 
     ctx.beginPath();
 
@@ -559,15 +1077,19 @@ function drawAxes(
 
     ctx.lineTo(
         padding.left,
-        chartHeight - padding.bottom
+        chartHeight -
+        padding.bottom
     );
 
     ctx.lineTo(
-        chartWidth - padding.right,
-        chartHeight - padding.bottom
+        chartWidth -
+        padding.right,
+        chartHeight -
+        padding.bottom
     );
 
     ctx.stroke();
+
 }
 
 
@@ -581,12 +1103,27 @@ function drawText(
     align = "left"
 ) {
 
-    ctx.fillStyle = color;
-    ctx.font = font;
-    ctx.textAlign = align;
-    ctx.fillText(text, x, y);
+    ctx.fillStyle =
+        color;
+
+    ctx.font =
+        font;
+
+    ctx.textAlign =
+        align;
+
+    ctx.fillText(
+        text,
+        x,
+        y
+    );
+
 }
 
+
+/* =========================================================
+   LINE CHART
+   ========================================================= */
 
 function drawLineChart(
     canvasId,
@@ -602,18 +1139,22 @@ function drawLineChart(
     const canvas =
         getElement(canvasId);
 
+
     const setup =
         setupCanvas(canvas);
+
 
     if (!setup) {
         return;
     }
+
 
     const {
         ctx,
         width,
         height
     } = setup;
+
 
     clearCanvas(
         ctx,
@@ -637,6 +1178,7 @@ function drawLineChart(
         padding
     );
 
+
     drawAxes(
         ctx,
         width,
@@ -650,23 +1192,34 @@ function drawLineChart(
         padding.left -
         padding.right;
 
+
     const chartHeight =
         height -
         padding.top -
         padding.bottom;
 
 
-    /* ---------- Y Labels ---------- */
-
-    for (let i = 0; i <= 5; i++) {
+    for (
+        let i = 0;
+        i <= 5;
+        i++
+    ) {
 
         const value =
             yMax -
-            (yMax * i / 5);
+            (
+                yMax *
+                i /
+                5
+            );
+
 
         const y =
             padding.top +
-            chartHeight * i / 5;
+            chartHeight *
+            i /
+            5;
+
 
         drawText(
             ctx,
@@ -677,42 +1230,46 @@ function drawLineChart(
             "10px Arial",
             "right"
         );
+
     }
 
 
-    /* ---------- X Labels ---------- */
+    data.forEach(
+        (point, index) => {
 
-    data.forEach((point, index) => {
+            const x =
+                padding.left +
+                (
+                    chartWidth *
+                    index /
+                    Math.max(
+                        data.length - 1,
+                        1
+                    )
+                );
 
-        const x =
-            padding.left +
-            (
-                chartWidth *
-                index /
-                Math.max(data.length - 1, 1)
-            );
 
-        if (
-            index === 0 ||
-            index === data.length - 1 ||
-            index % 2 === 0
-        ) {
+            if (
+                index === 0 ||
+                index === data.length - 1 ||
+                index % 2 === 0
+            ) {
 
-            drawText(
-                ctx,
-                `${point[xKey]}%`,
-                x,
-                height - 18,
-                "#72869f",
-                "10px Arial",
-                "center"
-            );
+                drawText(
+                    ctx,
+                    `${point[xKey]}%`,
+                    x,
+                    height - 18,
+                    "#72869f",
+                    "10px Arial",
+                    "center"
+                );
+
+            }
+
         }
+    );
 
-    });
-
-
-    /* ---------- Axis Labels ---------- */
 
     drawText(
         ctx,
@@ -727,12 +1284,17 @@ function drawLineChart(
 
     ctx.save();
 
+
     ctx.translate(
         12,
         height / 2
     );
 
-    ctx.rotate(-Math.PI / 2);
+
+    ctx.rotate(
+        -Math.PI / 2
+    );
+
 
     drawText(
         ctx,
@@ -744,83 +1306,124 @@ function drawLineChart(
         "center"
     );
 
+
     ctx.restore();
 
 
-    /* ---------- Line ---------- */
+    ctx.strokeStyle =
+        "#62a9ff";
 
-    ctx.strokeStyle = "#62a9ff";
-    ctx.lineWidth = 2.5;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
+    ctx.lineWidth =
+        2.5;
+
+    ctx.lineJoin =
+        "round";
+
+    ctx.lineCap =
+        "round";
+
 
     ctx.beginPath();
 
-    data.forEach((point, index) => {
 
-        const x =
-            padding.left +
-            (
-                chartWidth *
-                index /
-                Math.max(data.length - 1, 1)
-            );
+    data.forEach(
+        (point, index) => {
 
-        const y =
-            padding.top +
-            chartHeight -
-            (
-                (point[yKey] / yMax) *
-                chartHeight
-            );
+            const x =
+                padding.left +
+                (
+                    chartWidth *
+                    index /
+                    Math.max(
+                        data.length - 1,
+                        1
+                    )
+                );
 
-        if (index === 0) {
-            ctx.moveTo(x, y);
+
+            const y =
+                padding.top +
+                chartHeight -
+                (
+                    (
+                        point[yKey] /
+                        yMax
+                    ) *
+                    chartHeight
+                );
+
+
+            if (index === 0) {
+
+                ctx.moveTo(
+                    x,
+                    y
+                );
+
+            }
+            else {
+
+                ctx.lineTo(
+                    x,
+                    y
+                );
+
+            }
+
         }
-        else {
-            ctx.lineTo(x, y);
-        }
+    );
 
-    });
 
     ctx.stroke();
 
 
-    /* ---------- Points ---------- */
+    data.forEach(
+        (point, index) => {
 
-    data.forEach((point, index) => {
+            const x =
+                padding.left +
+                (
+                    chartWidth *
+                    index /
+                    Math.max(
+                        data.length - 1,
+                        1
+                    )
+                );
 
-        const x =
-            padding.left +
-            (
-                chartWidth *
-                index /
-                Math.max(data.length - 1, 1)
+
+            const y =
+                padding.top +
+                chartHeight -
+                (
+                    (
+                        point[yKey] /
+                        yMax
+                    ) *
+                    chartHeight
+                );
+
+
+            ctx.fillStyle =
+                "#8ac0ff";
+
+
+            ctx.beginPath();
+
+
+            ctx.arc(
+                x,
+                y,
+                3.5,
+                0,
+                Math.PI * 2
             );
 
-        const y =
-            padding.top +
-            chartHeight -
-            (
-                (point[yKey] / yMax) *
-                chartHeight
-            );
 
-        ctx.fillStyle = "#8ac0ff";
+            ctx.fill();
 
-        ctx.beginPath();
-
-        ctx.arc(
-            x,
-            y,
-            3.5,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fill();
-
-    });
+        }
+    );
 
 }
 
@@ -846,7 +1449,7 @@ function drawQberNoiseChart() {
 
 
 /* =========================================================
-   QBER VS EAVESDROPPER
+   QBER VS EVE
    ========================================================= */
 
 function drawQberEveChart() {
@@ -872,20 +1475,26 @@ function drawQberEveChart() {
 function drawThreatQberChart() {
 
     const canvas =
-        getElement("threatQberChart");
+        getElement(
+            "threatQberChart"
+        );
+
 
     const setup =
         setupCanvas(canvas);
 
+
     if (!setup) {
         return;
     }
+
 
     const {
         ctx,
         width,
         height
     } = setup;
+
 
     clearCanvas(
         ctx,
@@ -909,6 +1518,7 @@ function drawThreatQberChart() {
         padding
     );
 
+
     drawAxes(
         ctx,
         width,
@@ -922,23 +1532,34 @@ function drawThreatQberChart() {
         padding.left -
         padding.right;
 
+
     const chartHeight =
         height -
         padding.top -
         padding.bottom;
 
 
-    /* Y axis */
-
-    for (let i = 0; i <= 5; i++) {
+    for (
+        let i = 0;
+        i <= 5;
+        i++
+    ) {
 
         const value =
             100 -
-            (100 * i / 5);
+            (
+                100 *
+                i /
+                5
+            );
+
 
         const y =
             padding.top +
-            chartHeight * i / 5;
+            chartHeight *
+            i /
+            5;
+
 
         drawText(
             ctx,
@@ -949,23 +1570,30 @@ function drawThreatQberChart() {
             "10px Arial",
             "right"
         );
+
     }
 
 
-    /* X axis */
+    const xMax =
+        8;
 
-    const xMax = 8;
 
-    for (let i = 0; i <= 4; i++) {
+    for (
+        let i = 0;
+        i <= 4;
+        i++
+    ) {
 
         const value =
             i * 2;
+
 
         const x =
             padding.left +
             chartWidth *
             value /
             xMax;
+
 
         drawText(
             ctx,
@@ -976,6 +1604,7 @@ function drawThreatQberChart() {
             "10px Arial",
             "center"
         );
+
     }
 
 
@@ -992,12 +1621,17 @@ function drawThreatQberChart() {
 
     ctx.save();
 
+
     ctx.translate(
         12,
         height / 2
     );
 
-    ctx.rotate(-Math.PI / 2);
+
+    ctx.rotate(
+        -Math.PI / 2
+    );
+
 
     drawText(
         ctx,
@@ -1009,88 +1643,98 @@ function drawThreatQberChart() {
         "center"
     );
 
+
     ctx.restore();
 
 
-    /* ---------- Points ---------- */
+    threatQberData.forEach(
+        point => {
 
-    threatQberData.forEach(point => {
-
-        const x =
-            padding.left +
-            (
-                point.qber /
-                xMax
-            ) *
-            chartWidth;
-
-        const y =
-            padding.top +
-            chartHeight -
-            (
-                point.threat /
-                100
-            ) *
-            chartHeight;
+            const x =
+                padding.left +
+                (
+                    point.qber /
+                    xMax
+                ) *
+                chartWidth;
 
 
-        ctx.fillStyle =
-            point.threat >= 75
-                ? "#e86b6b"
-                : point.qber >= 5
-                    ? "#e8c75c"
-                    : "#62a9ff";
+            const y =
+                padding.top +
+                chartHeight -
+                (
+                    point.threat /
+                    100
+                ) *
+                chartHeight;
 
 
-        ctx.beginPath();
-
-        ctx.arc(
-            x,
-            y,
-            6,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fill();
+            ctx.fillStyle =
+                point.threat >= 75
+                    ? "#e86b6b"
+                    : point.qber >= 5
+                        ? "#e8c75c"
+                        : "#62a9ff";
 
 
-        drawText(
-            ctx,
-            point.name,
-            x,
-            y - 10,
-            "#9fb2c8",
-            "9px Arial",
-            "center"
-        );
+            ctx.beginPath();
 
-    });
+
+            ctx.arc(
+                x,
+                y,
+                6,
+                0,
+                Math.PI * 2
+            );
+
+
+            ctx.fill();
+
+
+            drawText(
+                ctx,
+                point.name,
+                x,
+                y - 10,
+                "#9fb2c8",
+                "9px Arial",
+                "center"
+            );
+
+        }
+    );
 
 }
 
 
 /* =========================================================
-   THREAT VS QUANTUM EVIDENCE
+   EVIDENCE COMPARISON
    ========================================================= */
 
 function drawEvidenceComparisonChart() {
 
     const canvas =
-        getElement("evidenceComparisonChart");
+        getElement(
+            "evidenceComparisonChart"
+        );
+
 
     const setup =
         setupCanvas(canvas);
 
+
     if (!setup) {
         return;
     }
+
 
     const {
         ctx,
         width,
         height
     } = setup;
+
 
     clearCanvas(
         ctx,
@@ -1114,6 +1758,7 @@ function drawEvidenceComparisonChart() {
         padding
     );
 
+
     drawAxes(
         ctx,
         width,
@@ -1127,23 +1772,34 @@ function drawEvidenceComparisonChart() {
         padding.left -
         padding.right;
 
+
     const chartHeight =
         height -
         padding.top -
         padding.bottom;
 
 
-    /* Y labels */
-
-    for (let i = 0; i <= 5; i++) {
+    for (
+        let i = 0;
+        i <= 5;
+        i++
+    ) {
 
         const value =
             100 -
-            (100 * i / 5);
+            (
+                100 *
+                i /
+                5
+            );
+
 
         const y =
             padding.top +
-            chartHeight * i / 5;
+            chartHeight *
+            i /
+            5;
+
 
         drawText(
             ctx,
@@ -1154,6 +1810,7 @@ function drawEvidenceComparisonChart() {
             "10px Arial",
             "right"
         );
+
     }
 
 
@@ -1167,7 +1824,8 @@ function drawEvidenceComparisonChart() {
 
             const centerX =
                 padding.left +
-                groupWidth * index +
+                groupWidth *
+                index +
                 groupWidth / 2;
 
 
@@ -1178,8 +1836,6 @@ function drawEvidenceComparisonChart() {
                 );
 
 
-            /* Threat bar */
-
             const threatHeight =
                 (
                     point.threat /
@@ -1187,23 +1843,26 @@ function drawEvidenceComparisonChart() {
                 ) *
                 chartHeight;
 
+
             const threatY =
                 padding.top +
                 chartHeight -
                 threatHeight;
 
 
-            ctx.fillStyle = "#62a9ff";
+            ctx.fillStyle =
+                "#62a9ff";
+
 
             ctx.fillRect(
-                centerX - barWidth - 4,
+                centerX -
+                barWidth -
+                4,
                 threatY,
                 barWidth,
                 threatHeight
             );
 
-
-            /* QBER bar */
 
             const qberHeight =
                 (
@@ -1212,13 +1871,16 @@ function drawEvidenceComparisonChart() {
                 ) *
                 chartHeight;
 
+
             const qberY =
                 padding.top +
                 chartHeight -
                 qberHeight;
 
 
-            ctx.fillStyle = "#e8c75c";
+            ctx.fillStyle =
+                "#e8c75c";
+
 
             ctx.fillRect(
                 centerX + 4,
@@ -1242,9 +1904,9 @@ function drawEvidenceComparisonChart() {
     );
 
 
-    /* Legend */
+    ctx.fillStyle =
+        "#62a9ff";
 
-    ctx.fillStyle = "#62a9ff";
 
     ctx.fillRect(
         width - 170,
@@ -1252,6 +1914,7 @@ function drawEvidenceComparisonChart() {
         10,
         10
     );
+
 
     drawText(
         ctx,
@@ -1263,7 +1926,9 @@ function drawEvidenceComparisonChart() {
     );
 
 
-    ctx.fillStyle = "#e8c75c";
+    ctx.fillStyle =
+        "#e8c75c";
+
 
     ctx.fillRect(
         width - 90,
@@ -1271,6 +1936,7 @@ function drawEvidenceComparisonChart() {
         10,
         10
     );
+
 
     drawText(
         ctx,
@@ -1285,26 +1951,32 @@ function drawEvidenceComparisonChart() {
 
 
 /* =========================================================
-   SECURITY DECISION DISTRIBUTION
+   DECISION DISTRIBUTION
    ========================================================= */
 
 function drawDecisionDistributionChart() {
 
     const canvas =
-        getElement("decisionDistributionChart");
+        getElement(
+            "decisionDistributionChart"
+        );
+
 
     const setup =
         setupCanvas(canvas);
 
+
     if (!setup) {
         return;
     }
+
 
     const {
         ctx,
         width,
         height
     } = setup;
+
 
     clearCanvas(
         ctx,
@@ -1328,6 +2000,7 @@ function drawDecisionDistributionChart() {
         padding
     );
 
+
     drawAxes(
         ctx,
         width,
@@ -1341,18 +2014,22 @@ function drawDecisionDistributionChart() {
         padding.left -
         padding.right;
 
+
     const chartHeight =
         height -
         padding.top -
         padding.bottom;
 
 
-    const maxCount = 4;
+    const maxCount =
+        4;
 
 
-    /* Y labels */
-
-    for (let i = 0; i <= 4; i++) {
+    for (
+        let i = 0;
+        i <= 4;
+        i++
+    ) {
 
         const y =
             padding.top +
@@ -1362,6 +2039,7 @@ function drawDecisionDistributionChart() {
                 i /
                 maxCount
             );
+
 
         drawText(
             ctx,
@@ -1401,7 +2079,8 @@ function drawDecisionDistributionChart() {
 
             const x =
                 padding.left +
-                groupWidth * index +
+                groupWidth *
+                index +
                 (
                     groupWidth -
                     barWidth
@@ -1414,14 +2093,27 @@ function drawDecisionDistributionChart() {
                 barHeight;
 
 
-            if (item.decision === "ACCEPT") {
-                ctx.fillStyle = "#67e59a";
+            if (
+                item.decision === "ACCEPT"
+            ) {
+
+                ctx.fillStyle =
+                    "#67e59a";
+
             }
-            else if (item.decision === "MONITOR") {
-                ctx.fillStyle = "#e8c75c";
+            else if (
+                item.decision === "MONITOR"
+            ) {
+
+                ctx.fillStyle =
+                    "#e8c75c";
+
             }
             else {
-                ctx.fillStyle = "#e86b6b";
+
+                ctx.fillStyle =
+                    "#e86b6b";
+
             }
 
 
@@ -1436,7 +2128,8 @@ function drawDecisionDistributionChart() {
             drawText(
                 ctx,
                 `${item.count}`,
-                x + barWidth / 2,
+                x +
+                barWidth / 2,
                 y - 8,
                 "#dce6f2",
                 "12px Arial",
@@ -1447,7 +2140,8 @@ function drawDecisionDistributionChart() {
             drawText(
                 ctx,
                 item.decision,
-                x + barWidth / 2,
+                x +
+                barWidth / 2,
                 height - 18,
                 "#8296ae",
                 "10px Arial",
@@ -1461,7 +2155,7 @@ function drawDecisionDistributionChart() {
 
 
 /* =========================================================
-   DRAW ALL GRAPHS
+   DRAW ALL CHARTS
    ========================================================= */
 
 function drawAllCharts() {
@@ -1487,14 +2181,20 @@ window.addEventListener(
     "resize",
     () => {
 
-        clearTimeout(window.qsafeResizeTimer);
+        clearTimeout(
+            window.qsafeResizeTimer
+        );
+
 
         window.qsafeResizeTimer =
-            setTimeout(() => {
+            setTimeout(
+                () => {
 
-                drawAllCharts();
+                    drawAllCharts();
 
-            }, 120);
+                },
+                120
+            );
 
     }
 );
@@ -1508,19 +2208,19 @@ document.addEventListener(
     "DOMContentLoaded",
     () => {
 
-        runScenario("normal");
+        runScenario(
+            "normal"
+        );
 
-        /*
-            Small delay ensures the browser has completed
-            layout calculations before canvas dimensions
-            are calculated.
-        */
 
-        setTimeout(() => {
+        setTimeout(
+            () => {
 
-            drawAllCharts();
+                drawAllCharts();
 
-        }, 100);
+            },
+            100
+        );
 
     }
 );
