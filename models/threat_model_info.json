@@ -1,0 +1,30 @@
+{
+    "model": "LightGBM",
+    "threshold": 0.8499999999999996,
+    "random_state": 42,
+    "training_dataset": "KDDTrain+.txt",
+    "test_dataset": "KDDTest+.txt",
+    "selection_metric": "validation_f1",
+    "hyperparameter_search_metric": "validation_pr_auc",
+    "best_parameters": {
+        "subsample": 1.0,
+        "reg_lambda": 0.01,
+        "reg_alpha": 0.01,
+        "num_leaves": 63,
+        "n_estimators": 500,
+        "min_child_samples": 40,
+        "max_depth": 15,
+        "learning_rate": 0.1,
+        "colsample_bytree": 1.0
+    },
+    "final_test_metrics": {
+        "threshold": 0.8499999999999996,
+        "accuracy": 0.7863289567068843,
+        "precision": 0.9685527238718729,
+        "recall": 0.6456011844463493,
+        "f1": 0.7747697199233179,
+        "roc_auc": 0.9603057986982526,
+        "pr_auc": 0.9652955719508282,
+        "model": "LightGBM"
+    }
+}
