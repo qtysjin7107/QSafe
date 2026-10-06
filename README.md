@@ -1,442 +1,617 @@
-# QSafe
+# Q-Safe
 
 ### Threat-Aware Quantum-Secure Communication for Biomedical Networks
 
-![Python](https://img.shields.io/badge/python-3.11-blue)
-![Qiskit](https://img.shields.io/badge/quantum-Qiskit-6929C4)
-![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Track](https://img.shields.io/badge/Hackathon-Track%202%3A%20Quantum%20Cryptography%20%26%20Communication-orange)
+Q-Safe is a hybrid cybersecurity and quantum communication system designed for secure communication in biomedical networks. It combines classical network-threat intelligence with Qiskit-based quantum key distribution, QBER analysis, and an adaptive decision policy.
 
-> QSafe decides **whether a communication session can be trusted** by combining two signals that are usually treated separately: how *suspicious the network traffic looks* (classical ML) and how *clean the quantum key exchange was* (BB84 + QBER).
+Q-Safe can operate in three analysis modes:
 
----
+- **Classical ML — LightGBM Threat Classifier**
+- **QBER Model — Bayesian QBER Evidence Model**
+- **Hybrid Model — Q-Safe Fusion Engine**
 
-## Table of Contents
-
-1. [Problem Statement](#1-problem-statement)
-2. [Our Solution](#2-our-solution)
-3. [System Architecture](#3-system-architecture)
-4. [How Each Module Works](#4-how-each-module-works)
-5. [Tech Stack](#5-tech-stack)
-6. [Project Structure](#6-project-structure)
-7. [Getting Started](#7-getting-started)
-8. [Usage](#8-usage)
-9. [Results and Evaluation](#9-results-and-evaluation)
-10. [Limitations](#10-limitations)
-11. [Future Work](#11-future-work)
-12. [Hackathon Details](#12-hackathon-details)
-13. [Team](#13-team)
-14. [License](#14-license)
+The system produces quantitative evidence and an **ACCEPT / MONITOR / REJECT** security decision.
 
 ---
 
-## 1. Problem Statement
+## Hackathon Track
 
-Biomedical networks (hospitals, diagnostic labs, remote patient-monitoring systems) move some of the most sensitive data that exists: patient records, genomic data, and device telemetry. Two problems threaten this traffic:
+**Track 2: Quantum Cryptography and Communication**
 
-- **Future cryptographic risk.** Data encrypted today with classical key exchange can be recorded now and decrypted later once quantum computers mature ("harvest now, decrypt later"). Medical data stays sensitive for decades, so this matters more here than in most domains.
-- **Present-day network attacks.** Quantum Key Distribution (QKD) protects the *key exchange*, but it does nothing about a compromised or malicious host on the network. Likewise, an intrusion detector says nothing about whether a quantum channel is being eavesdropped.
+### Application Context
 
-Most systems address one of these. A communication session is only trustworthy if **both** the network behaviour and the key exchange look healthy.
+Biomedical networks are used only as the application context for the security system. The current classical threat model is trained on **NSL-KDD**, a network intrusion-detection dataset.
 
-## 2. Our Solution
+---
 
-QSafe is a hybrid cybersecurity and quantum communication system that:
+# Core Workflow
 
-- Analyses network traffic from the **NSL-KDD** dataset and classifies it as normal or attack, producing a **threat probability**
-- Simulates **BB84 Quantum Key Distribution** using **Qiskit**
-- Simulates **quantum channel noise** and **eavesdropping**, and measures the **Quantum Bit Error Rate (QBER)**
-- Converts QBER into a **quantum attack probability** with a Bayesian evidence model, then fuses it with the network threat probability in a **hybrid security policy** that outputs one of three decisions: **ACCEPT**, **MONITOR**, or **REJECT**
-- Exposes everything through a **FastAPI backend** and a **web dashboard**
+## Classical Security Layer
 
-## 3. System Architecture
-
-```mermaid
-flowchart LR
-    A[NSL-KDD Network Traffic] --> B[Preprocessing]
-    B --> C[ML Threat Classifier]
-    C --> D[Threat Probability]
-
-    E[Qiskit BB84 Simulation] --> F[Channel Noise / Eavesdropping]
-    F --> G[QBER]
-    G --> I[Bayesian QBER Evidence]
-    I --> P[Quantum Attack Probability]
-
-    D --> H{Hybrid Security Policy}
-    P --> H
-
-    H --> J[ACCEPT]
-    H --> K[MONITOR]
-    H --> L[REJECT]
-
-    H --> M[FastAPI Backend]
-    M --> N[Web Dashboard]
+```text
+NSL-KDD
+   ↓
+Preprocessing
+   ↓
+LightGBM Threat Classifier
+   ↓
+Threat Probability
+   ↓
+Normal / Attack
 ```
 
-In plain text:
+## Quantum Security Layer
 
+```text
+Qiskit BB84
+   ↓
+Channel Noise / Eavesdropping Simulation
+   ↓
+QBER Measurement
+   ↓
+Bayesian QBER Evidence Model
+   ↓
+P(Eve)
 ```
-NSL-KDD -> LightGBM Threat Classifier -> Threat Probability --------------+
-                                                                          |
-Qiskit BB84 -> Noise / Eve -> QBER -> Bayesian Evidence -> Attack Prob. --+--> Hybrid Policy
-                                                                                 -> ACCEPT / MONITOR / REJECT
-                                                                                 -> FastAPI -> Web Dashboard
+
+## Hybrid Security Layer
+
+```text
+Threat Probability
+        +
+QBER / Quantum Evidence
+        +
+Channel Conditions
+        ↓
+Q-Safe Adaptive Security Policy
+        ↓
+ACCEPT / MONITOR / REJECT
 ```
 
-## 4. How Each Module Works
+---
 
-### 4.1 Classical Threat Analysis (`ml/`)
+# Analysis Modes
 
-- Uses the **NSL-KDD** intrusion detection dataset (an improved version of KDD'99 with duplicate records removed).
-- **Data:** trained on the official **KDDTrain+** split (125,973 rows) and evaluated on **KDDTest+** (22,544 rows), using 41 features. Labels are mapped to a binary target (normal = 0, attack = 1).
-- **Dataset audit:** schema, missing values, duplicates, train/test feature consistency, label distribution, and categorical compatibility were checked. KDDTest+ contains attack types that never appear in KDDTrain+, so the official test set measures generalisation to unseen attacks, not just random hold-out performance.
-- **Classification:** a binary classifier separates *normal* from *attack* traffic and outputs a **probability**, not just a label, so the decision engine can treat borderline traffic differently from clearly malicious traffic.
-- **Models compared:** Logistic Regression, Random Forest, Extra Trees, HistGradientBoosting, CatBoost, XGBoost, and LightGBM.
-- **Final runtime model: LightGBM**, stored as `models/threat_model_best.joblib` with its decision threshold and configuration in `models/threat_model_info.json`.
-- **Runtime predictor** (`ml/predict.py`) loads the model and threshold, restores the expected categorical types for `protocol_type`, `service`, and `flag`, and returns the predicted label, the threat probability, and the threshold used. It is wrapped by `backend/services/threat_service.py`.
+## 1. Classical ML — LightGBM Threat Classifier
 
-### 4.2 Quantum Key Distribution (`quantum/`)
+This mode analyzes an uploaded **NSL-KDD-compatible** network traffic dataset using the trained LightGBM model.
 
-QSafe simulates the **BB84 protocol** with Qiskit and Qiskit Aer:
+### Input
 
-1. **Alice** generates random bits and random measurement bases, and encodes each bit as a qubit.
-2. The qubit passes through a **simulated quantum channel**: an identity gate with a **depolarizing noise model** (Qiskit Aer) attached, controlled by `noise_rate`.
-3. For each qubit, an **eavesdropper (Eve)** attacks with probability `eve_probability`. Eve performs an **intercept-and-resend attack**: she measures in a randomly chosen basis, destroys the original qubit, and sends Bob a fresh qubit prepared from her result. When Eve attacks, the qubit crosses two noisy channel legs (Alice to Eve, Eve to Bob).
-4. **Bob** measures each qubit in a randomly chosen basis.
-5. **Sifting:** Alice and Bob keep only the positions where their bases matched.
-6. **QBER:** the fraction of sifted positions where Alice's and Bob's bits disagree. In the simulation it is computed over the whole sifted key.
+- NSL-KDD-compatible CSV/TXT file
 
-All random choices use Python's `secrets` module, so results differ slightly from run to run.
+### Output
 
-The main entry point is `run_bb84(n_bits, noise_rate, eve_probability)`, which returns Alice's and Bob's bits and bases, both sifted keys, and the QBER.
+- Row-level threat probability
+- Predicted normal/attack counts
+- Attack distribution
+- Threat-probability histogram
+- Accuracy, when labels are available
+- Precision
+- Recall
+- F1-score
+- Confusion matrix
 
-| File | Role |
-|---|---|
-| `quantum/bb84.py` | Core BB84 logic (`run_bb84`) plus a quick Eve-sweep demo |
-| `quantum/channel.py` | Depolarizing noise model for the channel |
-| `quantum/eve.py` | Intercept-and-resend circuit |
-| `quantum/experiment_runner.py` | Full experiment sweep; writes `experiments/qkd_experiment_results.csv` |
-| `quantum/qber_model.py` | Bayesian QBER evidence model |
+The uploaded dataset is processed directly; results are not generated from dummy upload data.
 
-**Why QBER matters:** a clean channel gives a QBER near zero. Channel noise raises it modestly, while intercept-and-resend raises it in proportion to how much Eve listens: theoretically about 25% of the sifted key when she attacks every qubit, so roughly `25% x eve_probability`. A high QBER means the key cannot be trusted, and the session should not proceed on it.
+---
 
-#### Statistical QBER evidence model
+## 2. QBER Model — Bayesian QBER Evidence Model
 
-Rather than relying on a single hard cutoff, QSafe asks: *given the QBER we observed, how likely is it that someone is listening?*
+This mode analyzes the quantum communication channel and does not require a network dataset upload.
 
-- Two hypotheses are compared: **H0** (honest noisy channel) and **H1** (channel under eavesdropping).
-- The expected QBER and its spread for each hypothesis are **calibrated from the experiment results** (`experiments/qkd_experiment_results.csv`), using the closest measured noise / Eve configuration.
-- The observed QBER is scored under both hypotheses using Gaussian likelihoods, giving a **likelihood ratio** (above 1 favours eavesdropping) and, through Bayes' rule with a configurable prior (default 50%), a **posterior probability that Eve is present**.
-- Inputs: observed QBER, estimated channel noise, a representative Eve attack strength (default 10%), and the prior.
+It uses the Q-Safe Qiskit BB84 implementation and repeated experiments to estimate QBER under channel noise and eavesdropping conditions.
 
-The backend uses a representative attack hypothesis of **10% Eve probability** and a **50% prior**. The true simulated Eve probability is never handed to the detector as a result: the detector only sees the observed QBER and judges it with this statistical model.
+### Inputs
 
-### 4.3 Adaptive Security Policy (`decision/`)
+- Channel noise rate
+- Eve probability
+- Number of qubits/bits per trial
+- Number of trials
 
-The decision engine (`decision/policy.py`, orchestrated by `backend/services/hybrid_service.py`) uses these signals:
+### Output
 
-| Input | Source |
-|---|---|
-| Threat probability | LightGBM classifier on network traffic |
-| Observed and expected QBER | BB84 simulation and channel model |
-| Quantum attack probability | Bayesian QBER evidence model |
-| Channel conditions | Noise / eavesdropping simulation settings |
+- Observed QBER
+- Expected QBER
+- QBER standard deviation
+- Bayesian `P(Eve)`
+- Honest-channel likelihood
+- Attack likelihood
+- Likelihood ratio
+- Sifted-key length
+- QBER-vs-noise analysis
+- QBER-vs-Eve analysis
 
-and returns one of:
+---
 
-| Decision | Meaning |
-|---|---|
-| **ACCEPT** | Both security layers look healthy. |
-| **MONITOR** | The session carries a moderate or ambiguous signal, or a strong network signal with a clean quantum channel. Treat it cautiously. |
-| **REJECT** | Strong evidence that the session should not proceed (high quantum threat, or high network and quantum threat together). |
+## 3. Hybrid Model — Q-Safe Fusion Engine
 
-**Current thresholds** (probabilities):
+This is the main integrated Q-Safe workflow.
 
-| Signal | Low below | High above |
-|---|---|---|
-| Network threat | 0.40 | 0.70 |
-| Quantum attack | 0.40 | 0.80 |
+It combines:
 
-**Decision rules:**
+1. Classical LightGBM network-threat evidence
+2. Qiskit BB84/QBER evidence
+3. The existing Q-Safe adaptive security policy
 
-| Condition | Decision |
-|---|---|
-| High network threat + high quantum threat | REJECT |
-| High network threat only | MONITOR |
-| High quantum threat only | REJECT |
-| Medium network threat + medium quantum threat | MONITOR |
-| Medium quantum threat | MONITOR |
-| Medium network threat | MONITOR |
-| Low network threat + low quantum threat | ACCEPT |
+The final result contains:
 
-Because the policy uses both signals together, it catches cases that either one would miss alone. For example, benign network traffic over a compromised quantum channel is **REJECTED**, while malicious traffic over a clean quantum channel is **MONITORED** instead of passing silently.
+- Network threat probability
+- QBER
+- Channel noise
+- Quantum attack probability / `P(Eve)`
+- Classical and quantum evidence
+- Explainable decision reason
+- **ACCEPT / MONITOR / REJECT**
 
-### 4.4 Backend and Dashboard (`backend/`, `frontend/`)
+### Concept
 
-**Backend.** A FastAPI service wraps the classifier, the BB84 simulation, the evidence model, and the policy (`backend/services/`: `threat_service`, `qkd_service`, `decision_service`, `hybrid_service`, `demo_service`).
-
-| Endpoint | Purpose |
-|---|---|
-| `GET /api/health` | Backend health check |
-| `POST /api/threat` | Run the classical threat classifier |
-| `POST /api/security` | Evaluate a provided security state |
-| `POST /api/analyze` | Run the full network + QKD + policy pipeline |
-| `POST /api/demo` | Run a predefined demonstration scenario |
-
-`/api/analyze` is the main endpoint. It takes the 41 NSL-KDD features, the number of BB84 bits and trials, the channel noise rate, and the Eve probability, and returns three blocks: `threat`, `quantum`, and `decision`.
-
-`/api/demo` offers five predefined modes backed by stored NSL-KDD test samples in `backend/demo_samples.json`, so the demo is reproducible without typing 41 features: `NORMAL`, `NOISY_CHANNEL`, `NETWORK_ATTACK`, `EAVESDROPPER`, `COMBINED_ATTACK`.
-
-**Dashboard.** A browser app in plain HTML, CSS, JavaScript and SVG (no framework) that consumes real backend results, not hardcoded scenario numbers. It shows:
-
-- Person A, Person B, and an animated quantum channel between them
-- Live threat probability, QBER, expected QBER, and quantum attack probability
-- The ACCEPT / MONITOR / REJECT decision state, with scenario controls and session history
-- Charts for QBER vs noise, QBER vs Eve, threat probability vs QBER, evidence comparison, and decision distribution
-- A guardian-dragon visual tied to the decision: calm for ACCEPT, irritated with a controlled channel wave for MONITOR, and furious with fire and a chaotic channel for REJECT
-- Multiple visual themes (for example Quantum Core, Cyber Neon, Clinical Secure)
-
-## 5. Tech Stack
-
-| Area | Tools |
-|---|---|
-| Quantum computing | Qiskit, Qiskit Aer, Qiskit IBM Runtime |
-| Machine learning | scikit-learn, XGBoost, LightGBM (final runtime model), CatBoost, joblib |
-| Scientific computing | NumPy, SciPy, pandas |
-| Network / graph analysis | NetworkX |
-| Visualisation | Matplotlib, Plotly |
-| Backend | FastAPI, Uvicorn, Pydantic, HTTPX |
-| Frontend | HTML, CSS, JavaScript, SVG (no framework) |
-| Dev environment | Python 3.11, Jupyter, VS Code |
-
-## 6. Project Structure
-
+```text
+                Uploaded Network Data
+                         ↓
+               LightGBM Classifier
+                         ↓
+                Network Threat P
+                         │
+                         │
+                         ├───────────────┐
+                         │               │
+                         ▼               ▼
+                                     Qiskit BB84
+                                          ↓
+                                        QBER
+                                          ↓
+                                 Bayesian QBER Model
+                                          ↓
+                                       P(Eve)
+                         │               │
+                         └───────┬───────┘
+                                 ↓
+                          Q-Safe Fusion
+                                 ↓
+                   ACCEPT / MONITOR / REJECT
 ```
+
+---
+
+# Project Structure
+
+```text
 QSafe/
-├── backend/
-│   ├── api/routes.py            # API routes
-│   ├── services/                # threat, qkd, decision, hybrid, demo services
-│   ├── demo_samples.json        # NSL-KDD samples for demo scenarios
-│   └── main.py                  # FastAPI app
+│
 ├── quantum/
-│   ├── bb84.py                  # BB84 implementation
-│   ├── channel.py               # Depolarizing noise model
-│   ├── eve.py                   # Intercept-and-resend Eve
-│   ├── qber_model.py            # Bayesian QBER evidence model
-│   ├── experiment_runner.py     # Repeated QBER experiments -> CSV
-│   └── experiments/             # Quantum experiment outputs
+│   ├── bb84.py
+│   ├── channel.py
+│   ├── eve.py
+│   ├── qber.py
+│   ├── qber_model.py
+│   ├── experiment_runner.py
+│   ├── analyze_experiments.py
+│   └── experiments/
+│
 ├── ml/
-│   ├── predict.py               # Runtime predictor
-│   └── train.py                 # Model training
+│   ├── __init__.py
+│   ├── preprocess.py
+│   ├── train.py
+│   ├── predict.py
+│   ├── evaluate.py
+│   ├── advanced_train.py
+│   ├── benchmark_models.py
+│   ├── audit_nsl_kdd.py
+│   └── hyperparameter_search.py
+│
 ├── decision/
-│   └── policy.py                # Hybrid security policy
+│   └── policy.py
+│
+├── backend/
+│   ├── main.py
+│   ├── api/
+│   │   ├── routes.py
+│   │   └── upload_routes.py
+│   └── services/
+│       ├── qkd_service.py
+│       ├── threat_service.py
+│       ├── decision_service.py
+│       ├── hybrid_service.py
+│       ├── demo_service.py
+│       └── upload_analysis_service.py
+│
+├── frontend/
+│   ├── index.html
+│   ├── style.css
+│   ├── app.js
+│   ├── channel-flow.js
+│   ├── dragon-theme.js
+│   ├── ambient-field.js
+│   └── assets/
+│
 ├── models/
-│   ├── threat_model_best.joblib # Final LightGBM model
-│   └── threat_model_info.json   # Threshold / configuration
+│   ├── threat_model_best.joblib
+│   └── threat_model_info.json
+│
 ├── data/
-│   ├── raw/                     # KDDTrain+.txt, KDDTest+.txt
+│   ├── raw/
 │   └── processed/
+│
 ├── experiments/
-│   └── qkd_experiment_results.csv
-├── frontend/                    # index.html, style.css, app.js, channel-flow.js, ambient-field.js, assets/
-├── scripts/
-├── tests/
+│   └── figures/
+│
 ├── notebooks/
-├── docs/
+│
+├── render.yaml
 ├── requirements.txt
-├── .env.example
-├── .gitignore
-└── LICENSE
+├── README.md
+└── .gitignore
 ```
 
-## 7. Getting Started
+---
 
-### Prerequisites
+# Upload System
 
-- Python **3.11**
-- Git
-- (Optional) An IBM Quantum account, only if you want to use Qiskit IBM Runtime
+The production upload interface supports:
 
-### Installation
+- Clicking the complete upload drop zone
+- Drag-and-drop
+- Selecting the same file again
+- Exact backend error reporting
+- CSV and TXT files
+- NSL-KDD 41-column format
+- NSL-KDD 43-column format
+- NSL-KDD 44-column format when the trailing field is empty
 
-```bash
-# 1. Clone the repository
-git clone https://github.com/qtysjin7107/QSafe.git
-cd QSafe
+### Upload Limits
 
-# 2. Create and activate a virtual environment
-python3.11 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+- Maximum file size: **25 MB**
+- Maximum rows: **250,000**
 
-# 3. Install dependencies
+Uploaded files are processed temporarily and are not intended to be stored permanently by the application.
+
+---
+
+# Data Compatibility
+
+The phrase **"anyone can upload"** means anyone can upload a dataset compatible with the currently trained model.
+
+The LightGBM model is trained on the **41 NSL-KDD model features** and the categorical-value metadata expected by that model.
+
+An arbitrary cybersecurity CSV with unrelated feature names, encodings, or schema cannot be meaningfully scored without:
+
+- a schema-mapping layer, or
+- retraining / fine-tuning for that dataset.
+
+For the current hackathon implementation, the uploader should therefore be described as accepting **NSL-KDD-compatible network traffic datasets**.
+
+---
+
+# Why the Upload Problem Happened
+
+The previous upload implementation had several compatibility problems:
+
+1. `python-multipart` was not guaranteed to be in the root runtime requirements.
+2. The frontend depended on a hard-coded `http://localhost:8000` backend address.
+3. The upload UI relied too heavily on a hidden file input and click handling.
+4. Some NSL-KDD files could be interpreted as having an extra empty trailing column.
+5. One earlier frontend version contained duplicate upload-noise controls.
+
+The production patch addresses these issues.
+
+---
+
+# Requirements
+
+Python **3.11** is recommended.
+
+The project uses Qiskit, Qiskit Aer, FastAPI, pandas, NumPy, SciPy, scikit-learn, LightGBM, and related dependencies.
+
+For FastAPI multipart file uploads, the root `requirements.txt` must contain:
+
+```text
+python-multipart
+```
+
+Keep the existing Qiskit, Aer, LightGBM, FastAPI, pandas and scikit-learn dependencies.
+
+---
+
+# Local Installation
+
+From the QSafe repository root:
+
+```powershell
 pip install -r requirements.txt
-
-# 4. Configure environment variables
-cp .env.example .env             # Windows: copy .env.example .env
-# then edit .env with your values
 ```
 
-### Dataset
+Start the backend:
 
-QSafe uses the **NSL-KDD** dataset. Place the files here:
-
-```
-data/raw/KDDTrain+.txt
-data/raw/KDDTest+.txt
+```powershell
+python -m uvicorn backend.main:app --reload
 ```
 
-The final trained model is already committed in `models/threat_model_best.joblib` and `models/threat_model_info.json`, so the backend and dashboard run **without retraining**. The dataset is only needed if you want to retrain with `python -m ml.train`.
+Open the application:
 
-## 8. Usage
-
-Run every command from the **repository root**.
-
-**Train the threat classifier**
-
-```bash
-python -m ml.train
+```text
+http://127.0.0.1:8000/
 ```
 
-**Quick BB84 demo** (one run per Eve level, 2000 bits, no channel noise; prints a table and saves nothing)
+---
 
-```bash
-python -m quantum.bb84
+# API
+
+## Health Check
+
+```text
+GET /api/health
 ```
 
-**Full quantum experiment** (4 noise levels x 6 Eve levels x 10 trials x 1000 bits; saves `experiments/qkd_experiment_results.csv`)
+Used to verify that the backend is running.
 
-```bash
-python -m quantum.experiment_runner
+## Demo Security
+
+```text
+POST /api/demo
 ```
 
-This is the run that produces the project's reported results. Run it before the two commands below, because both read its CSV.
+Runs the predefined Q-Safe demonstration scenarios.
 
-**Plot the experiment results**
+## Full Hybrid Analysis
 
-```bash
-python quantum/analyze_experiments   
+```text
+POST /api/analyze
 ```
 
-**QBER evidence model** (example: observed QBER 5%, estimated noise 2%)
+Runs the integrated threat + quantum + decision workflow.
 
-```bash
-python -m quantum.qber_model --observed 0.05 --noise 0.02 --eve 0.10 --prior 0.5
+## Threat Analysis
+
+```text
+POST /api/threat
 ```
 
-**Start the backend API**
+Runs the classical threat model.
 
-```bash
-uvicorn backend.main:app --reload
+## Security Evaluation
+
+```text
+POST /api/security
 ```
 
-The interactive API docs are then available at `http://127.0.0.1:8000/docs`.
+Evaluates the security decision policy.
 
-**Start the dashboard**
+## Dataset Upload Analysis
 
-Serve the `frontend/` folder with any static HTTP server:
-
-```bash
-cd frontend
-python -m http.server 5500
+```text
+POST /api/upload/analyze
 ```
 
-Then open `http://127.0.0.1:5500`. The dashboard expects the backend at `http://127.0.0.1:8000`, so start the backend first.
+Processes an uploaded NSL-KDD-compatible dataset and returns analysis results.
 
-**Run the tests**
+---
 
-```bash
-pytest tests/
+# Swagger API Documentation
+
+FastAPI automatically exposes interactive API documentation at:
+
+```text
+http://127.0.0.1:8000/docs
 ```
 
-The tests cover threat prediction, QKD execution, noisy-channel behaviour, eavesdropper behaviour, hybrid decision behaviour, and the API health and analysis flow.
+OpenAPI JSON:
 
-## 9. Results and Evaluation
+```text
+http://127.0.0.1:8000/openapi.json
+```
 
-**Threat classifier (NSL-KDD)**
+Swagger is intended for API testing and development. The normal user-facing interface is the Q-Safe frontend.
 
-Evaluated on the official **KDDTest+** split (trained on KDDTrain+):
+---
 
-| Model | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC |
-|---|---|---|---|---|---|---|
-| Logistic Regression (baseline) | 75.38% | 91.76% | 62.35% | 74.25% | n/a | n/a |
-| **LightGBM (final)** | **77.96%** | **96.70%** | **63.45%** | **76.62%** | **96.62%** | **96.85%** |
+# Running the Frontend Separately
 
-LightGBM is the selected runtime classifier. KDDTest+ includes attack types absent from the training set, so these figures reflect generalisation to unseen attacks.
+The production frontend is designed to work with the FastAPI backend.
 
-**Quantum layer: representative runs of the demo scenarios**
+You may also use VS Code Live Server during local development. The frontend can detect the local development setup and communicate with the backend at:
 
-| Scenario | Channel noise | Eve probability | Mean QBER | Expected QBER (honest model) | P(Eve) |
-|---|---|---|---|---|---|
-| Normal | 0% | 0% | 0.000 | 0.000 | about 0.0002 |
-| Noisy channel | 5% | 0% | about 0.024 | about 0.023 | about 0.025 |
-| Eavesdropper | 0% | 50% | about 0.106 | 0.000 | 1.000 |
-| Combined attack | 5% | 50% | about 0.147 | about 0.023 | 1.000 |
+```text
+http://127.0.0.1:8000
+```
 
-In the noisy-channel case the observed QBER stays consistent with the honest noisy-channel model, so the evidence model does not raise an alarm. With Eve present, QBER rises well above the honest expectation and the attack probability goes to 1. These are single stochastic runs, so exact values vary between runs. The full sweep (4 noise levels x 6 Eve levels x 10 trials x 1000 bits) is saved in `experiments/qkd_experiment_results.csv`.
+For the most reliable end-to-end test, use the FastAPI-served page:
 
-**End-to-end hybrid decisions**
+```text
+http://127.0.0.1:8000/
+```
 
-| Network state | Quantum state | Threat probability | Quantum attack probability | Decision |
-|---|---|---|---|---|
-| Normal | Clean | very low | about 0.0002 | **ACCEPT** |
-| Normal | Eavesdropper | very low | 1.000 | **REJECT** |
-| Attack | Clean | about 1.000 | about 0.0002 | **MONITOR** |
-| Attack | Eavesdropper | about 1.000 | 1.000 | **REJECT** |
-| Attack | Noise + Eavesdropper | about 1.000 | 1.000 | **REJECT** |
+This is also the preferred architecture for deployment.
 
-Neither layer alone gives these answers: the combined policy is what turns two independent signals into one session-level decision.
+---
 
-## 10. Limitations
+# GitHub
 
-Being upfront about what this prototype is and is not:
+From the real QSafe repository:
 
-- **Simulation, not hardware.** BB84, noise, and eavesdropping are simulated in Qiskit. No physical quantum channel is used.
-- **Dataset age.** NSL-KDD is a widely used benchmark but it is derived from 1999-era traffic and does not reflect modern attack patterns or medical-device protocols.
-- **Link between the two halves is policy-based.** The ML model and the QKD simulation are independent; the connection between them is the adaptive policy, not a physical coupling.
-- **Thresholds are heuristic.** Decision thresholds are tuned for demonstration and would need calibration on real deployment data.
-- **One attack model.** Only intercept-and-resend is simulated. Other eavesdropping strategies are out of scope.
-- **Noise model.** Only depolarizing noise is modelled, applied on each channel leg.
-- **Evidence model is calibrated on one session size.** The QBER spread comes from 1000-bit trials, so it is most meaningful for sessions of similar length; shorter sessions have noisier QBER.
-- **QBER uses the whole sifted key.** A real deployment would use a dedicated parameter-estimation procedure rather than consuming the key this way.
-- **Classifier recall.** Recall on KDDTest+ is about 63%, so the classifier misses a meaningful share of attacks. The prototype does not claim to catch every attack.
-- **No quantum advantage claimed.** QSafe is a hybrid security prototype; it does not claim a computational advantage over the classical baseline.
+```powershell
+git status
+git add .
+git commit -m "feat: production upload pipeline and model selector"
+git push origin main
+```
 
-## 11. Future Work
+If the repository does not have a remote yet:
 
-- Run the QKD component on real quantum hardware or a hardware-accurate noise model through Qiskit IBM Runtime
-- Evaluate on modern intrusion datasets and healthcare-specific traffic
-- Support additional QKD protocols (for example decoy-state or E91)
-- Learn the decision policy from data instead of hand-tuned thresholds
-- Integrate the established key into an actual encrypted channel (for example, as key material for symmetric encryption)
-- Improve uncertainty estimation for different QBER sample sizes
-- Expand the quantum attack model beyond intercept-and-resend
-- Add deployment-oriented monitoring, logging, and authentication
+```powershell
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+git branch -M main
+git push -u origin main
+```
 
-## 12. Hackathon Details
+## Model Files
 
-- **Track:** Track 2 - Quantum Cryptography and Communication
+Keep the trained model files in GitHub:
 
+```text
+models/threat_model_best.joblib
+models/threat_model_info.json
+```
 
-**Requirement mapping**
+The raw NSL-KDD datasets should remain ignored by Git.
 
-| Requirement | Where it is covered |
-|---|---|
-| Working Qiskit implementation | BB84 with Qiskit and Aer: qubit preparation, basis selection, measurement, channel noise, intercept-and-resend Eve, key sifting, QBER (`quantum/`) |
-| Classical baseline | NSL-KDD intrusion-detection pipeline comparing seven models, LightGBM selected (`ml/`, `models/`) |
-| Quantitative results | Accuracy, precision, recall, F1, ROC-AUC, PR-AUC; QBER, expected QBER, likelihood ratio, posterior Eve probability, final decision ([Section 9](#9-results-and-evaluation)) |
-| Visual results | Dashboard with live security state, QBER and evidence charts, animated quantum channel, decision states (`frontend/`) |
-| Technical explanation | This document |
-| Final demonstration | FastAPI backend + dashboard + predefined scenarios using real ML predictions and real BB84 simulation |
-| Quantum advantage | Not claimed |
-| Hardware | Simulation only. Qiskit IBM Runtime is installed for future hardware runs, but all reported results come from the simulator |
+Do not commit user-uploaded datasets.
 
-## 13. Team
+---
 
-- Vishal Singh
-- Sabyasaachi Pradhan
-- Roopa Gayatri Pabolu
+# Render Deployment
 
-## 14. License
+Q-Safe is designed to run as a **single Render Web Service**.
 
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+```text
+Browser
+   |
+   v
+Render HTTPS URL
+   |
+   +--> FastAPI API
+   |
+   +--> Static frontend
+```
+
+This avoids having separate frontend and backend origins in production.
+
+## Render Build Command
+
+```text
+pip install -r requirements.txt
+```
+
+## Render Start Command
+
+```text
+uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+```
+
+## Render Health Check
+
+```text
+/api/health
+```
+
+The repository includes a `render.yaml` configuration for this deployment architecture.
+
+Connect the Render service to the GitHub repository and the `main` branch. Pushes to the connected branch can then trigger new deployments.
+
+---
+
+# Render Free-Tier Considerations
+
+The free Render Web Service is suitable for a hackathon/demo deployment.
+
+Free services can spin down after inactivity and may take time to wake when a new request arrives.
+
+The runtime filesystem is ephemeral, so uploaded datasets should be treated as temporary processing inputs and should not be relied upon as permanent storage.
+
+The trained model files committed to GitHub are part of the deployment and are restored when the service is rebuilt.
+
+---
+
+# Research Positioning
+
+Q-Safe is not positioned as a claim of quantum advantage.
+
+The primary contribution is the **hybrid, threat-aware interpretation of security evidence across classical and quantum layers**.
+
+### Research Questions
+
+**RQ1.** Can classical network-threat probability improve the interpretation of abnormal QBER?
+
+**RQ2.** Can noise-aware QBER analysis reduce false alarms caused by legitimate channel noise?
+
+**RQ3.** Does combining classical network evidence with quantum-channel evidence produce more informative security decisions than either layer alone?
+
+### Proposed Research Contribution
+
+> Q-Safe proposes a cross-layer threat-aware security framework that fuses classical network threat probability with noise-aware quantum-channel evidence to support adaptive security decisions in biomedical communication networks.
+
+---
+
+# Demonstration Scenarios
+
+The Q-Safe frontend supports security demonstrations such as:
+
+- Normal
+- Noisy Channel
+- Network Attack
+- Eavesdropper
+- Combined Attack
+
+The visual communication channel can react to the decision state:
+
+```text
+ACCEPT  → stable / straight channel
+MONITOR → warning / wavy channel
+REJECT  → critical / chaotic channel
+```
+
+The Dragon Guardian theme can provide a visual interpretation:
+
+```text
+ACCEPT  → calm
+MONITOR → irritated
+REJECT  → furious / fire
+```
+
+The underlying security result remains generated by the backend.
+
+---
+
+# Security Decision
+
+The adaptive policy produces one of three outcomes:
+
+### ACCEPT
+
+The available classical and quantum evidence indicates a sufficiently safe channel.
+
+### MONITOR
+
+Evidence is elevated or ambiguous and the connection should be monitored.
+
+### REJECT
+
+The evidence indicates a likely security compromise or sufficiently strong quantum-channel attack evidence.
+
+---
+
+# Important Notes
+
+- NSL-KDD is a network intrusion dataset, not healthcare-specific patient data.
+- Biomedical networks are the application context for the communication-security problem.
+- QBER results are generated from Qiskit BB84 experiments and the Q-Safe Bayesian evidence model.
+- The `eve_probability` value used in QKD simulation is a simulation control, not ground-truth knowledge given to the Bayesian detector.
+- Uploaded datasets are temporary inputs and should not be treated as persistent storage.
+- The current classifier requires an NSL-KDD-compatible schema.
+
+---
+
+# Status
+
+Q-Safe currently contains:
+
+- Classical NSL-KDD threat classification
+- LightGBM-based prediction
+- Qiskit BB84 simulation
+- Quantum channel noise simulation
+- Eavesdropping simulation
+- QBER measurement
+- Bayesian QBER evidence analysis
+- Adaptive ACCEPT / MONITOR / REJECT policy
+- Hybrid security analysis
+- FastAPI backend
+- Interactive web dashboard
+- Dataset upload pipeline
+- Three analysis modes
+- Render deployment configuration
+
+---
+
+# License
+
+Add your chosen project license here before public release.

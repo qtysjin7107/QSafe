@@ -1,77 +1,46 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 560" role="img" aria-label="Stylized celestial dragon guardian">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" fill="none">
   <defs>
-    <linearGradient id="jade" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#17382f"/>
-      <stop offset="0.48" stop-color="#2f6b51"/>
-      <stop offset="1" stop-color="#10251f"/>
+    <linearGradient id="gold" x1="150" y1="60" x2="660" y2="700" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff0b4"/>
+      <stop offset="0.35" stop-color="#e9b95d"/>
+      <stop offset="0.72" stop-color="#b63c32"/>
+      <stop offset="1" stop-color="#6f1716"/>
     </linearGradient>
-    <linearGradient id="scarlet" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#8e2528"/>
-      <stop offset="1" stop-color="#3a1015"/>
-    </linearGradient>
-    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f4dc88"/>
-      <stop offset="0.55" stop-color="#d5ad4d"/>
-      <stop offset="1" stop-color="#8e6426"/>
-    </linearGradient>
-    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
       <feGaussianBlur stdDeviation="5" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
-    <pattern id="scales" width="22" height="18" patternUnits="userSpaceOnUse">
-      <path d="M1 9 Q11 0 21 9 Q11 18 1 9Z" fill="none" stroke="#e6c96c" stroke-width="1.1" opacity=".28"/>
-    </pattern>
   </defs>
 
-  <!-- Serpentine body -->
-  <path d="M416 456 C520 425 548 343 505 288 C471 245 420 253 389 286 C359 319 369 372 410 389 C447 404 476 377 463 348 C450 319 411 322 402 348" fill="none" stroke="#0a1110" stroke-width="70" stroke-linecap="round" opacity=".9"/>
-  <path d="M416 456 C520 425 548 343 505 288 C471 245 420 253 389 286 C359 319 369 372 410 389 C447 404 476 377 463 348 C450 319 411 322 402 348" fill="none" stroke="url(#jade)" stroke-width="58" stroke-linecap="round"/>
-  <path d="M416 456 C520 425 548 343 505 288 C471 245 420 253 389 286 C359 319 369 372 410 389 C447 404 476 377 463 348 C450 319 411 322 402 348" fill="none" stroke="url(#scales)" stroke-width="54" stroke-linecap="round"/>
-  <path d="M438 452 C512 422 527 350 490 307" fill="none" stroke="url(#gold)" stroke-width="3" opacity=".75"/>
+  <g filter="url(#glow)" stroke="url(#gold)" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke-width="15" d="M150 590 C95 515 100 425 165 362 C233 296 335 292 432 330 C525 366 625 345 675 260 C715 190 700 115 647 84 C592 53 527 86 519 147 C512 204 570 224 607 194"/>
+    <path stroke-width="9" d="M145 585 C214 646 306 676 393 650 C497 620 576 553 586 474 C595 402 541 347 467 353"/>
+    <path stroke-width="6" d="M185 355 C170 310 176 261 204 220 C240 168 298 145 347 158 C391 169 419 203 420 241"/>
 
-  <!-- Neck into head -->
-  <path d="M402 348 C356 327 312 278 299 221 C287 169 318 137 365 151 C404 163 410 202 385 224 C365 242 337 233 331 212 C324 188 351 177 367 191" fill="none" stroke="#0a1110" stroke-width="80" stroke-linecap="round"/>
-  <path d="M402 348 C356 327 312 278 299 221 C287 169 318 137 365 151 C404 163 410 202 385 224 C365 242 337 233 331 212 C324 188 351 177 367 191" fill="none" stroke="url(#jade)" stroke-width="64" stroke-linecap="round"/>
-  <path d="M370 154 C402 168 404 198 386 215 C366 233 341 224 337 209" fill="none" stroke="url(#gold)" stroke-width="3" opacity=".9"/>
+    <path stroke-width="4" d="M597 196 C623 172 652 169 683 178 M601 200 C637 210 662 230 680 258"/>
+    <path stroke-width="5" d="M552 132 C537 103 544 73 571 53 M563 135 C558 103 570 80 600 64"/>
 
-  <!-- Head -->
-  <path d="M306 127 C281 107 248 107 223 124 C204 137 193 154 190 176 L161 185 C146 190 143 206 156 214 L186 232 C191 249 205 267 227 279 C251 292 286 286 308 267 C331 246 342 211 331 176 C326 158 320 143 306 127Z" fill="#0b1210"/>
-  <path d="M300 133 C276 116 250 117 228 131 C211 142 202 158 199 177 L171 186 C164 188 161 198 169 202 L197 219 C200 238 213 255 232 266 C253 278 282 272 300 256 C319 238 327 208 318 179 C314 161 309 146 300 133Z" fill="url(#jade)" stroke="url(#gold)" stroke-width="3"/>
-  <path d="M201 220 C225 214 258 221 292 242" fill="none" stroke="#8b1f26" stroke-width="10" opacity=".75"/>
+    <path stroke-width="5" d="M465 346 C447 319 445 288 458 265 C471 242 495 226 523 226"/>
+    <path stroke-width="5" d="M468 355 C439 354 410 367 389 391 C370 413 360 440 361 471"/>
 
-  <!-- Horns -->
-  <path d="M230 131 C190 92 191 53 208 27 C238 47 248 85 244 116" fill="url(#gold)" stroke="#5b421c" stroke-width="3"/>
-  <path d="M282 128 C303 85 331 62 357 60 C357 94 333 124 301 143" fill="url(#gold)" stroke="#5b421c" stroke-width="3"/>
+    <g stroke-width="3" opacity="0.85">
+      <path d="M250 328 l18 18 -12 18 -18 -18z"/>
+      <path d="M290 320 l18 18 -12 18 -18 -18z"/>
+      <path d="M330 319 l18 18 -12 18 -18 -18z"/>
+      <path d="M372 327 l18 18 -12 18 -18 -18z"/>
+      <path d="M235 408 l18 18 -12 18 -18 -18z"/>
+      <path d="M281 398 l18 18 -12 18 -18 -18z"/>
+      <path d="M330 394 l18 18 -12 18 -18 -18z"/>
+      <path d="M384 400 l18 18 -12 18 -18 -18z"/>
+      <path d="M433 412 l18 18 -12 18 -18 -18z"/>
+      <path d="M480 425 l18 18 -12 18 -18 -18z"/>
+      <path d="M526 432 l18 18 -12 18 -18 -18z"/>
+    </g>
+  </g>
 
-  <!-- Brows / eyes -->
-  <path d="M215 165 Q237 146 261 163" fill="none" stroke="#e5c870" stroke-width="7" stroke-linecap="round"/>
-  <path d="M273 163 Q292 147 311 166" fill="none" stroke="#e5c870" stroke-width="7" stroke-linecap="round"/>
-  <ellipse cx="238" cy="174" rx="7" ry="11" fill="#d7aa3e" filter="url(#softGlow)"/>
-  <ellipse cx="291" cy="174" rx="7" ry="11" fill="#d7aa3e" filter="url(#softGlow)"/>
-  <circle cx="239" cy="176" r="2.3" fill="#16100a"/>
-  <circle cx="292" cy="176" r="2.3" fill="#16100a"/>
-
-  <!-- Nose / mouth -->
-  <path d="M206 209 Q221 197 237 205" fill="none" stroke="#e0c16e" stroke-width="3"/>
-  <path d="M239 207 Q256 195 273 207" fill="none" stroke="#e0c16e" stroke-width="3"/>
-  <path d="M193 241 Q248 278 303 239" fill="none" stroke="#090b0a" stroke-width="18" stroke-linecap="round"/>
-  <path d="M194 241 Q249 264 302 239" fill="none" stroke="#d7c17d" stroke-width="3"/>
-
-  <!-- Whiskers -->
-  <path d="M198 207 C157 185 118 187 93 209 C119 205 143 218 162 238" fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
-  <path d="M302 206 C352 186 385 196 407 218 C378 210 353 220 334 240" fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
-  <path d="M202 227 C166 236 140 253 126 279 C151 264 176 262 197 271" fill="none" stroke="#b78a34" stroke-width="3" stroke-linecap="round" opacity=".9"/>
-
-  <!-- Mane -->
-  <path d="M208 137 C179 128 158 142 145 160 C167 155 177 163 184 177 C167 171 150 180 140 199 C161 191 180 196 190 210" fill="none" stroke="url(#scarlet)" stroke-width="18" stroke-linecap="round"/>
-  <path d="M297 131 C319 109 340 105 360 113 C342 123 335 140 334 155 C349 145 370 146 387 158 C364 164 349 175 338 190" fill="none" stroke="url(#scarlet)" stroke-width="18" stroke-linecap="round"/>
-
-  <!-- Chest armor -->
-  <path d="M326 272 L385 300 L417 352" fill="none" stroke="#d7b45d" stroke-width="6" opacity=".85"/>
-  <path d="M327 272 L379 293 L401 320 L355 334 Z" fill="url(#scarlet)" stroke="url(#gold)" stroke-width="2"/>
-  <path d="M347 340 L397 329 L421 360 L365 372 Z" fill="url(#scarlet)" stroke="url(#gold)" stroke-width="2"/>
-
-  <!-- Claw -->
-  <path d="M445 427 Q473 443 490 462 M465 419 Q490 429 510 448" fill="none" stroke="url(#gold)" stroke-width="7" stroke-linecap="round"/>
-  <path d="M487 461 l16 11 M505 448 l17 10" stroke="#e3cf88" stroke-width="4" stroke-linecap="round"/>
+  <g fill="#f6d98b">
+    <circle cx="571" cy="145" r="7"/>
+    <circle cx="598" cy="190" r="5"/>
+  </g>
+  <circle cx="571" cy="145" r="3" fill="#7d1719"/>
 </svg>
