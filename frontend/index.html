@@ -531,6 +531,24 @@
 
             </div>
 
+
+            <div class="quantum-circuit-action">
+
+                <button
+                    type="button"
+                    class="quantum-circuit-button"
+                    id="openQiskitCircuitButton"
+                >
+                    VIEW QISKIT CIRCUIT
+                    <span>↗</span>
+                </button>
+
+                <span class="quantum-circuit-note">
+                    Generated from the active BB84 implementation
+                </span>
+
+            </div>
+
         </section>
 
 
@@ -1040,6 +1058,243 @@
             </div>
 
         </section>
+
+
+        <!-- =====================================================
+             LIVE QUANTUM THREAT LAB
+             New interactive research section.
+             ===================================================== -->
+
+        <section class="card live-lab-card" id="liveThreatLab">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>
+                        Q-Safe Quantum Threat Lab
+                    </h2>
+
+                    <p class="section-subtitle">
+                        Run the real Qiskit BB84 model while changing channel conditions live.
+                    </p>
+                </div>
+
+                <span class="badge">
+                    LIVE QISKIT
+                </span>
+
+            </div>
+
+
+            <div class="live-lab-layout">
+
+                <div class="live-lab-controls">
+
+                    <div class="live-lab-control">
+                        <div class="live-lab-control-head">
+                            <span>CHANNEL NOISE</span>
+                            <strong id="liveLabNoiseValue">0.0%</strong>
+                        </div>
+
+                        <input
+                            id="liveLabNoiseSlider"
+                            type="range"
+                            min="0"
+                            max="15"
+                            step="0.5"
+                            value="0"
+                        >
+
+                        <div class="live-lab-scale">
+                            <span>0%</span>
+                            <span>15%</span>
+                        </div>
+                    </div>
+
+
+                    <div class="live-lab-control">
+                        <div class="live-lab-control-head">
+                            <span>EAVESDROPPER PROBABILITY</span>
+                            <strong id="liveLabEveValue">0%</strong>
+                        </div>
+
+                        <input
+                            id="liveLabEveSlider"
+                            type="range"
+                            min="0"
+                            max="100"
+                            step="5"
+                            value="0"
+                        >
+
+                        <div class="live-lab-scale">
+                            <span>0%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+
+
+                    <div class="live-lab-control">
+                        <div class="live-lab-control-head">
+                            <span>CLASSICAL THREAT PROBABILITY</span>
+                            <strong id="liveLabThreatValue">5%</strong>
+                        </div>
+
+                        <input
+                            id="liveLabThreatSlider"
+                            type="range"
+                            min="0"
+                            max="100"
+                            step="5"
+                            value="5"
+                        >
+
+                        <div class="live-lab-scale">
+                            <span>0%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+
+                    <div class="live-lab-run-note">
+                        Each update runs 200 qubits across 3 BB84 trials on the backend.
+                    </div>
+
+                    <div
+                        class="live-lab-status"
+                        id="liveLabStatus"
+                        role="status"
+                        aria-live="polite"
+                    >
+                        Move a slider to run a live simulation.
+                    </div>
+
+                </div>
+
+
+                <div class="live-lab-results">
+
+                    <div class="live-lab-result-grid">
+
+                        <div class="live-lab-result">
+                            <span>QBER</span>
+                            <strong id="liveLabQber">—</strong>
+                        </div>
+
+                        <div class="live-lab-result">
+                            <span>EXPECTED QBER</span>
+                            <strong id="liveLabExpectedQber">—</strong>
+                        </div>
+
+                        <div class="live-lab-result">
+                            <span>P(EVE | QBER)</span>
+                            <strong id="liveLabEvePosterior">—</strong>
+                        </div>
+
+                        <div class="live-lab-result">
+                            <span>QUANTUM ANOMALY</span>
+                            <strong id="liveLabAnomaly">—</strong>
+                        </div>
+
+                    </div>
+
+                    <div class="live-lab-decision">
+                        <span>HYBRID SECURITY DECISION</span>
+                        <strong id="liveLabDecision">—</strong>
+                        <p id="liveLabReason">Waiting for a simulation.</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="live-lab-charts">
+
+                <div class="research-chart">
+                    <div class="chart-title">
+                        LIVE QBER vs CHANNEL NOISE
+                    </div>
+                    <div class="chart-description">
+                        Measured QBER points produced by the real BB84 backend as the experiment is explored.
+                    </div>
+                    <canvas id="liveLabNoiseChart"></canvas>
+                </div>
+
+                <div class="research-chart">
+                    <div class="chart-title">
+                        LIVE QBER vs EAVESDROPPER PROBABILITY
+                    </div>
+                    <div class="chart-description">
+                        Observed QBER from actual Qiskit intercept-and-resend simulations.
+                    </div>
+                    <canvas id="liveLabEveChart"></canvas>
+                </div>
+
+            </div>
+
+
+            <div class="live-lab-footnote">
+                QBER is the measured channel disturbance; P(Eve | QBER) is the Bayesian quantum evidence used by the Q-Safe decision policy.
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             QISKIT CIRCUIT MODAL
+             ===================================================== -->
+
+        <div
+            class="qiskit-circuit-modal"
+            id="qiskitCircuitModal"
+            aria-hidden="true"
+        >
+
+            <div class="qiskit-circuit-dialog" role="dialog" aria-modal="true" aria-labelledby="qiskitCircuitTitle">
+
+                <div class="qiskit-circuit-header">
+                    <div>
+                        <p class="decision-label">
+                            QISKIT QUANTUM CIRCUIT
+                        </p>
+                        <h2 id="qiskitCircuitTitle">
+                            BB84 Transmission Circuit
+                        </h2>
+                        <span id="qiskitCircuitMode">
+                            BB84 STANDARD
+                        </span>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="qiskit-circuit-close"
+                        id="qiskitCircuitCloseButton"
+                        aria-label="Close Qiskit circuit"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                <div class="qiskit-circuit-image-wrap">
+                    <img
+                        id="qiskitCircuitImage"
+                        src="/api/qiskit/circuit.svg?eve=false"
+                        alt="Qiskit BB84 quantum circuit generated from the Q-Safe implementation"
+                    >
+                </div>
+
+                <div class="qiskit-circuit-explanation">
+                    <strong>
+                        Generated from the same Qiskit circuit functions used by the live simulator.
+                    </strong>
+                    <span>
+                        Channel noise is applied by the Aer depolarizing noise model; when Eve is enabled, the circuit uses the intercept-and-resend branch.
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
 
 
     </main>

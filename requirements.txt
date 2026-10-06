@@ -64,3 +64,6 @@ lightgbm
 joblib
 
 python-multipart
+
+# Qiskit circuit image rendering
+pylatexenc==2.10

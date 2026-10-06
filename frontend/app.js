@@ -25,7 +25,7 @@ const API_CONFIG = {
     USE_MOCK_API: false,
 
     BASE_URL:
-        "http://localhost:8000",
+        "",
 
     SECURITY_ENDPOINT:
         "/api/demo",
@@ -1185,6 +1185,445 @@ async function runScenario(
 
 }
 
+
+
+/* =========================================================
+   LIVE QUANTUM THREAT LAB
+   Added without changing existing dashboard logic.
+   ========================================================= */
+
+const liveLabState = {
+    noiseRate: 0.0,
+    eveProbability: 0.0,
+    threatProbability: 0.05,
+    noiseHistory: [],
+    eveHistory: [],
+    requestTimer: null,
+    requestController: null,
+    requestSequence: 0,
+    initialized: false
+};
+
+
+function clampLiveLabValue(value, minimum, maximum) {
+    return Math.min(
+        maximum,
+        Math.max(minimum, Number(value) || 0)
+    );
+}
+
+
+function upsertLiveLabPoint(array, x, y) {
+    const existing = array.findIndex(
+        point => Math.abs(point.x - x) < 0.0001
+    );
+
+    const point = {
+        x: Number(x.toFixed(3)),
+        y: Number(y.toFixed(3))
+    };
+
+    if (existing >= 0) {
+        array[existing] = point;
+    }
+    else {
+        array.push(point);
+    }
+
+    array.sort((a, b) => a.x - b.x);
+
+    if (array.length > 20) {
+        array.splice(0, array.length - 20);
+    }
+}
+
+
+function setLiveLabText(id, value) {
+    const element = getElement(id);
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+
+function updateLiveLabControls() {
+    const noiseLabel = getElement("liveLabNoiseValue");
+    const eveLabel = getElement("liveLabEveValue");
+    const threatLabel = getElement("liveLabThreatValue");
+
+    if (noiseLabel) {
+        noiseLabel.textContent =
+            `${(liveLabState.noiseRate * 100).toFixed(1)}%`;
+    }
+
+    if (eveLabel) {
+        eveLabel.textContent =
+            `${(liveLabState.eveProbability * 100).toFixed(0)}%`;
+    }
+
+    if (threatLabel) {
+        threatLabel.textContent =
+            `${(liveLabState.threatProbability * 100).toFixed(0)}%`;
+    }
+}
+
+
+function updateLiveLabStatus(message, type = "") {
+    const status = getElement("liveLabStatus");
+
+    if (!status) {
+        return;
+    }
+
+    status.textContent = message;
+    status.className = "live-lab-status";
+
+    if (type) {
+        status.classList.add(type);
+    }
+}
+
+
+function drawLiveLabCharts() {
+    drawLineChart(
+        "liveLabNoiseChart",
+        liveLabState.noiseHistory,
+        "x",
+        "y",
+        15,
+        25,
+        "Channel Noise",
+        "QBER"
+    );
+
+    drawLineChart(
+        "liveLabEveChart",
+        liveLabState.eveHistory,
+        "x",
+        "y",
+        100,
+        50,
+        "Eavesdropper Probability",
+        "QBER"
+    );
+}
+
+
+function updateLiveLabResults(payload) {
+    const data = payload.data || {};
+    const quantum = payload.quantum || {};
+    const decision = payload.decision || {};
+
+    setLiveLabText(
+        "liveLabQber",
+        `${(Number(data.qber || 0) * 100).toFixed(1)}%`
+    );
+
+    setLiveLabText(
+        "liveLabExpectedQber",
+        `${(Number(data.expected_qber || 0) * 100).toFixed(1)}%`
+    );
+
+    setLiveLabText(
+        "liveLabEvePosterior",
+        `${(Number(data.quantum_attack_probability || 0) * 100).toFixed(1)}%`
+    );
+
+    setLiveLabText(
+        "liveLabDecision",
+        String(data.decision || "MONITOR")
+    );
+
+    setLiveLabText(
+        "liveLabAnomaly",
+        `${(Number(quantum.quantum_anomaly || 0) * 100).toFixed(1)}%`
+    );
+
+    const decisionText =
+        String(decision.reason || data.reason || "Simulation complete.");
+
+    setLiveLabText(
+        "liveLabReason",
+        decisionText
+    );
+
+    const decisionBadge = getElement("liveLabDecision");
+    if (decisionBadge) {
+        decisionBadge.dataset.decision =
+            String(data.decision || "MONITOR").toLowerCase();
+    }
+
+    upsertLiveLabPoint(
+        liveLabState.noiseHistory,
+        liveLabState.noiseRate * 100,
+        Number(data.qber || 0) * 100
+    );
+
+    upsertLiveLabPoint(
+        liveLabState.eveHistory,
+        liveLabState.eveProbability * 100,
+        Number(data.qber || 0) * 100
+    );
+
+    drawLiveLabCharts();
+
+    const circuitImage = getElement("qiskitCircuitImage");
+    if (circuitImage) {
+        const eve = liveLabState.eveProbability > 0;
+        circuitImage.src =
+            `${API_CONFIG.BASE_URL}/api/qiskit/circuit.svg?eve=${eve ? "true" : "false"}&v=${Date.now()}`;
+    }
+}
+
+
+async function runLiveLabSimulation() {
+    const requestSequence =
+        ++liveLabState.requestSequence;
+
+    if (liveLabState.requestController) {
+        liveLabState.requestController.abort();
+    }
+
+    liveLabState.requestController =
+        new AbortController();
+
+    updateLiveLabStatus(
+        "Running the Qiskit BB84 simulation…"
+    );
+
+    try {
+        const response = await fetch(
+            `${API_CONFIG.BASE_URL}/api/lab/simulate`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    noise_rate: liveLabState.noiseRate,
+                    eve_probability: liveLabState.eveProbability,
+                    threat_probability: liveLabState.threatProbability,
+                    n_bits: 200,
+                    trials: 3
+                }),
+                signal: liveLabState.requestController.signal
+            }
+        );
+
+        if (!response.ok) {
+            let detail =
+                `Backend returned HTTP ${response.status}.`;
+
+            try {
+                const errorPayload = await response.json();
+                detail =
+                    errorPayload.detail ||
+                    errorPayload.message ||
+                    detail;
+            }
+            catch (_) {
+                /* Keep the HTTP error. */
+            }
+
+            throw new Error(detail);
+        }
+
+        const payload = await response.json();
+
+        if (requestSequence !== liveLabState.requestSequence) {
+            return;
+        }
+
+        if (!payload || !payload.data) {
+            throw new Error("Live simulation returned an invalid response.");
+        }
+
+        updateDashboard({
+            success: true,
+            data: payload.data
+        });
+
+        updateLiveLabResults(payload);
+
+        updateLiveLabStatus(
+            "LIVE • Qiskit simulation updated",
+            "success"
+        );
+    }
+    catch (error) {
+        if (error && error.name === "AbortError") {
+            return;
+        }
+
+        console.error("Q-Safe live lab error:", error);
+
+        updateLiveLabStatus(
+            error.message || "Live quantum simulation failed.",
+            "error"
+        );
+    }
+}
+
+
+function scheduleLiveLabSimulation() {
+    updateLiveLabControls();
+
+    clearTimeout(liveLabState.requestTimer);
+
+    liveLabState.requestTimer =
+        setTimeout(
+            () => {
+                runLiveLabSimulation();
+            },
+            420
+        );
+}
+
+
+function openQiskitCircuitModal() {
+    const modal = getElement("qiskitCircuitModal");
+
+    if (!modal) {
+        return;
+    }
+
+    const eve = liveLabState.eveProbability > 0;
+    const image = getElement("qiskitCircuitImage");
+
+    if (image) {
+        image.src =
+            `${API_CONFIG.BASE_URL}/api/qiskit/circuit.svg?eve=${eve ? "true" : "false"}&v=${Date.now()}`;
+    }
+
+    setLiveLabText(
+        "qiskitCircuitMode",
+        eve ? "BB84 WITH EAVESDROPPER" : "BB84 STANDARD"
+    );
+
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+}
+
+
+function closeQiskitCircuitModal() {
+    const modal = getElement("qiskitCircuitModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden", "true");
+}
+
+
+function initializeLiveThreatLab() {
+    if (liveLabState.initialized) {
+        return;
+    }
+
+    const noiseSlider = getElement("liveLabNoiseSlider");
+    const eveSlider = getElement("liveLabEveSlider");
+    const threatSlider = getElement("liveLabThreatSlider");
+
+    if (!noiseSlider || !eveSlider || !threatSlider) {
+        return;
+    }
+
+    liveLabState.initialized = true;
+
+    liveLabState.noiseRate =
+        Number(noiseSlider.value) / 100;
+    liveLabState.eveProbability =
+        Number(eveSlider.value) / 100;
+    liveLabState.threatProbability =
+        Number(threatSlider.value) / 100;
+
+    noiseSlider.addEventListener(
+        "input",
+        event => {
+            liveLabState.noiseRate =
+                clampLiveLabValue(
+                    Number(event.target.value) / 100,
+                    0,
+                    0.15
+                );
+            scheduleLiveLabSimulation();
+        }
+    );
+
+    eveSlider.addEventListener(
+        "input",
+        event => {
+            liveLabState.eveProbability =
+                clampLiveLabValue(
+                    Number(event.target.value) / 100,
+                    0,
+                    1
+                );
+            scheduleLiveLabSimulation();
+        }
+    );
+
+    threatSlider.addEventListener(
+        "input",
+        event => {
+            liveLabState.threatProbability =
+                clampLiveLabValue(
+                    Number(event.target.value) / 100,
+                    0,
+                    1
+                );
+            scheduleLiveLabSimulation();
+        }
+    );
+
+    updateLiveLabControls();
+    drawLiveLabCharts();
+
+    const circuitButton =
+        getElement("openQiskitCircuitButton");
+
+    const circuitCloseButton =
+        getElement("qiskitCircuitCloseButton");
+
+    const modal =
+        getElement("qiskitCircuitModal");
+
+    if (circuitButton) {
+        circuitButton.addEventListener(
+            "click",
+            openQiskitCircuitModal
+        );
+    }
+
+    if (circuitCloseButton) {
+        circuitCloseButton.addEventListener(
+            "click",
+            closeQiskitCircuitModal
+        );
+    }
+
+    if (modal) {
+        modal.addEventListener(
+            "click",
+            event => {
+                if (event.target === modal) {
+                    closeQiskitCircuitModal();
+                }
+            }
+        );
+    }
+
+    document.addEventListener(
+        "keydown",
+        event => {
+            if (event.key === "Escape") {
+                closeQiskitCircuitModal();
+            }
+        }
+    );
+}
 
 
 /* =========================================================
@@ -3623,6 +4062,8 @@ document.addEventListener(
         initializeTheme();
 
         initializeDatasetUpload();
+
+        initializeLiveThreatLab();
 
         runScenario(
             "normal"

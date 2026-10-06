@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from backend.api.routes import router
 from backend.api.upload_routes import upload_router
+from backend.api.lab_routes import lab_router
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_DIR = PROJECT_ROOT / "frontend"
@@ -26,6 +27,7 @@ app.add_middleware(
 
 app.include_router(router)
 app.include_router(upload_router)
+app.include_router(lab_router)
 
 
 @app.get("/api/health")
