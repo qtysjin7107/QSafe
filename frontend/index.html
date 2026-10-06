@@ -294,6 +294,64 @@
                 Q-SAFE SECURITY DECISION
             </p>
 
+
+            <!-- =====================================================
+                 SECURITY RISK GAUGE
+                 ===================================================== -->
+
+            <div class="security-risk-widget">
+
+                <div class="risk-widget-head">
+
+                    <span class="risk-widget-label">
+                        SECURITY RISK SCORE
+                    </span>
+
+                    <strong id="riskScore">
+                        5
+                    </strong>
+
+                </div>
+
+                <div class="risk-gauge"
+                     role="meter"
+                     aria-label="Security risk score"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     aria-valuenow="5"
+                     id="riskGauge">
+
+                    <div class="risk-gauge-track">
+
+                        <div
+                            class="risk-gauge-fill"
+                            id="riskGaugeFill"
+                        ></div>
+
+                        <div
+                            class="risk-gauge-marker"
+                            id="riskGaugeMarker"
+                        ></div>
+
+                    </div>
+
+                    <div class="risk-gauge-scale">
+                        <span>LOW</span>
+                        <span>MEDIUM</span>
+                        <span>HIGH</span>
+                    </div>
+
+                </div>
+
+                <span
+                    class="risk-gauge-label"
+                    id="riskGaugeLabel"
+                >
+                    LOW RISK
+                </span>
+
+            </div>
+
             <h1 id="decision">
                 ACCEPT
             </h1>
@@ -524,6 +582,301 @@
                         SECURE
                     </strong>
 
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             SECURITY TELEMETRY + EVIDENCE FUSION
+             ===================================================== -->
+
+        <section class="telemetry-grid">
+
+            <!-- Security Event Feed -->
+
+            <article class="card telemetry-card">
+
+                <div class="section-header">
+
+                    <div>
+
+                        <h2>
+                            Security Event Feed
+                        </h2>
+
+                        <p class="section-subtitle">
+                            Live interpretation of current security signals
+                        </p>
+
+                    </div>
+
+                    <span class="badge">
+                        LIVE FEED
+                    </span>
+
+                </div>
+
+                <div
+                    class="event-feed"
+                    id="eventFeed"
+                    aria-live="polite"
+                ></div>
+
+            </article>
+
+
+            <!-- Evidence Fusion -->
+
+            <article class="card fusion-card">
+
+                <div class="section-header">
+
+                    <div>
+
+                        <h2>
+                            Evidence Fusion
+                        </h2>
+
+                        <p class="section-subtitle">
+                            Classical and quantum evidence combined by Q-Safe
+                        </p>
+
+                    </div>
+
+                    <span class="badge">
+                        ADAPTIVE
+                    </span>
+
+                </div>
+
+                <div class="fusion-content">
+
+                    <div class="fusion-inputs">
+
+                        <div class="fusion-input">
+
+                            <span class="fusion-icon">
+                                T
+                            </span>
+
+                            <div>
+
+                                <span>
+                                    THREAT PROBABILITY
+                                </span>
+
+                                <strong id="fusionThreat">
+                                    8.0%
+                                </strong>
+
+                                <small>
+                                    NSL-KDD classifier
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="fusion-input">
+
+                            <span class="fusion-icon">
+                                Q
+                            </span>
+
+                            <div>
+
+                                <span>
+                                    QBER
+                                </span>
+
+                                <strong id="fusionQber">
+                                    0.8%
+                                </strong>
+
+                                <small>
+                                    Qiskit BB84
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="fusion-input">
+
+                            <span class="fusion-icon">
+                                N
+                            </span>
+
+                            <div>
+
+                                <span>
+                                    CHANNEL NOISE
+                                </span>
+
+                                <strong id="fusionNoise">
+                                    0.3%
+                                </strong>
+
+                                <small>
+                                    Channel condition
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="fusion-result">
+
+                        <span>
+                            POLICY OUTPUT
+                        </span>
+
+                        <strong id="fusionDecision">
+                            ACCEPT
+                        </strong>
+
+                        <small id="fusionDecisionReason">
+                            Combined evidence indicates a secure channel.
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- =====================================================
+             ATTACK SURFACE
+             ===================================================== -->
+
+        <section class="card threat-card">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Attack Surface
+                    </h2>
+
+                    <p class="section-subtitle">
+                        Where the current security signal is originating
+                    </p>
+
+                </div>
+
+                <span
+                    class="badge"
+                    id="attackSurfaceStatus"
+                >
+                    BASELINE
+                </span>
+
+            </div>
+
+
+            <div
+                class="attack-map"
+                id="attackMap"
+            >
+
+                <div class="attack-endpoint">
+
+                    <div class="attack-endpoint-icon">
+                        H
+                    </div>
+
+                    <strong>
+                        HOSPITAL A
+                    </strong>
+
+                    <span>
+                        Classical Network
+                    </span>
+
+                </div>
+
+
+                <div class="attack-path classical-path">
+
+                    <span class="attack-path-line"></span>
+
+                    <small>
+                        NETWORK SIGNAL
+                    </small>
+
+                </div>
+
+
+                <div class="attack-engine">
+
+                    <div class="attack-engine-ring"></div>
+
+                    <div class="attack-engine-core">
+                        Q
+                    </div>
+
+                    <span>
+                        ADAPTIVE<br>
+                        SECURITY
+                    </span>
+
+                </div>
+
+
+                <div class="attack-path quantum-path">
+
+                    <span class="attack-path-line"></span>
+
+                    <small>
+                        QUANTUM SIGNAL
+                    </small>
+
+                </div>
+
+
+                <div class="attack-endpoint">
+
+                    <div class="attack-endpoint-icon">
+                        C
+                    </div>
+
+                    <strong>
+                        SECURE CLOUD
+                    </strong>
+
+                    <span>
+                        Protected Endpoint
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="attack-indicator network-indicator"
+                    id="networkIndicator"
+                >
+                    NETWORK ATTACK
+                </div>
+
+
+                <div
+                    class="attack-indicator quantum-indicator"
+                    id="quantumIndicator"
+                >
+                    QUANTUM DISTURBANCE
                 </div>
 
             </div>

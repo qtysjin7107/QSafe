@@ -2434,3 +2434,1189 @@ body[data-theme="neo-brutalism"] .connection::before {
     }
 
 }
+
+/* =========================================================
+   FINAL Q-SAFE ENHANCEMENTS
+   Compact additions layered on the stable dashboard
+   ========================================================= */
+
+/* ---------- Risk score ---------- */
+
+.security-risk-widget {
+
+    max-width:
+        620px;
+
+    margin:
+        16px auto 8px;
+
+    padding:
+        11px 14px;
+
+    border:
+        1px solid
+        var(--panel-border);
+
+    border-radius:
+        var(--small-radius);
+
+    background:
+        var(--panel-bg-secondary);
+
+}
+
+
+.risk-widget-head {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    margin-bottom:
+        9px;
+
+}
+
+
+.risk-widget-label {
+
+    color:
+        var(--text-muted);
+
+    font-size:
+        10px;
+
+    font-weight:
+        bold;
+
+    letter-spacing:
+        0.8px;
+
+}
+
+
+.risk-widget-head strong {
+
+    color:
+        var(--text-main);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size:
+        18px;
+
+}
+
+
+.risk-gauge-track {
+
+    position:
+        relative;
+
+    height:
+        8px;
+
+    width:
+        100%;
+
+    border-radius:
+        999px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #49d997 0%,
+            #e3c55e 52%,
+            #e66b6b 100%
+        );
+
+}
+
+
+.risk-gauge-fill {
+
+    position:
+        absolute;
+
+    inset:
+        0 auto 0 0;
+
+    width:
+        5%;
+
+    border-radius:
+        inherit;
+
+    background:
+        rgba(255,255,255,0.25);
+
+    transition:
+        width 420ms ease;
+
+}
+
+
+.risk-gauge-marker {
+
+    position:
+        absolute;
+
+    top:
+        50%;
+
+    left:
+        5%;
+
+    width:
+        15px;
+
+    height:
+        15px;
+
+    transform:
+        translate(-50%, -50%);
+
+    border:
+        2px solid
+        var(--text-main);
+
+    border-radius:
+        50%;
+
+    background:
+        var(--panel-bg);
+
+    box-shadow:
+        0 0 12px
+        rgba(255,255,255,0.22);
+
+    transition:
+        left 420ms ease;
+
+}
+
+
+.risk-gauge-scale {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    margin-top:
+        6px;
+
+    color:
+        var(--text-faint);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size:
+        7px;
+
+}
+
+
+.risk-gauge-label {
+
+    display:
+        block;
+
+    margin-top:
+        5px;
+
+    color:
+        #67e59a;
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size:
+        8px;
+
+    font-weight:
+        bold;
+
+    text-align:
+        right;
+
+}
+
+
+/* ---------- Telemetry / Event Feed ---------- */
+
+.telemetry-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(
+                0,
+                1fr
+            )
+        );
+
+    gap:
+        22px;
+
+}
+
+
+.event-feed {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        7px;
+
+    max-height:
+        210px;
+
+    overflow-y:
+        auto;
+
+    padding-right:
+        3px;
+
+}
+
+
+.event-feed::-webkit-scrollbar {
+
+    width:
+        4px;
+
+}
+
+
+.event-feed::-webkit-scrollbar-thumb {
+
+    background:
+        var(--panel-border-strong);
+
+    border-radius:
+        999px;
+
+}
+
+
+.security-event {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        8px
+        minmax(
+            0,
+            1fr
+        )
+        auto;
+
+    align-items:
+        start;
+
+    gap:
+        9px;
+
+    padding:
+        9px 10px;
+
+    border:
+        1px solid
+        var(--panel-border);
+
+    border-radius:
+        var(--small-radius);
+
+    background:
+        var(--panel-bg-secondary);
+
+}
+
+
+.event-dot {
+
+    width:
+        7px;
+
+    height:
+        7px;
+
+    margin-top:
+        4px;
+
+    border-radius:
+        50%;
+
+    background:
+        var(--accent);
+
+    box-shadow:
+        0 0 8px
+        var(--accent);
+
+}
+
+
+.security-event.event-success .event-dot {
+
+    background:
+        #67e59a;
+
+    box-shadow:
+        0 0 8px
+        rgba(103,229,154,0.72);
+
+}
+
+
+.security-event.event-warning .event-dot {
+
+    background:
+        #e8c75c;
+
+    box-shadow:
+        0 0 8px
+        rgba(232,199,92,0.72);
+
+}
+
+
+.security-event.event-danger .event-dot {
+
+    background:
+        #e86b6b;
+
+    box-shadow:
+        0 0 8px
+        rgba(232,107,107,0.72);
+
+}
+
+
+.event-copy strong {
+
+    display:
+        block;
+
+    font-size:
+        9px;
+
+    color:
+        var(--text-main);
+
+}
+
+
+.event-copy span {
+
+    display:
+        block;
+
+    margin-top:
+        3px;
+
+    color:
+        var(--text-muted);
+
+    font-size:
+        8px;
+
+    line-height:
+        1.35;
+
+}
+
+
+.event-time {
+
+    color:
+        var(--text-faint);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size:
+        7px;
+
+    white-space:
+        nowrap;
+
+}
+
+
+/* ---------- Evidence fusion ---------- */
+
+.fusion-content {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        minmax(
+            0,
+            1.45fr
+        )
+        minmax(
+            160px,
+            0.75fr
+        );
+
+    gap:
+        14px;
+
+    align-items:
+        stretch;
+
+}
+
+
+.fusion-inputs {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(
+                0,
+                1fr
+            )
+        );
+
+    gap:
+        8px;
+
+}
+
+
+.fusion-input {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        8px;
+
+    min-width:
+        0;
+
+    padding:
+        9px;
+
+    border:
+        1px solid
+        var(--panel-border);
+
+    border-radius:
+        var(--small-radius);
+
+    background:
+        var(--panel-bg-secondary);
+
+}
+
+
+.fusion-input > div {
+
+    min-width:
+        0;
+
+}
+
+
+.fusion-input > div span,
+.fusion-input > div strong,
+.fusion-input > div small {
+
+    display:
+        block;
+
+}
+
+
+.fusion-input > div span {
+
+    color:
+        var(--text-faint);
+
+    font-size:
+        7px;
+
+    line-height:
+        1.3;
+
+}
+
+
+.fusion-input > div strong {
+
+    margin-top:
+        3px;
+
+    color:
+        var(--text-main);
+
+    font-size:
+        13px;
+
+}
+
+
+.fusion-input > div small {
+
+    margin-top:
+        2px;
+
+    color:
+        var(--text-muted);
+
+    font-size:
+        7px;
+
+}
+
+
+.fusion-icon {
+
+    width:
+        25px;
+
+    height:
+        25px;
+
+    flex:
+        0 0 25px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border:
+        1px solid
+        var(--panel-border-strong);
+
+    border-radius:
+        6px;
+
+    color:
+        var(--accent-soft);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size:
+        9px;
+
+    font-weight:
+        bold;
+
+}
+
+
+.fusion-result {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        center;
+
+    padding:
+        12px;
+
+    border:
+        1px solid
+        var(--panel-border);
+
+    border-radius:
+        var(--small-radius);
+
+    background:
+        var(--panel-bg-secondary);
+
+}
+
+
+.fusion-result > span {
+
+    color:
+        var(--text-faint);
+
+    font-size:
+        7px;
+
+    letter-spacing:
+        0.8px;
+
+}
+
+
+.fusion-result > strong {
+
+    margin:
+        6px 0 4px;
+
+    color:
+        #67e59a;
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size:
+        23px;
+
+}
+
+
+.fusion-result > small {
+
+    color:
+        var(--text-muted);
+
+    font-size:
+        8px;
+
+    line-height:
+        1.4;
+
+}
+
+
+/* ---------- Attack surface ---------- */
+
+.attack-map {
+
+    position:
+        relative;
+
+    min-height:
+        175px;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        minmax(
+            120px,
+            1fr
+        )
+        minmax(
+            140px,
+            1.15fr
+        )
+        minmax(
+            120px,
+            1fr
+        );
+
+    align-items:
+        center;
+
+    gap:
+        20px;
+
+}
+
+
+.attack-endpoint {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        center;
+
+    text-align:
+        center;
+
+}
+
+
+.attack-endpoint-icon {
+
+    width:
+        46px;
+
+    height:
+        46px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border:
+        1px solid
+        var(--panel-border-strong);
+
+    border-radius:
+        12px;
+
+    background:
+        var(--panel-bg-secondary);
+
+    color:
+        var(--accent-soft);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size:
+        15px;
+
+    font-weight:
+        bold;
+
+}
+
+
+.attack-endpoint strong {
+
+    margin-top:
+        7px;
+
+    font-size:
+        9px;
+
+}
+
+
+.attack-endpoint span {
+
+    margin-top:
+        3px;
+
+    color:
+        var(--text-muted);
+
+    font-size:
+        7px;
+
+}
+
+
+.attack-engine {
+
+    position:
+        relative;
+
+    z-index:
+        3;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    min-height:
+        145px;
+
+}
+
+
+.attack-engine-core {
+
+    width:
+        62px;
+
+    height:
+        62px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border:
+        1px solid
+        var(--accent);
+
+    border-radius:
+        50%;
+
+    background:
+        var(--panel-bg);
+
+    color:
+        var(--accent);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size:
+        18px;
+
+    font-weight:
+        bold;
+
+    box-shadow:
+        0 0 22px
+        rgba(98,169,255,0.15);
+
+}
+
+
+.attack-engine-ring {
+
+    position:
+        absolute;
+
+    width:
+        84px;
+
+    height:
+        84px;
+
+    border:
+        1px dashed
+        var(--panel-border-strong);
+
+    border-radius:
+        50%;
+
+    animation:
+        qsafeRing 8s linear infinite;
+
+}
+
+
+@keyframes qsafeRing {
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+
+}
+
+
+.attack-engine > span {
+
+    margin-top:
+        9px;
+
+    color:
+        var(--text-muted);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size:
+        6px;
+
+    line-height:
+        1.4;
+
+    text-align:
+        center;
+
+}
+
+
+.attack-path {
+
+    position:
+        absolute;
+
+    left:
+        16%;
+
+    right:
+        16%;
+
+    pointer-events:
+        none;
+
+}
+
+
+.attack-path-line {
+
+    display:
+        block;
+
+    width:
+        100%;
+
+    border-top:
+        1px dashed
+        var(--panel-border);
+
+}
+
+
+.classical-path {
+
+    top:
+        30%;
+
+}
+
+
+.quantum-path {
+
+    top:
+        70%;
+
+}
+
+
+.attack-path small {
+
+    position:
+        absolute;
+
+    left:
+        50%;
+
+    transform:
+        translateX(-50%);
+
+    padding:
+        2px 5px;
+
+    background:
+        var(--panel-bg);
+
+    color:
+        var(--text-faint);
+
+    font-size:
+        6px;
+
+    white-space:
+        nowrap;
+
+}
+
+
+.classical-path small {
+
+    top:
+        -12px;
+
+}
+
+
+.quantum-path small {
+
+    top:
+        3px;
+
+}
+
+
+.attack-indicator {
+
+    position:
+        absolute;
+
+    z-index:
+        4;
+
+    padding:
+        5px 8px;
+
+    border:
+        1px solid
+        #e86b6b;
+
+    border-radius:
+        6px;
+
+    background:
+        var(--panel-bg);
+
+    color:
+        #f0a0a0;
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size:
+        7px;
+
+    letter-spacing:
+        0.6px;
+
+    opacity:
+        0;
+
+    transform:
+        scale(0.90);
+
+    transition:
+        opacity 220ms ease,
+        transform 220ms ease;
+
+}
+
+
+.attack-indicator.active {
+
+    opacity:
+        1;
+
+    transform:
+        scale(1);
+
+}
+
+
+.network-indicator {
+
+    left:
+        25%;
+
+    top:
+        16%;
+
+}
+
+
+.quantum-indicator {
+
+    left:
+        50%;
+
+    top:
+        76%;
+
+}
+
+
+@media (max-width: 1100px) {
+
+    .telemetry-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .fusion-content {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+}
+
+
+@media (max-width: 750px) {
+
+    .fusion-inputs {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .attack-map {
+
+        grid-template-columns:
+            1fr;
+
+        min-height:
+            300px;
+
+    }
+
+
+    .attack-path {
+
+        display:
+            none;
+
+    }
+
+
+    .attack-indicator {
+
+        position:
+            static;
+
+        margin:
+            5px auto 0;
+
+    }
+
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+
+    .attack-engine-ring {
+
+        animation:
+            none;
+
+    }
+
+}

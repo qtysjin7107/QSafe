@@ -587,6 +587,761 @@ const decisionDistributionData = [
 
 
 /* =========================================================
+   FINAL SECURITY UI STATE
+   ========================================================= */
+
+let qsafeEventHistory = [];
+
+
+/* =========================================================
+   RISK SCORE
+   ========================================================= */
+
+function calculateRiskScore(
+    data
+) {
+
+    const threat =
+        Number(
+            data.threat_probability || 0
+        ) * 100;
+
+    const qber =
+        Number(
+            data.qber || 0
+        ) * 100;
+
+    const noise =
+        Number(
+            data.channel_noise || 0
+        ) * 100;
+
+    let score =
+        (threat * 0.55) +
+        (qber * 0.30) +
+        (noise * 0.15);
+
+
+    if (
+        data.eavesdropper_detected
+    ) {
+
+        score += 10;
+
+    }
+
+
+    if (
+        data.decision === "MONITOR"
+    ) {
+
+        score =
+            Math.max(
+                score,
+                40
+            );
+
+    }
+
+
+    if (
+        data.decision === "REJECT"
+    ) {
+
+        score =
+            Math.max(
+                score,
+                75
+            );
+
+    }
+
+
+    if (
+        data.decision === "ACCEPT"
+    ) {
+
+        score =
+            Math.min(
+                score,
+                29
+            );
+
+    }
+
+
+    return Math.round(
+        Math.min(
+            Math.max(
+                score,
+                0
+            ),
+            100
+        )
+    );
+
+}
+
+
+function updateRiskGauge(
+    data
+) {
+
+    const backendScore =
+        Number(
+            data.risk_score
+        );
+
+    const score =
+        Number.isFinite(
+            backendScore
+        )
+            ? backendScore
+            : calculateRiskScore(
+                data
+            );
+
+
+    const scoreElement =
+        getElement(
+            "riskScore"
+        );
+
+    const fill =
+        getElement(
+            "riskGaugeFill"
+        );
+
+    const marker =
+        getElement(
+            "riskGaugeMarker"
+        );
+
+    const label =
+        getElement(
+            "riskGaugeLabel"
+        );
+
+    const gauge =
+        getElement(
+            "riskGauge"
+        );
+
+
+    if (
+        !scoreElement ||
+        !fill ||
+        !marker ||
+        !label
+    ) {
+
+        return;
+
+    }
+
+
+    const safeScore =
+        Math.round(
+            Math.min(
+                Math.max(
+                    score,
+                    0
+                ),
+                100
+            )
+        );
+
+
+    scoreElement.textContent =
+        safeScore;
+
+    fill.style.width =
+        `${safeScore}%`;
+
+    marker.style.left =
+        `${safeScore}%`;
+
+
+    if (gauge) {
+
+        gauge.setAttribute(
+            "aria-valuenow",
+            safeScore
+        );
+
+    }
+
+
+    if (
+        safeScore < 30
+    ) {
+
+        label.textContent =
+            "LOW RISK";
+
+        label.style.color =
+            "#67e59a";
+
+    }
+    else if (
+        safeScore < 65
+    ) {
+
+        label.textContent =
+            "ELEVATED RISK";
+
+        label.style.color =
+            "#e8c75c";
+
+    }
+    else {
+
+        label.textContent =
+            "HIGH RISK";
+
+        label.style.color =
+            "#e86b6b";
+
+    }
+
+}
+
+
+/* =========================================================
+   EVENT FEED
+   ========================================================= */
+
+function addSecurityEvent(
+    title,
+    message,
+    severity = "info"
+) {
+
+    const time =
+        new Date().toLocaleTimeString(
+            [],
+            {
+                hour:
+                    "2-digit",
+
+                minute:
+                    "2-digit",
+
+                second:
+                    "2-digit"
+            }
+        );
+
+
+    qsafeEventHistory.unshift({
+
+        title,
+        message,
+        severity,
+        time
+
+    });
+
+
+    qsafeEventHistory =
+        qsafeEventHistory.slice(
+            0,
+            8
+        );
+
+
+    renderSecurityEvents();
+
+}
+
+
+function renderSecurityEvents() {
+
+    const feed =
+        getElement(
+            "eventFeed"
+        );
+
+
+    if (!feed) {
+        return;
+    }
+
+
+    feed.innerHTML =
+        "";
+
+
+    qsafeEventHistory.forEach(
+        event => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+            row.className =
+                `security-event event-${event.severity}`;
+
+
+            const dot =
+                document.createElement(
+                    "span"
+                );
+
+            dot.className =
+                "event-dot";
+
+
+            const copy =
+                document.createElement(
+                    "div"
+                );
+
+            copy.className =
+                "event-copy";
+
+
+            const title =
+                document.createElement(
+                    "strong"
+                );
+
+            title.textContent =
+                event.title;
+
+
+            const message =
+                document.createElement(
+                    "span"
+                );
+
+            message.textContent =
+                event.message;
+
+
+            copy.appendChild(
+                title
+            );
+
+            copy.appendChild(
+                message
+            );
+
+
+            const time =
+                document.createElement(
+                    "span"
+                );
+
+            time.className =
+                "event-time";
+
+            time.textContent =
+                event.time;
+
+
+            row.appendChild(
+                dot
+            );
+
+            row.appendChild(
+                copy
+            );
+
+            row.appendChild(
+                time
+            );
+
+
+            feed.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+function updateSecurityEvents(
+    data
+) {
+
+    const events = [];
+
+
+    events.push({
+
+        title:
+            `Policy decision: ${data.decision}`,
+
+        message:
+            data.reason ||
+            "Adaptive security evaluation completed.",
+
+        severity:
+            data.decision === "ACCEPT"
+                ? "success"
+                : data.decision === "MONITOR"
+                    ? "warning"
+                    : "danger"
+
+    });
+
+
+    if (
+        data.threat_probability >=
+        0.75
+    ) {
+
+        events.push({
+
+            title:
+                "High network threat",
+
+            message:
+                `Threat probability is ${(data.threat_probability * 100).toFixed(1)}%.`,
+
+            severity:
+                "danger"
+
+        });
+
+    }
+    else {
+
+        events.push({
+
+            title:
+                "Network telemetry stable",
+
+            message:
+                `Threat probability is ${(data.threat_probability * 100).toFixed(1)}%.`,
+
+            severity:
+                "success"
+
+        });
+
+    }
+
+
+    if (
+        data.qber >=
+        0.05
+    ) {
+
+        events.push({
+
+            title:
+                "Quantum disturbance detected",
+
+            message:
+                `QBER reached ${(data.qber * 100).toFixed(1)}%.`,
+
+            severity:
+                "danger"
+
+        });
+
+    }
+    else if (
+        data.qber >=
+        0.03
+    ) {
+
+        events.push({
+
+            title:
+                "Elevated quantum error",
+
+            message:
+                `QBER reached ${(data.qber * 100).toFixed(1)}%.`,
+
+            severity:
+                "warning"
+
+        });
+
+    }
+    else {
+
+        events.push({
+
+            title:
+                "Quantum channel stable",
+
+            message:
+                `QBER remains at ${(data.qber * 100).toFixed(1)}%.`,
+
+            severity:
+                "success"
+
+        });
+
+    }
+
+
+    if (
+        data.channel_noise >=
+        0.03
+    ) {
+
+        events.push({
+
+            title:
+                "Channel noise elevated",
+
+            message:
+                `Estimated channel noise is ${(data.channel_noise * 100).toFixed(1)}%.`,
+
+            severity:
+                "warning"
+
+        });
+
+    }
+
+
+    if (
+        data.eavesdropper_detected
+    ) {
+
+        events.push({
+
+            title:
+                "Eavesdropper detected",
+
+            message:
+                "Quantum-channel evidence indicates possible interception.",
+
+            severity:
+                "danger"
+
+        });
+
+    }
+
+
+    qsafeEventHistory =
+        events.map(
+            event => ({
+
+                ...event,
+
+                time:
+                    new Date().toLocaleTimeString(
+                        [],
+                        {
+                            hour:
+                                "2-digit",
+
+                            minute:
+                                "2-digit",
+
+                            second:
+                                "2-digit"
+                        }
+                    )
+
+            })
+        );
+
+
+    renderSecurityEvents();
+
+}
+
+
+/* =========================================================
+   EVIDENCE FUSION
+   ========================================================= */
+
+function updateEvidenceFusion(
+    data
+) {
+
+    const threat =
+        getElement(
+            "fusionThreat"
+        );
+
+    const qber =
+        getElement(
+            "fusionQber"
+        );
+
+    const noise =
+        getElement(
+            "fusionNoise"
+        );
+
+    const decision =
+        getElement(
+            "fusionDecision"
+        );
+
+    const reason =
+        getElement(
+            "fusionDecisionReason"
+        );
+
+
+    if (threat) {
+
+        threat.textContent =
+            `${(
+                data.threat_probability *
+                100
+            ).toFixed(1)}%`;
+
+    }
+
+
+    if (qber) {
+
+        qber.textContent =
+            `${(
+                data.qber *
+                100
+            ).toFixed(1)}%`;
+
+    }
+
+
+    if (noise) {
+
+        noise.textContent =
+            `${(
+                data.channel_noise *
+                100
+            ).toFixed(1)}%`;
+
+    }
+
+
+    if (decision) {
+
+        decision.textContent =
+            data.decision;
+
+        decision.style.color =
+            data.decision === "ACCEPT"
+                ? "#67e59a"
+                : data.decision === "MONITOR"
+                    ? "#e8c75c"
+                    : "#e86b6b";
+
+    }
+
+
+    if (reason) {
+
+        reason.textContent =
+            data.reason ||
+            "Combined evidence evaluated.";
+
+    }
+
+}
+
+
+/* =========================================================
+   ATTACK SURFACE
+   ========================================================= */
+
+function updateAttackSurface(
+    data
+) {
+
+    const status =
+        getElement(
+            "attackSurfaceStatus"
+        );
+
+    const networkIndicator =
+        getElement(
+            "networkIndicator"
+        );
+
+    const quantumIndicator =
+        getElement(
+            "quantumIndicator"
+        );
+
+
+    const networkThreat =
+        data.threat_probability >=
+        0.75;
+
+    const quantumThreat =
+        data.qber >=
+            0.05 ||
+        data.eavesdropper_detected;
+
+
+    if (networkIndicator) {
+
+        networkIndicator.classList.toggle(
+            "active",
+            networkThreat
+        );
+
+    }
+
+
+    if (quantumIndicator) {
+
+        quantumIndicator.classList.toggle(
+            "active",
+            quantumThreat
+        );
+
+    }
+
+
+    if (!status) {
+        return;
+    }
+
+
+    if (
+        networkThreat &&
+        quantumThreat
+    ) {
+
+        status.textContent =
+            "MULTI-LAYER THREAT";
+
+    }
+    else if (
+        networkThreat
+    ) {
+
+        status.textContent =
+            "NETWORK THREAT";
+
+    }
+    else if (
+        quantumThreat
+    ) {
+
+        status.textContent =
+            "QUANTUM SIGNAL";
+
+    }
+    else {
+
+        status.textContent =
+            "BASELINE";
+
+    }
+
+}
+
+
+/* =========================================================
    DOM HELPER
    ========================================================= */
 
@@ -1188,6 +1943,25 @@ function updateDashboard(
         "analysisBadge"
     ).textContent =
         badgeText;
+
+
+    /* ---------- Final security UI ---------- */
+
+    updateRiskGauge(
+        data
+    );
+
+    updateEvidenceFusion(
+        data
+    );
+
+    updateSecurityEvents(
+        data
+    );
+
+    updateAttackSurface(
+        data
+    );
 
 }
 
@@ -2797,6 +3571,24 @@ document.addEventListener(
     () => {
 
         initializeTheme();
+
+        addSecurityEvent(
+            "Q-Safe initialized",
+            "Threat-aware security dashboard is online.",
+            "success"
+        );
+
+        addSecurityEvent(
+            "BB84 layer ready",
+            "Quantum-channel telemetry is available.",
+            "success"
+        );
+
+        addSecurityEvent(
+            "Evidence fusion ready",
+            "Classical and quantum signals can be evaluated together.",
+            "info"
+        );
 
         runScenario(
             "normal"
