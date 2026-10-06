@@ -3,10 +3,10 @@
     ----------------
 
     Current data source:
-        MOCK API
-
-    Future data source:
         FastAPI
+
+    Demo source:
+        Q-Safe /api/demo
 
     This file also owns:
         - theme switching
@@ -22,13 +22,13 @@
 
 const API_CONFIG = {
 
-    USE_MOCK_API: true,
+    USE_MOCK_API: false,
 
     BASE_URL:
         "http://localhost:8000",
 
     SECURITY_ENDPOINT:
-        "/api/security/evaluate"
+        "/api/demo"
 
 };
 
@@ -63,7 +63,8 @@ function applyTheme(themeName) {
         "neo-brutalism",
         "midnight-violet",
         "arctic-lab",
-        "carbon-matrix"
+        "carbon-matrix",
+        "dragon"
 
     ];
 
@@ -100,6 +101,25 @@ function applyTheme(themeName) {
         THEME_CONFIG.storageKey,
         themeName
     );
+
+
+    const leftNodeLabel = getElement("leftNodeLabel");
+    const rightNodeLabel = getElement("rightNodeLabel");
+
+    if (leftNodeLabel && rightNodeLabel) {
+        if (themeName === "dragon") {
+            leftNodeLabel.textContent = "PERSON A";
+            rightNodeLabel.textContent = "PERSON B";
+        } else {
+            leftNodeLabel.textContent = "Hospital A";
+            rightNodeLabel.textContent = "Cloud";
+        }
+    }
+
+
+    if (typeof window.updateDragonTheme === "function") {
+        window.updateDragonTheme(themeName);
+    }
 
 
     /*
@@ -158,432 +178,129 @@ function initializeTheme() {
 
 const scenarios = {
 
-    normal: {
-
-        threatProbability:
-            0.08,
-
-        qber:
-            0.008,
-
-        noiseRate:
-            0.003,
-
-        eveDetected:
-            false,
-
-        decision:
-            "ACCEPT",
-
-        reason:
-            "Network and quantum-channel evidence indicate a normal secure channel.",
-
-        qubitsSent:
-            1000,
-
-        siftedKeyLength:
-            493
-
-    },
-
-
-    noise: {
-
-        threatProbability:
-            0.10,
-
-        qber:
-            0.041,
-
-        noiseRate:
-            0.035,
-
-        eveDetected:
-            false,
-
-        decision:
-            "MONITOR",
-
-        reason:
-            "Elevated QBER is consistent with channel noise, but the channel should be monitored.",
-
-        qubitsSent:
-            1000,
-
-        siftedKeyLength:
-            491
-
-    },
-
-
-    network: {
-
-        threatProbability:
-            0.91,
-
-        qber:
-            0.012,
-
-        noiseRate:
-            0.004,
-
-        eveDetected:
-            false,
-
-        decision:
-            "MONITOR",
-
-        reason:
-            "High network threat detected, but the quantum channel currently appears stable.",
-
-        qubitsSent:
-            1000,
-
-        siftedKeyLength:
-            496
-
-    },
-
-
-    eve: {
-
-        threatProbability:
-            0.12,
-
-        qber:
-            0.063,
-
-        noiseRate:
-            0.008,
-
-        eveDetected:
-            true,
-
-        decision:
-            "MONITOR",
-
-        reason:
-            "Quantum-channel errors are elevated, but classical network evidence is weak.",
-
-        qubitsSent:
-            1000,
-
-        siftedKeyLength:
-            487
-
-    },
-
-
-    combined: {
-
-        threatProbability:
-            0.93,
-
-        qber:
-            0.067,
-
-        noiseRate:
-            0.018,
-
-        eveDetected:
-            true,
-
-        decision:
-            "REJECT",
-
-        reason:
-            "High network threat combined with elevated quantum-channel error indicates a likely compromise.",
-
-        qubitsSent:
-            1000,
-
-        siftedKeyLength:
-            486
-
-    }
+    normal: true,
+    noise: true,
+    network: true,
+    eve: true,
+    combined: true
 
 };
 
 
 /* =========================================================
-   RESEARCH DATA
+   LIVE RESEARCH DATA
    ========================================================= */
 
-const qberNoiseData = [
+const qberNoiseData = [];
 
-    {
-        noise: 0,
-        qber: 0.8
-    },
+const qberEveData = [];
 
-    {
-        noise: 1,
-        qber: 1.4
-    },
+const threatQberData = [];
 
-    {
-        noise: 2,
-        qber: 2.3
-    },
-
-    {
-        noise: 3,
-        qber: 3.2
-    },
-
-    {
-        noise: 4,
-        qber: 4.1
-    },
-
-    {
-        noise: 5,
-        qber: 5.3
-    },
-
-    {
-        noise: 6,
-        qber: 6.1
-    },
-
-    {
-        noise: 7,
-        qber: 7.0
-    },
-
-    {
-        noise: 8,
-        qber: 8.2
-    },
-
-    {
-        noise: 10,
-        qber: 10.1
-    }
-
-];
-
-
-const qberEveData = [
-
-    {
-        eve: 0,
-        qber: 0.8
-    },
-
-    {
-        eve: 10,
-        qber: 2.1
-    },
-
-    {
-        eve: 20,
-        qber: 4.3
-    },
-
-    {
-        eve: 30,
-        qber: 6.4
-    },
-
-    {
-        eve: 40,
-        qber: 8.1
-    },
-
-    {
-        eve: 50,
-        qber: 10.2
-    },
-
-    {
-        eve: 60,
-        qber: 12.4
-    },
-
-    {
-        eve: 70,
-        qber: 14.8
-    },
-
-    {
-        eve: 80,
-        qber: 17.0
-    },
-
-    {
-        eve: 90,
-        qber: 19.2
-    },
-
-    {
-        eve: 100,
-        qber: 21.0
-    }
-
-];
-
-
-const threatQberData = [
-
-    {
-        name:
-            "Normal",
-
-        threat:
-            8,
-
-        qber:
-            0.8
-
-    },
-
-    {
-        name:
-            "Noise",
-
-        threat:
-            10,
-
-        qber:
-            4.1
-
-    },
-
-    {
-        name:
-            "Network Attack",
-
-        threat:
-            91,
-
-        qber:
-            1.2
-
-    },
-
-    {
-        name:
-            "Eavesdropper",
-
-        threat:
-            12,
-
-        qber:
-            6.3
-
-    },
-
-    {
-        name:
-            "Combined Attack",
-
-        threat:
-            93,
-
-        qber:
-            6.7
-
-    }
-
-];
-
-
-const evidenceComparisonData = [
-
-    {
-        name:
-            "Normal",
-
-        threat:
-            8,
-
-        qber:
-            0.8
-
-    },
-
-    {
-        name:
-            "Noise",
-
-        threat:
-            10,
-
-        qber:
-            4.1
-
-    },
-
-    {
-        name:
-            "Network Attack",
-
-        threat:
-            91,
-
-        qber:
-            1.2
-
-    },
-
-    {
-        name:
-            "Eavesdropper",
-
-        threat:
-            12,
-
-        qber:
-            6.3
-
-    },
-
-    {
-        name:
-            "Combined Attack",
-
-        threat:
-            93,
-
-        qber:
-            6.7
-
-    }
-
-];
-
+const evidenceComparisonData = [];
 
 const decisionDistributionData = [
 
     {
-        decision:
-            "ACCEPT",
-
-        count:
-            1
-
+        decision: "ACCEPT",
+        count: 0
     },
 
     {
-        decision:
-            "MONITOR",
-
-        count:
-            3
-
+        decision: "MONITOR",
+        count: 0
     },
 
     {
-        decision:
-            "REJECT",
-
-        count:
-            1
-
+        decision: "REJECT",
+        count: 0
     }
 
 ];
+
+
+function recordLiveResearchData(
+    scenarioName,
+    data
+) {
+
+    const qberPercent =
+        (data.qber || 0) *
+        100;
+
+    const noisePercent =
+        (data.channel_noise || 0) *
+        100;
+
+    const evePercent =
+        (data.eve_probability || 0) *
+        100;
+
+    const threatPercent =
+        (data.threat_probability || 0) *
+        100;
+
+    qberNoiseData.push({
+        noise: Number(noisePercent.toFixed(3)),
+        qber: Number(qberPercent.toFixed(3))
+    });
+
+    qberNoiseData.sort((a, b) => a.noise - b.noise);
+
+    qberEveData.push({
+        eve: Number(evePercent.toFixed(3)),
+        qber: Number(qberPercent.toFixed(3))
+    });
+
+    qberEveData.sort((a, b) => a.eve - b.eve);
+
+    const replacePoint = (array, point) => {
+        const existingIndex =
+            array.findIndex(
+                item => item.name === point.name
+            );
+
+        if (existingIndex >= 0) {
+            array[existingIndex] = point;
+        } else {
+            array.push(point);
+        }
+    };
+
+    replacePoint(
+        threatQberData,
+        {
+            name: scenarioName.toUpperCase(),
+            threat: Number(threatPercent.toFixed(2)),
+            qber: Number(qberPercent.toFixed(3))
+        }
+    );
+
+    replacePoint(
+        evidenceComparisonData,
+        {
+            name: scenarioName.toUpperCase(),
+            threat: Number(threatPercent.toFixed(2)),
+            qber: Number(qberPercent.toFixed(3))
+        }
+    );
+
+    const decision =
+        String(data.decision || "MONITOR")
+            .toUpperCase();
+
+    const decisionItem =
+        decisionDistributionData.find(
+            item => item.decision === decision
+        );
+
+    if (decisionItem) {
+        decisionItem.count += 1;
+    }
+
+    drawAllCharts();
+
+}
 
 
 /* =========================================================
@@ -687,8 +404,16 @@ async function mockSecurityEvaluation(
    ========================================================= */
 
 async function fetchSecurityEvaluation(
-    input
+    scenarioName
 ) {
+
+    const modeMap = {
+        normal: "NORMAL",
+        noise: "NOISY_CHANNEL",
+        network: "NETWORK_ATTACK",
+        eve: "EAVESDROPPER",
+        combined: "COMBINED_ATTACK"
+    };
 
     const response =
         await fetch(
@@ -696,24 +421,19 @@ async function fetchSecurityEvaluation(
             API_CONFIG.SECURITY_ENDPOINT,
             {
 
-                method:
-                    "POST",
+                method: "POST",
 
                 headers: {
-
-                    "Content-Type":
-                        "application/json"
-
+                    "Content-Type": "application/json"
                 },
 
-                body:
-                    JSON.stringify(
-                        input
-                    )
-
+                body: JSON.stringify({
+                    mode: modeMap[scenarioName] || "NORMAL",
+                    n_bits: 100,
+                    trials: 10
+                })
             }
         );
-
 
     if (!response.ok) {
 
@@ -723,38 +443,56 @@ async function fetchSecurityEvaluation(
 
     }
 
+    const payload = await response.json();
 
-    return await response.json();
+    if (!payload || !payload.result) {
+        throw new Error("Backend response missing result.");
+    }
 
+    const result = payload.result;
+    const threat = result.threat || {};
+    const quantum = result.quantum || {};
+    const decision = result.decision || {};
+
+    return {
+        success: true,
+        data: {
+            threat_probability: threat.threat_probability ?? 0,
+            qber: quantum.qber ?? 0,
+            channel_noise: quantum.noise_rate ?? 0,
+            expected_qber: quantum.expected_qber ?? 0,
+            quantum_attack_probability: quantum.quantum_attack_probability ?? 0,
+            eavesdropper_detected: (quantum.quantum_attack_probability ?? 0) >= 0.80,
+            decision: decision.decision || "MONITOR",
+            reason: decision.reason || "Security evaluation completed.",
+            qkd: {
+                protocol: "BB84",
+                qubits_sent: (quantum.trials || 0) * (quantum.bits_per_trial || 0),
+                sifted_key_length: Math.round(quantum.mean_sifted_key_length || 0)
+            },
+            metadata: {
+                source: "q-safe-fastapi",
+                scenario: scenarioName,
+                quantum_attack_probability: quantum.quantum_attack_probability ?? 0
+            }
+        }
+    };
 }
 
-
-/* =========================================================
-   API ADAPTER
-   ========================================================= */
 
 async function getSecurityEvaluation(
     scenarioName
 ) {
 
-    if (
-        API_CONFIG.USE_MOCK_API
-    ) {
-
+    if (API_CONFIG.USE_MOCK_API) {
         return await mockSecurityEvaluation(
             scenarioName
         );
-
     }
 
-
-    return await fetchSecurityEvaluation({
-
-        scenario:
-            scenarioName
-
-    });
-
+    return await fetchSecurityEvaluation(
+        scenarioName
+    );
 }
 
 
@@ -866,6 +604,24 @@ function updateDashboard(
             data.channel_noise *
             100
         ).toFixed(1)}%`;
+
+
+    if (getElement("quantumAttackProbability")) {
+        getElement("quantumAttackProbability").textContent =
+            `${(
+                (data.quantum_attack_probability || 0) *
+                100
+            ).toFixed(1)}%`;
+    }
+
+
+    if (getElement("expectedQber")) {
+        getElement("expectedQber").textContent =
+            `${(
+                (data.expected_qber || 0) *
+                100
+            ).toFixed(1)}%`;
+    }
 
 
     /* ---------- Eavesdropper ---------- */
@@ -1189,6 +945,19 @@ function updateDashboard(
     ).textContent =
         badgeText;
 
+
+    if (getElement("decisionCard")) {
+        getElement("decisionCard").dataset.decision =
+            data.decision || "MONITOR";
+    }
+
+
+    if (typeof window.updateDragonThemeState === "function") {
+        window.updateDragonThemeState(
+            data.decision || "MONITOR"
+        );
+    }
+
 }
 
 
@@ -1390,6 +1159,13 @@ async function runScenario(
         updateDashboard(
             response
         );
+
+        if (response && response.data) {
+            recordLiveResearchData(
+                name,
+                response.data
+            );
+        }
 
     }
     catch (error) {
@@ -2121,8 +1897,20 @@ function drawThreatQberChart() {
     }
 
 
+    const maxQber =
+        threatQberData.length
+            ? Math.max(
+                ...threatQberData.map(
+                    point => point.qber
+                )
+            )
+            : 10;
+
     const xMax =
-        8;
+        Math.max(
+            10,
+            Math.ceil(maxQber / 2) * 2
+        );
 
 
     for (
@@ -2604,8 +2392,20 @@ function drawDecisionDistributionChart() {
         padding.bottom;
 
 
+    const maxObservedCount =
+        decisionDistributionData.length
+            ? Math.max(
+                ...decisionDistributionData.map(
+                    item => item.count
+                )
+            )
+            : 0;
+
     const maxCount =
-        4;
+        Math.max(
+            4,
+            maxObservedCount
+        );
 
 
     for (

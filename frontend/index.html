@@ -80,6 +80,10 @@
                         Carbon Matrix
                     </option>
 
+                    <option value="dragon">
+                        Dragon Guardian
+                    </option>
+
                 </select>
 
             </div>
@@ -134,10 +138,10 @@
                 <div class="node secure">
 
                     <div class="node-icon">
-                        H
+                        A
                     </div>
 
-                    <h3>
+                    <h3 id="leftNodeLabel">
                         Hospital A
                     </h3>
 
@@ -165,6 +169,23 @@
                         aria-hidden="true"
                     ></div>
 
+                    <svg
+                        class="dragon-channel-svg"
+                        id="dragonChannelSvg"
+                        viewBox="0 0 700 120"
+                        preserveAspectRatio="none"
+                        aria-hidden="true"
+                    >
+                        <polyline id="dragonChannelPath" points="8,60 692,60"></polyline>
+                        <polyline id="dragonChannelGlow" points="8,60 692,60"></polyline>
+                    </svg>
+
+                    <div
+                        class="dragon-flow-track"
+                        id="dragonFlowTrack"
+                        aria-hidden="true"
+                    ></div>
+
 
                     <div class="connection-label">
 
@@ -186,10 +207,10 @@
                 <div class="node secure">
 
                     <div class="node-icon">
-                        C
+                        B
                     </div>
 
-                    <h3>
+                    <h3 id="rightNodeLabel">
                         Cloud
                     </h3>
 
@@ -200,6 +221,37 @@
                 </div>
 
 
+            </div>
+
+            <div class="dragon-guardian" id="dragonGuardian" aria-hidden="true">
+
+                <div class="dragon-halo"></div>
+
+                <img
+                    class="dragon-art"
+                    src="assets/dragon-guardian.svg"
+                    alt=""
+                >
+
+                <div class="dragon-smoke" id="dragonSmoke">
+                    <span></span><span></span><span></span>
+                </div>
+
+                <div class="dragon-fire" id="dragonFire">
+                    <span class="flame f1"></span>
+                    <span class="flame f2"></span>
+                    <span class="flame f3"></span>
+                </div>
+
+                <div class="dragon-caption">
+                    <span class="dragon-caption-kicker">Q-SAFE GUARDIAN</span>
+                    <strong>CELESTIAL DRAGON</strong>
+                </div>
+
+            </div>
+
+            <div class="dragon-state-readout" id="dragonStateReadout">
+                GUARDIAN // CALM
             </div>
 
         </section>
@@ -274,6 +326,23 @@
 
                 <span>
                     Quantum Channel
+                </span>
+
+            </div>
+
+
+            <div class="metric-card dragon-metric-card">
+
+                <p>
+                    Quantum Attack Probability
+                </p>
+
+                <h2 id="quantumAttackProbability">
+                    0.0%
+                </h2>
+
+                <span>
+                    Bayesian Evidence
                 </span>
 
             </div>
@@ -447,6 +516,16 @@
 
                     <strong id="quantumQber">
                         0.8%
+                    </strong>
+                </div>
+
+                <div>
+                    <p>
+                        Expected QBER
+                    </p>
+
+                    <strong id="expectedQber">
+                        0.0%
                     </strong>
                 </div>
 
@@ -738,6 +817,7 @@
 
     <script src="app.js"></script>
     <script src="channel-flow.js"></script>
+    <script src="dragon-theme.js"></script>
     <script src="ambient-field.js"></script>
 
 </body>

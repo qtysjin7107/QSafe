@@ -9,8 +9,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 DEMO_SAMPLES_PATH = (
     PROJECT_ROOT
-    / "data"
-    / "processed"
+    / "backend"
     / "demo_samples.json"
 )
 

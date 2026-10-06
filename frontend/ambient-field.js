@@ -164,6 +164,19 @@
 
             lineType: "matrix"
 
+        },
+
+
+        "dragon": {
+
+            primary: "#d8b86a",
+
+            secondary: "#a92e2e",
+
+            particleType: "quantum",
+
+            lineType: "dragon"
+
         }
 
     };

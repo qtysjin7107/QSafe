@@ -2434,3 +2434,539 @@ body[data-theme="neo-brutalism"] .connection::before {
     }
 
 }
+/* =========================================================
+   DRAGON GUARDIAN THEME
+   ========================================================= */
+
+body[data-theme="dragon"] {
+    --body-bg: #110807;
+    --topbar-bg: rgba(22, 8, 9, 0.90);
+    --panel-bg: rgba(36, 15, 14, 0.80);
+    --panel-bg-secondary: rgba(25, 13, 12, 0.78);
+    --panel-border: rgba(205, 166, 82, 0.25);
+    --panel-border-strong: rgba(221, 181, 89, 0.58);
+    --text-main: #f1e6ca;
+    --text-soft: #cbb98e;
+    --text-muted: #a08c66;
+    --text-faint: #715f45;
+    --accent: #d7b65d;
+    --accent-soft: #f0d98b;
+    --ambient-particle: #d8b45b;
+    --selector-bg: rgba(36, 14, 13, 0.94);
+    --selector-border: rgba(213, 171, 76, 0.52);
+    --button-bg: rgba(57, 18, 17, 0.82);
+    --button-hover: rgba(103, 29, 27, 0.92);
+    --card-radius: 4px;
+    --small-radius: 3px;
+    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.42);
+    --font-family: Georgia, "Times New Roman", serif;
+
+    background:
+        radial-gradient(circle at 12% 10%, rgba(157, 43, 32, 0.22), transparent 26%),
+        radial-gradient(circle at 88% 18%, rgba(81, 123, 76, 0.14), transparent 24%),
+        radial-gradient(circle at 55% 100%, rgba(134, 35, 29, 0.16), transparent 35%),
+        linear-gradient(135deg, #100706 0%, #180a08 42%, #100706 100%);
+}
+
+body[data-theme="dragon"]::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.45;
+    background:
+        radial-gradient(ellipse at 10% 25%, transparent 0 9%, rgba(207, 172, 90, 0.04) 10% 11%, transparent 12%),
+        radial-gradient(ellipse at 82% 76%, transparent 0 11%, rgba(207, 172, 90, 0.04) 12% 13%, transparent 14%),
+        repeating-radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.012) 0 1px, transparent 1px 7px);
+    mix-blend-mode: screen;
+}
+
+body[data-theme="dragon"] .topbar {
+    background: linear-gradient(180deg, rgba(31, 9, 10, 0.96), rgba(13, 7, 7, 0.92));
+    border-bottom: 1px solid rgba(214, 174, 81, 0.34);
+    box-shadow: 0 9px 35px rgba(0,0,0,.35);
+}
+
+body[data-theme="dragon"] .brand-mark {
+    background: linear-gradient(145deg, #9a261f, #3a0e0f);
+    color: #f0d887;
+    border: 1px solid rgba(226, 193, 103, 0.55);
+    box-shadow: 0 0 0 1px rgba(125, 27, 24, .45), 0 8px 25px rgba(0,0,0,.30);
+}
+
+body[data-theme="dragon"] .brand h1 {
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+body[data-theme="dragon"] .brand p {
+    color: #b79d68;
+    letter-spacing: .16em;
+}
+
+body[data-theme="dragon"] .theme-control label {
+    color: #bda56f;
+}
+
+body[data-theme="dragon"] .theme-control select {
+    background: #21100f;
+    border-color: rgba(214, 174, 81, .48);
+    color: #f2e1b8;
+}
+
+body[data-theme="dragon"] .system-status {
+    color: #dfc778;
+    border-color: rgba(214, 174, 81, .28);
+    background: rgba(87, 27, 24, .28);
+}
+
+body[data-theme="dragon"] .status-dot {
+    background: #d7b555;
+    box-shadow: 0 0 12px rgba(215,181,85,.9);
+}
+
+body[data-theme="dragon"] .dashboard {
+    position: relative;
+    z-index: 1;
+}
+
+body[data-theme="dragon"] .card,
+body[data-theme="dragon"] .metric-card {
+    position: relative;
+    overflow: hidden;
+    background:
+        linear-gradient(135deg, rgba(66, 21, 19, .86), rgba(29, 13, 12, .88));
+    border-color: rgba(206, 166, 76, .28);
+    box-shadow: var(--card-shadow);
+}
+
+body[data-theme="dragon"] .card::before,
+body[data-theme="dragon"] .metric-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .16;
+    background:
+        radial-gradient(circle at 20% 25%, rgba(218, 188, 108, .7) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 70% 68%, rgba(218, 188, 108, .45) 0 1px, transparent 1.5px);
+    background-size: 13px 13px, 19px 19px;
+    mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+}
+
+body[data-theme="dragon"] .section-header,
+body[data-theme="dragon"] .research-point,
+body[data-theme="dragon"] .analysis-item,
+body[data-theme="dragon"] .quantum-info > div {
+    border-color: rgba(210, 171, 79, .20);
+}
+
+body[data-theme="dragon"] .section-header h2,
+body[data-theme="dragon"] .card h2,
+body[data-theme="dragon"] .metric-card h2 {
+    color: #f2dfb0;
+}
+
+body[data-theme="dragon"] .section-subtitle,
+body[data-theme="dragon"] .metric-card span,
+body[data-theme="dragon"] .analysis-item span,
+body[data-theme="dragon"] .chart-description {
+    color: #aa9468;
+}
+
+body[data-theme="dragon"] .badge {
+    background: rgba(122, 24, 22, .36);
+    border-color: rgba(217, 178, 83, .34);
+    color: #ebd18a;
+    letter-spacing: .16em;
+}
+
+body[data-theme="dragon"] .network-card {
+    min-height: 350px;
+    background:
+        linear-gradient(120deg, rgba(80, 22, 19, .90), rgba(25, 12, 11, .93)),
+        radial-gradient(circle at 75% 35%, rgba(86, 132, 76, .12), transparent 27%);
+    border-color: rgba(211, 172, 79, .38);
+}
+
+body[data-theme="dragon"] .network-card::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 420px;
+    height: 250px;
+    border-radius: 50%;
+    border: 1px solid rgba(218, 183, 95, .12);
+    box-shadow: 0 0 80px rgba(122, 27, 22, .25) inset;
+    transform: rotate(-18deg);
+    pointer-events: none;
+}
+
+body[data-theme="dragon"] .network {
+    min-height: 235px;
+    gap: 34px;
+    padding-right: 230px;
+    position: relative;
+    z-index: 3;
+}
+
+body[data-theme="dragon"] .node {
+    width: 150px;
+    padding: 18px 12px;
+    border-color: rgba(214, 177, 85, .48);
+    background: linear-gradient(160deg, rgba(70, 28, 24, .92), rgba(26, 13, 12, .92));
+    box-shadow: 0 12px 28px rgba(0,0,0,.28), inset 0 0 0 1px rgba(117, 60, 46, .16);
+}
+
+body[data-theme="dragon"] .node-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 2px;
+    background: linear-gradient(145deg, #b12c25, #3c1213);
+    border: 1px solid rgba(233, 201, 117, .55);
+    box-shadow: inset 0 0 0 5px rgba(98, 25, 22, .45), 0 0 0 1px rgba(103, 31, 27, .55);
+    color: #eed58d;
+    font-family: Georgia, serif;
+    font-size: 23px;
+}
+
+body[data-theme="dragon"] .node h3 {
+    text-transform: uppercase;
+    letter-spacing: .10em;
+    font-size: 13px;
+    color: #edd8a1;
+}
+
+body[data-theme="dragon"] .node p {
+    color: #8fbd7b;
+    text-transform: uppercase;
+    letter-spacing: .13em;
+    font-size: 10px;
+}
+
+body[data-theme="dragon"] .connection {
+    width: 360px;
+    height: 135px;
+    z-index: 5;
+}
+
+body[data-theme="dragon"] .connection-line,
+body[data-theme="dragon"] .flow-track {
+    opacity: 0;
+}
+
+body[data-theme="dragon"] .dragon-channel-svg {
+    position: absolute;
+    inset: 8px 0 auto;
+    width: 100%;
+    height: 95px;
+    overflow: visible;
+    pointer-events: none;
+}
+
+body[data-theme="dragon"] .dragon-channel-svg polyline {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+body[data-theme="dragon"] #dragonChannelPath {
+    stroke: #d5b35e;
+    stroke-width: 2.4;
+    filter: drop-shadow(0 0 5px rgba(217, 181, 87, .72));
+}
+
+body[data-theme="dragon"] #dragonChannelGlow {
+    stroke: rgba(177, 44, 37, .55);
+    stroke-width: 9;
+    filter: blur(4px);
+}
+
+body[data-theme="dragon"] .dragon-flow-track {
+    position: absolute;
+    inset: 8px 0 auto;
+    height: 95px;
+    pointer-events: none;
+}
+
+body[data-theme="dragon"] .dragon-flow-dot {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: #e4c673;
+    box-shadow: 0 0 7px rgba(226, 195, 109, .9), 0 0 16px rgba(179, 39, 34, .55);
+}
+
+body[data-theme="dragon"] .connection-label {
+    top: 73px;
+}
+
+body[data-theme="dragon"] .connection-label strong {
+    color: #e8ca77;
+    letter-spacing: .18em;
+}
+
+body[data-theme="dragon"] .connection-label small {
+    color: #9d875e;
+    text-transform: uppercase;
+    letter-spacing: .16em;
+}
+
+body[data-theme="dragon"] .dragon-guardian {
+    display: block;
+    position: absolute;
+    z-index: 4;
+    right: 18px;
+    top: 54px;
+    width: 285px;
+    height: 280px;
+    pointer-events: none;
+    transform-origin: 72% 56%;
+}
+
+body:not([data-theme="dragon"]) .dragon-guardian,
+body:not([data-theme="dragon"]) .dragon-state-readout,
+body:not([data-theme="dragon"]) .dragon-channel-svg,
+body:not([data-theme="dragon"]) .dragon-flow-track {
+    display: none !important;
+}
+
+body[data-theme="dragon"] .dragon-halo {
+    position: absolute;
+    width: 230px;
+    height: 230px;
+    right: 8px;
+    top: 12px;
+    border-radius: 50%;
+    border: 1px solid rgba(218, 183, 92, .12);
+    box-shadow: 0 0 100px rgba(152, 36, 29, .25) inset;
+}
+
+body[data-theme="dragon"] .dragon-art {
+    position: absolute;
+    width: 300px;
+    height: 265px;
+    object-fit: contain;
+    right: -5px;
+    top: 2px;
+    filter: drop-shadow(0 18px 28px rgba(0,0,0,.48));
+}
+
+body[data-theme="dragon"] .dragon-caption {
+    position: absolute;
+    right: 18px;
+    bottom: -1px;
+    text-align: right;
+    color: #e8cd87;
+    text-shadow: 0 2px 10px rgba(0,0,0,.45);
+}
+
+body[data-theme="dragon"] .dragon-caption-kicker {
+    display: block;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 8px;
+    letter-spacing: .28em;
+    color: #a89163;
+    margin-bottom: 3px;
+}
+
+body[data-theme="dragon"] .dragon-caption strong {
+    font-size: 14px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+body[data-theme="dragon"] .dragon-smoke {
+    position: absolute;
+    left: 2px;
+    top: 113px;
+    width: 58px;
+    height: 45px;
+}
+
+body[data-theme="dragon"] .dragon-smoke span {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(224, 208, 163, .20);
+    border: 1px solid rgba(223, 207, 168, .16);
+    filter: blur(.2px);
+    animation: dragonSmoke 3s ease-in-out infinite;
+}
+
+body[data-theme="dragon"] .dragon-smoke span:nth-child(1) { left: 4px; top: 22px; animation-delay: 0s; }
+body[data-theme="dragon"] .dragon-smoke span:nth-child(2) { left: 18px; top: 11px; width: 13px; height: 13px; animation-delay: .45s; }
+body[data-theme="dragon"] .dragon-smoke span:nth-child(3) { left: 36px; top: 0; width: 8px; height: 8px; animation-delay: .8s; }
+
+body[data-theme="dragon"] .dragon-fire {
+    position: absolute;
+    left: -38px;
+    top: 115px;
+    width: 95px;
+    height: 38px;
+    opacity: 0;
+    transform-origin: right center;
+    filter: drop-shadow(0 0 9px rgba(248, 145, 38, .75));
+}
+
+body[data-theme="dragon"] .flame {
+    position: absolute;
+    border-radius: 58% 42% 58% 42%;
+    transform: rotate(22deg);
+    background: linear-gradient(90deg, #ffdf74, #ef552e 48%, #9f1712 100%);
+}
+
+body[data-theme="dragon"] .f1 { width: 58px; height: 18px; left: 17px; top: 10px; }
+body[data-theme="dragon"] .f2 { width: 39px; height: 12px; left: 40px; top: 4px; }
+body[data-theme="dragon"] .f3 { width: 29px; height: 9px; left: 51px; top: 17px; }
+
+body[data-theme="dragon"] .dragon-state-readout {
+    position: absolute;
+    right: 26px;
+    top: 19px;
+    z-index: 8;
+    padding: 6px 10px;
+    border: 1px solid rgba(215, 177, 81, .24);
+    background: rgba(29, 9, 10, .78);
+    color: #bda66f;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 9px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+}
+
+body[data-theme="dragon"] #decisionCard {
+    background: linear-gradient(125deg, rgba(78, 23, 20, .90), rgba(24, 11, 10, .92));
+}
+
+body[data-theme="dragon"] .scenario-button {
+    border-color: rgba(205, 162, 67, .28);
+    color: #e0cb95;
+    background: linear-gradient(145deg, rgba(74, 23, 20, .88), rgba(33, 13, 12, .90));
+}
+
+body[data-theme="dragon"] .scenario-button:hover,
+body[data-theme="dragon"] .scenario-button.active {
+    border-color: rgba(225, 183, 85, .62);
+    background: linear-gradient(145deg, rgba(112, 31, 25, .94), rgba(54, 17, 16, .94));
+    color: #f0d78b;
+    box-shadow: 0 10px 26px rgba(0,0,0,.26), inset 0 0 0 1px rgba(231, 203, 125, .10);
+}
+
+body[data-theme="dragon"] .research-chart canvas {
+    filter: saturate(.86) contrast(1.04);
+}
+
+/* Dragon state: calm / monitor / reject */
+body[data-theme="dragon"] .dragon-guardian[data-state="normal"] {
+    animation: dragonBreath 5.8s ease-in-out infinite;
+}
+
+body[data-theme="dragon"] .dragon-guardian[data-state="monitor"] {
+    animation: dragonIrritated 1.15s ease-in-out infinite;
+}
+
+body[data-theme="dragon"] .dragon-guardian[data-state="reject"] {
+    animation: dragonFury .22s linear infinite;
+}
+
+body[data-theme="dragon"] .dragon-guardian[data-state="reject"] .dragon-fire {
+    opacity: 1;
+    animation: dragonFireBlast .16s ease-in-out infinite alternate;
+}
+
+body[data-theme="dragon"] .dragon-guardian[data-state="monitor"] .dragon-smoke {
+    opacity: 1;
+}
+
+body[data-theme="dragon"] .dragon-guardian[data-state="reject"] .dragon-smoke {
+    opacity: 0;
+}
+
+body[data-theme="dragon"] #decisionCard[data-decision="MONITOR"] {
+    box-shadow: 0 0 0 1px rgba(207, 141, 42, .25), 0 18px 46px rgba(0,0,0,.38);
+}
+
+body[data-theme="dragon"] #decisionCard[data-decision="REJECT"] {
+    box-shadow: 0 0 0 1px rgba(181, 34, 25, .34), 0 0 35px rgba(181, 34, 25, .18), 0 18px 46px rgba(0,0,0,.44);
+}
+
+@keyframes dragonBreath {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-3px) rotate(-.6deg); }
+}
+
+@keyframes dragonIrritated {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    20% { transform: translateX(-3px) rotate(-1.2deg); }
+    40% { transform: translateX(2px) rotate(.9deg); }
+    65% { transform: translateX(-2px) rotate(-.7deg); }
+    85% { transform: translateX(3px) rotate(1.1deg); }
+}
+
+@keyframes dragonFury {
+    0%, 100% { transform: translate(0,0) rotate(0deg); }
+    25% { transform: translate(-4px,1px) rotate(-1.8deg); }
+    50% { transform: translate(4px,-1px) rotate(1.8deg); }
+    75% { transform: translate(-2px,2px) rotate(-1deg); }
+}
+
+@keyframes dragonFireBlast {
+    from { transform: scaleX(.92) scaleY(.90) translateX(0); opacity: .72; }
+    to { transform: scaleX(1.22) scaleY(1.12) translateX(-7px); opacity: 1; }
+}
+
+@keyframes dragonSmoke {
+    0% { transform: translate(0,0) scale(.7); opacity: 0; }
+    24% { opacity: .7; }
+    100% { transform: translate(-21px,-22px) scale(1.35); opacity: 0; }
+}
+
+body[data-theme="dragon"] .dragon-guardian[data-state="reject"] .dragon-art {
+    filter: drop-shadow(0 18px 28px rgba(0,0,0,.5)) drop-shadow(0 0 17px rgba(184, 44, 29, .25));
+}
+
+body[data-theme="dragon"] .dragon-guardian[data-state="monitor"] .dragon-art {
+    filter: drop-shadow(0 18px 28px rgba(0,0,0,.5)) sepia(.18) saturate(1.1);
+}
+
+body[data-theme="dragon"] .dragon-guardian[data-state="normal"] .dragon-art {
+    opacity: .96;
+}
+
+@media (max-width: 980px) {
+    body[data-theme="dragon"] .network {
+        padding-right: 0;
+    }
+
+    body[data-theme="dragon"] .dragon-guardian {
+        opacity: .22;
+        right: 2px;
+    }
+}
+
+@media (max-width: 700px) {
+    body[data-theme="dragon"] .network {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    body[data-theme="dragon"] .connection {
+        width: min(92vw, 420px);
+    }
+
+    body[data-theme="dragon"] .dragon-guardian {
+        display: none !important;
+    }
+
+    body[data-theme="dragon"] .dragon-state-readout {
+        right: 14px;
+        top: 56px;
+    }
+}
