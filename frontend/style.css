@@ -1,7 +1,3 @@
-/* =========================================
-   GLOBAL
-========================================= */
-
 * {
     box-sizing: border-box;
     margin: 0;
@@ -10,590 +6,504 @@
 
 body {
     font-family: Arial, Helvetica, sans-serif;
-
-    background: #0b0f14;
-    color: #e8edf3;
-
+    background: #07111f;
+    color: #e8eef7;
     min-height: 100vh;
 }
 
-
-/* =========================================
-   TOP BAR
-========================================= */
-
 .topbar {
     width: 100%;
-
-    padding: 22px 40px;
-
+    padding: 22px 5%;
+    border-bottom: 1px solid #1b2b42;
+    background: #091525;
     display: flex;
-    align-items: center;
     justify-content: space-between;
-
-    border-bottom: 1px solid #252d37;
-
-    background: #0d1218;
+    align-items: center;
 }
 
 .brand h1 {
-    font-size: 28px;
-    letter-spacing: 1px;
+    font-size: 30px;
+    letter-spacing: 0.5px;
 }
 
 .brand p {
     margin-top: 5px;
-
-    color: #8c98a6;
-
-    font-size: 13px;
+    color: #8fa2bb;
+    font-size: 14px;
 }
-
 
 .system-status {
     display: flex;
     align-items: center;
-    gap: 9px;
-
-    color: #8c98a6;
-
+    gap: 8px;
     font-size: 12px;
     font-weight: bold;
+    color: #79e6a7;
 }
 
 .status-dot {
     width: 9px;
     height: 9px;
-
     border-radius: 50%;
-
-    background: #35d07f;
-
-    box-shadow: 0 0 10px #35d07f;
+    background: #53d88a;
+    box-shadow: 0 0 10px rgba(83, 216, 138, 0.7);
 }
-
-
-/* =========================================
-   DASHBOARD
-========================================= */
 
 .dashboard {
-    width: min(1200px, 94%);
-
-    margin: 30px auto;
-
+    width: min(1450px, 92%);
+    margin: 30px auto 60px;
     display: flex;
     flex-direction: column;
-
-    gap: 20px;
+    gap: 22px;
 }
-
-
-/* =========================================
-   CARDS
-========================================= */
 
 .card {
-    background: #111820;
-
-    border: 1px solid #252d37;
-
-    border-radius: 12px;
-
+    background: #0c1929;
+    border: 1px solid #1b2b42;
+    border-radius: 14px;
     padding: 24px;
-
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
 }
-
 
 .section-header {
     display: flex;
-
-    align-items: center;
     justify-content: space-between;
-
+    align-items: flex-start;
     gap: 20px;
-
-    margin-bottom: 25px;
+    margin-bottom: 22px;
 }
 
 .section-header h2 {
-    font-size: 19px;
+    font-size: 20px;
 }
 
 .section-subtitle {
-    margin-top: 5px;
-
-    color: #74808e;
-
-    font-size: 12px;
+    margin-top: 6px;
+    color: #7f93ad;
+    font-size: 13px;
 }
-
-
-/* =========================================
-   BADGES
-========================================= */
 
 .badge {
+    border: 1px solid #2a405c;
+    background: #102238;
+    color: #9fb5cf;
     padding: 6px 10px;
-
-    border: 1px solid #33404d;
-
     border-radius: 6px;
-
-    color: #9ba8b6;
-
     font-size: 10px;
     font-weight: bold;
-
     letter-spacing: 0.8px;
+    white-space: nowrap;
 }
 
 
-/* =========================================
-   BIOMEDICAL NETWORK
-========================================= */
+/* Network */
 
 .network {
-    min-height: 190px;
-
+    min-height: 210px;
     display: flex;
-
     align-items: center;
     justify-content: center;
-
-    gap: 60px;
+    gap: 50px;
 }
-
 
 .node {
-    width: 150px;
-
-    padding: 20px;
-
+    width: 180px;
+    padding: 22px 15px;
     text-align: center;
-
-    background: #151e27;
-
-    border: 1px solid #2a3540;
-
-    border-radius: 10px;
+    border: 1px solid #28415e;
+    border-radius: 12px;
+    background: #0a1727;
 }
 
-
 .node-icon {
-    width: 50px;
-    height: 50px;
-
+    width: 52px;
+    height: 52px;
     margin: 0 auto 12px;
-
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-
-    border-radius: 50%;
-
-    background: #1c2a35;
-
-    border: 1px solid #35d07f;
-
-    color: #35d07f;
-
-    font-size: 20px;
+    background: #123153;
+    color: #9cc5ff;
+    font-size: 21px;
     font-weight: bold;
 }
 
-
 .node h3 {
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .node p {
     margin-top: 5px;
-
-    color: #35d07f;
-
-    font-size: 11px;
+    color: #65dc96;
+    font-size: 12px;
 }
-
-
-/* =========================================
-   QUANTUM CONNECTION
-========================================= */
 
 .connection {
-    width: 240px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    gap: 12px;
+    width: 260px;
+    position: relative;
+    text-align: center;
 }
 
-
-.connection > span {
-    width: 100%;
-    height: 4px;
-
+.connection-line {
     display: block;
-
-    border-radius: 10px;
-
-    background: #35d07f;
-
-    box-shadow: 0 0 10px #35d07f;
-
-    transition:
-        background 0.3s ease,
-        box-shadow 0.3s ease;
+    height: 3px;
+    width: 100%;
+    background: #4ee39a;
+    box-shadow: 0 0 12px rgba(78, 227, 154, 0.45);
+    transition: 0.25s ease;
 }
-
 
 .connection-label {
-    text-align: center;
+    margin-top: 12px;
 }
 
 .connection-label strong {
     display: block;
-
     font-size: 12px;
-
-    letter-spacing: 0.7px;
+    color: #6ce39d;
 }
 
 .connection-label small {
     display: block;
-
     margin-top: 4px;
-
-    color: #74808e;
-
-    font-size: 10px;
+    color: #748ba6;
 }
 
 
-/* =========================================
-   METRICS
-========================================= */
+/* Metrics */
 
 .metrics {
     display: grid;
-
-    grid-template-columns:
-        repeat(4, 1fr);
-
-    gap: 15px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
 }
-
 
 .metric-card {
-    padding: 20px;
-
-    background: #111820;
-
-    border: 1px solid #252d37;
-
-    border-radius: 12px;
+    padding: 22px;
+    border-radius: 14px;
+    background: #0c1929;
+    border: 1px solid #1b2b42;
 }
-
 
 .metric-card p {
-    color: #7f8b98;
-
-    font-size: 12px;
+    color: #8296ae;
+    font-size: 13px;
 }
-
 
 .metric-card h2 {
     margin-top: 10px;
-
-    font-size: 27px;
+    font-size: 28px;
 }
-
 
 .metric-card span {
     display: block;
-
     margin-top: 8px;
-
-    color: #35d07f;
-
-    font-size: 10px;
+    color: #6d829d;
+    font-size: 11px;
     font-weight: bold;
-
-    letter-spacing: 0.5px;
 }
 
 
-/* =========================================
-   SECURITY DECISION
-========================================= */
+/* Decision */
 
 .decision-card {
     text-align: center;
-
-    padding: 35px;
+    padding: 32px 20px;
+    border-color: #28543e;
 }
-
 
 .decision-label {
-    color: #7f8b98;
-
+    color: #7f93ad;
     font-size: 11px;
     font-weight: bold;
-
-    letter-spacing: 1.2px;
+    letter-spacing: 1px;
 }
-
 
 .decision-card h1 {
-    margin-top: 12px;
-
-    font-size: 42px;
-
-    color: #35d07f;
-
-    transition: color 0.3s ease;
+    margin: 12px 0;
+    font-size: 48px;
+    color: #67e59a;
 }
 
-
 .decision-card p:last-child {
-    max-width: 650px;
-
-    margin: 10px auto 0;
-
-    color: #8d99a7;
-
-    font-size: 13px;
-
+    max-width: 750px;
+    margin: 0 auto;
+    color: #9aacc1;
+    font-size: 14px;
     line-height: 1.6;
 }
 
 
-/* =========================================
-   SCENARIO BUTTONS
-========================================= */
+/* Scenario Buttons */
 
 .scenario-buttons {
     display: flex;
-
     flex-wrap: wrap;
-
-    gap: 10px;
+    gap: 12px;
 }
-
 
 .scenario-button {
-    padding: 11px 16px;
-
-    border: 1px solid #33404d;
-
-    border-radius: 7px;
-
-    background: #151e27;
-
-    color: #dce3ea;
-
+    border: 1px solid #2b425e;
+    background: #102136;
+    color: #cbd8e7;
+    padding: 11px 18px;
+    border-radius: 8px;
     cursor: pointer;
-
-    font-size: 12px;
-
-    transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.2s ease;
+    font-size: 13px;
+    transition: 0.2s ease;
 }
 
-
 .scenario-button:hover {
-    background: #1d2833;
-
-    border-color: #4b5c6c;
-
+    background: #18304c;
+    border-color: #426484;
     transform: translateY(-1px);
 }
 
-
-.scenario-button:active {
-    transform: translateY(0);
+.scenario-button.active {
+    background: #173452;
+    border-color: #5e8db9;
 }
 
 
-/* =========================================
-   QUANTUM INFORMATION
-========================================= */
+/* Quantum Info */
 
 .quantum-info {
     display: grid;
-
-    grid-template-columns:
-        repeat(4, 1fr);
-
-    gap: 15px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
 }
-
 
 .quantum-info > div {
+    background: #091625;
+    border: 1px solid #1b2b42;
+    border-radius: 10px;
     padding: 18px;
-
-    background: #151e27;
-
-    border: 1px solid #252f3a;
-
-    border-radius: 8px;
 }
-
 
 .quantum-info p {
-    color: #788594;
-
-    font-size: 11px;
+    color: #7e92aa;
+    font-size: 12px;
 }
-
 
 .quantum-info strong {
     display: block;
-
     margin-top: 8px;
-
-    font-size: 20px;
+    font-size: 19px;
 }
 
 
-/* =========================================
-   SECURITY ANALYSIS
-========================================= */
+/* Analysis */
 
 .analysis-grid {
     display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
-    gap: 15px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
 }
-
 
 .analysis-item {
+    background: #091625;
+    border: 1px solid #1b2b42;
+    border-radius: 10px;
     padding: 18px;
-
-    background: #151e27;
-
-    border: 1px solid #252f3a;
-
-    border-radius: 8px;
 }
-
 
 .analysis-item span {
     display: block;
-
-    color: #788594;
-
-    font-size: 11px;
+    color: #7e92aa;
+    font-size: 12px;
 }
-
 
 .analysis-item strong {
     display: block;
-
     margin-top: 8px;
+    font-size: 15px;
+}
 
+
+/* Research */
+
+.research-card {
+    overflow: hidden;
+}
+
+.research-charts {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.single-chart-row {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.research-chart {
+    min-width: 0;
+    width: 100%;
+    background: #091625;
+    border: 1px solid #1b2b42;
+    border-radius: 12px;
+    padding: 18px;
+    overflow: hidden;
+}
+
+.chart-title {
+    font-size: 15px;
+    font-weight: bold;
+    color: #dce6f2;
+}
+
+.chart-description {
+    margin-top: 6px;
+    min-height: 34px;
+    color: #72869f;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.research-chart canvas {
+    display: block;
+    width: 100% !important;
+    height: 280px !important;
+    margin-top: 14px;
+}
+
+
+/* Research Notes */
+
+.research-notes {
+    margin-top: 0;
+}
+
+.research-points {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.research-point {
+    background: #091625;
+    border: 1px solid #1b2b42;
+    border-radius: 10px;
+    padding: 18px;
+}
+
+.research-point strong {
     font-size: 14px;
 }
 
-
-/* =========================================
-   RESPONSIVE
-========================================= */
-
-@media (max-width: 900px) {
-
-    .metrics {
-        grid-template-columns:
-            repeat(2, 1fr);
-    }
-
-    .quantum-info {
-        grid-template-columns:
-            repeat(2, 1fr);
-    }
-
-    .analysis-grid {
-        grid-template-columns:
-            1fr;
-    }
-
-    .network {
-        gap: 25px;
-    }
-
-    .connection {
-        width: 150px;
-    }
-
+.research-point p {
+    margin-top: 8px;
+    color: #7e92aa;
+    font-size: 12px;
+    line-height: 1.6;
 }
 
 
-@media (max-width: 650px) {
+/* Responsive */
 
-    .topbar {
-        padding: 20px;
-
-        flex-direction: column;
-
-        align-items: flex-start;
-
-        gap: 15px;
-    }
-
-    .dashboard {
-        width: 92%;
-    }
+@media (max-width: 1100px) {
 
     .metrics {
-        grid-template-columns:
-            1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .quantum-info {
-        grid-template-columns:
-            1fr;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .research-points {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .research-charts {
+        grid-template-columns: 1fr;
+    }
+
+    .single-chart-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 750px) {
+
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
     }
 
     .network {
         flex-direction: column;
-
         gap: 25px;
     }
 
     .connection {
         width: 80%;
+        transform: rotate(90deg);
+        margin: 20px 0;
     }
 
+    .connection-label {
+        transform: rotate(-90deg);
+        position: relative;
+        left: -10px;
+        top: 12px;
+    }
+
+    .metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .analysis-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .research-points {
+        grid-template-columns: 1fr;
+    }
+
+    .decision-card h1 {
+        font-size: 40px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .research-chart canvas {
+        height: 250px !important;
+    }
 }
 
 
-/* =========================================
-   DYNAMIC QUANTUM CHANNEL COLORS
+@media (max-width: 500px) {
 
-   These are controlled directly by app.js.
-========================================= */
+    .dashboard {
+        width: 94%;
+        margin-top: 20px;
+    }
 
-.connection.secure > span {
-    background: #35d07f;
-    box-shadow: 0 0 12px #35d07f;
-}
+    .quantum-info {
+        grid-template-columns: 1fr;
+    }
 
-.connection.noisy > span {
-    background: #f0b429;
-    box-shadow: 0 0 12px #f0b429;
-}
+    .scenario-buttons {
+        flex-direction: column;
+    }
 
-.connection.compromised > span {
-    background: #ff4d5d;
-    box-shadow: 0 0 12px #ff4d5d;
+    .scenario-button {
+        width: 100%;
+    }
+
+    .research-chart {
+        padding: 14px;
+    }
+
+    .research-chart canvas {
+        height: 220px !important;
+    }
 }

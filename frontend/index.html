@@ -12,12 +12,7 @@
 
 <body>
 
-    <!-- =========================
-         TOP BAR
-    ========================== -->
-
     <header class="topbar">
-
         <div class="brand">
             <h1>Q-Safe</h1>
             <p>Threat-Aware Quantum-Secure Communication</p>
@@ -27,20 +22,14 @@
             <span class="status-dot"></span>
             SYSTEM ONLINE
         </div>
-
     </header>
-
 
     <main class="dashboard">
 
-        <!-- =========================
-             BIOMEDICAL NETWORK
-        ========================== -->
-
+        <!-- Biomedical Network -->
         <section class="card network-card">
 
             <div class="section-header">
-
                 <div>
                     <h2>Biomedical Network</h2>
                     <p class="section-subtitle">
@@ -49,63 +38,31 @@
                 </div>
 
                 <span class="badge">SIMULATION</span>
-
             </div>
-
 
             <div class="network">
 
-                <!-- Hospital -->
-
                 <div class="node secure">
-
-                    <div class="node-icon">
-                        H
-                    </div>
-
+                    <div class="node-icon">H</div>
                     <h3>Hospital A</h3>
-
                     <p>Secure</p>
-
                 </div>
 
+                <div class="connection" id="quantumConnection">
 
-                <!-- Quantum Channel -->
-
-                <div
-                    class="connection"
-                    id="quantumConnection"
-                >
-
-                    <span></span>
+                    <span class="connection-line"></span>
 
                     <div class="connection-label">
-
-                        <strong id="channelStatus">
-                            SECURE
-                        </strong>
-
-                        <small>
-                            Quantum Channel
-                        </small>
-
+                        <strong id="channelStatus">SECURE</strong>
+                        <small>Quantum Channel</small>
                     </div>
 
                 </div>
-
-
-                <!-- Cloud -->
 
                 <div class="node secure">
-
-                    <div class="node-icon">
-                        C
-                    </div>
-
+                    <div class="node-icon">C</div>
                     <h3>Cloud</h3>
-
                     <p>Secure</p>
-
                 </div>
 
             </div>
@@ -113,173 +70,88 @@
         </section>
 
 
-
-        <!-- =========================
-             SECURITY METRICS
-        ========================== -->
-
+        <!-- Metrics -->
         <section class="metrics">
 
-            <!-- Threat Probability -->
-
             <div class="metric-card">
-
                 <p>Threat Probability</p>
-
-                <h2 id="threatProbability">
-                    8.0%
-                </h2>
-
-                <span id="threatStatus">
-                    LOW RISK
-                </span>
-
+                <h2 id="threatProbability">8.0%</h2>
+                <span id="threatStatus">LOW RISK</span>
             </div>
 
-
-            <!-- QBER -->
-
             <div class="metric-card">
-
                 <p>QBER</p>
-
-                <h2 id="qber">
-                    0.8%
-                </h2>
-
-                <span>
-                    Quantum Channel
-                </span>
-
+                <h2 id="qber">0.8%</h2>
+                <span>Quantum Channel</span>
             </div>
 
-
-            <!-- Channel Noise -->
-
             <div class="metric-card">
-
                 <p>Channel Noise</p>
-
-                <h2 id="noise">
-                    0.3%
-                </h2>
-
-                <span>
-                    Estimated
-                </span>
-
+                <h2 id="noise">0.3%</h2>
+                <span>Estimated</span>
             </div>
 
-
-            <!-- Eavesdropper -->
-
             <div class="metric-card">
-
                 <p>Eavesdropper</p>
-
-                <h2 id="eve">
-                    NOT DETECTED
-                </h2>
-
-                <span>
-                    Quantum Channel
-                </span>
-
+                <h2 id="eve">NOT DETECTED</h2>
+                <span>Quantum Channel</span>
             </div>
 
         </section>
 
 
-
-        <!-- =========================
-             SECURITY DECISION
-        ========================== -->
-
-        <section
-            class="card decision-card"
-            id="decisionCard"
-        >
+        <!-- Security Decision -->
+        <section class="card decision-card" id="decisionCard">
 
             <p class="decision-label">
                 Q-SAFE SECURITY DECISION
             </p>
 
-            <h1 id="decision">
-                ACCEPT
-            </h1>
+            <h1 id="decision">ACCEPT</h1>
 
             <p id="decisionReason">
-
-                Network and quantum-channel evidence
-                indicate a normal secure channel.
-
+                Network and quantum-channel evidence indicate a normal secure channel.
             </p>
 
         </section>
 
 
-
-        <!-- =========================
-             ATTACK SIMULATION
-        ========================== -->
-
+        <!-- Attack Simulation -->
         <section class="card">
 
             <div class="section-header">
 
                 <div>
-
-                    <h2>
-                        Attack Simulation
-                    </h2>
+                    <h2>Attack Simulation</h2>
 
                     <p class="section-subtitle">
                         Test different security conditions
                     </p>
-
                 </div>
 
-                <span class="badge">
-                    DEMO MODE
-                </span>
+                <span class="badge">DEMO MODE</span>
 
             </div>
 
-
             <div class="scenario-buttons">
 
-                <button
-                    onclick="runScenario('normal')"
-                    class="scenario-button"
-                >
+                <button onclick="runScenario('normal')" class="scenario-button">
                     Normal
                 </button>
 
-                <button
-                    onclick="runScenario('noise')"
-                    class="scenario-button"
-                >
+                <button onclick="runScenario('noise')" class="scenario-button">
                     Channel Noise
                 </button>
 
-                <button
-                    onclick="runScenario('network')"
-                    class="scenario-button"
-                >
+                <button onclick="runScenario('network')" class="scenario-button">
                     Network Attack
                 </button>
 
-                <button
-                    onclick="runScenario('eve')"
-                    class="scenario-button"
-                >
+                <button onclick="runScenario('eve')" class="scenario-button">
                     Eavesdropper
                 </button>
 
-                <button
-                    onclick="runScenario('combined')"
-                    class="scenario-button"
-                >
+                <button onclick="runScenario('combined')" class="scenario-button">
                     Combined Attack
                 </button>
 
@@ -288,84 +160,201 @@
         </section>
 
 
-
-        <!-- =========================
-             QUANTUM CHANNEL
-        ========================== -->
-
+        <!-- Quantum Channel -->
         <section class="card">
 
             <div class="section-header">
 
                 <div>
-
-                    <h2>
-                        Quantum Channel
-                    </h2>
+                    <h2>Quantum Channel</h2>
 
                     <p class="section-subtitle">
                         BB84 simulation
                     </p>
+                </div>
 
+                <span class="badge">QISKIT</span>
+
+            </div>
+
+            <div class="quantum-info">
+
+                <div>
+                    <p>Protocol</p>
+                    <strong>BB84</strong>
+                </div>
+
+                <div>
+                    <p>Qubits Sent</p>
+                    <strong id="qubitsSent">1000</strong>
+                </div>
+
+                <div>
+                    <p>Sifted Key</p>
+                    <strong id="siftedKey">493 bits</strong>
+                </div>
+
+                <div>
+                    <p>QBER</p>
+                    <strong id="quantumQber">0.8%</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Security Analysis -->
+        <section class="card analysis-card">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Security Analysis</h2>
+
+                    <p class="section-subtitle">
+                        Current channel assessment
+                    </p>
+                </div>
+
+                <span class="badge" id="analysisBadge">
+                    NORMAL
+                </span>
+
+            </div>
+
+            <div class="analysis-grid">
+
+                <div class="analysis-item">
+                    <span>Network Evidence</span>
+                    <strong id="networkEvidence">
+                        LOW THREAT
+                    </strong>
+                </div>
+
+                <div class="analysis-item">
+                    <span>Quantum Evidence</span>
+                    <strong id="quantumEvidence">
+                        NORMAL
+                    </strong>
+                </div>
+
+                <div class="analysis-item">
+                    <span>Channel State</span>
+                    <strong id="analysisChannel">
+                        SECURE
+                    </strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Research Analysis -->
+        <section class="card research-card">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Research Analysis</h2>
+
+                    <p class="section-subtitle">
+                        Quantum-channel and threat-analysis experiments
+                    </p>
                 </div>
 
                 <span class="badge">
-                    QISKIT
+                    EXPERIMENTS
                 </span>
 
             </div>
 
 
-            <div class="quantum-info">
+            <!-- Row 1 -->
+            <div class="research-charts">
 
-                <div>
+                <div class="research-chart">
 
-                    <p>
-                        Protocol
-                    </p>
+                    <div class="chart-title">
+                        QBER vs Channel Noise
+                    </div>
 
-                    <strong>
-                        BB84
-                    </strong>
+                    <div class="chart-description">
+                        Relationship between estimated channel noise and quantum bit error rate.
+                    </div>
 
-                </div>
-
-
-                <div>
-
-                    <p>
-                        Qubits Sent
-                    </p>
-
-                    <strong id="qubitsSent">
-                        1000
-                    </strong>
+                    <canvas id="qberNoiseChart"></canvas>
 
                 </div>
 
 
-                <div>
+                <div class="research-chart">
 
-                    <p>
-                        Sifted Key
-                    </p>
+                    <div class="chart-title">
+                        QBER vs Eavesdropper Probability
+                    </div>
 
-                    <strong id="siftedKey">
-                        493 bits
-                    </strong>
+                    <div class="chart-description">
+                        Effect of increasing interception probability on QBER.
+                    </div>
+
+                    <canvas id="qberEveChart"></canvas>
+
+                </div>
+
+            </div>
+
+
+            <!-- Row 2 -->
+            <div class="research-charts">
+
+                <div class="research-chart">
+
+                    <div class="chart-title">
+                        Threat Probability vs QBER
+                    </div>
+
+                    <div class="chart-description">
+                        Combined view of classical threat evidence and quantum-channel evidence.
+                    </div>
+
+                    <canvas id="threatQberChart"></canvas>
 
                 </div>
 
 
-                <div>
+                <div class="research-chart">
 
-                    <p>
-                        QBER
-                    </p>
+                    <div class="chart-title">
+                        Threat vs Quantum Evidence
+                    </div>
 
-                    <strong id="quantumQber">
-                        0.8%
-                    </strong>
+                    <div class="chart-description">
+                        Comparison of network threat probability and QBER across attack scenarios.
+                    </div>
+
+                    <canvas id="evidenceComparisonChart"></canvas>
+
+                </div>
+
+            </div>
+
+
+            <!-- Row 3 -->
+            <div class="research-charts single-chart-row">
+
+                <div class="research-chart">
+
+                    <div class="chart-title">
+                        Security Decision Distribution
+                    </div>
+
+                    <div class="chart-description">
+                        Distribution of ACCEPT, MONITOR and REJECT decisions across simulated scenarios.
+                    </div>
+
+                    <canvas id="decisionDistributionChart"></canvas>
 
                 </div>
 
@@ -374,75 +363,53 @@
         </section>
 
 
-
-        <!-- =========================
-             CURRENT ANALYSIS
-        ========================== -->
-
-        <section class="card analysis-card">
+        <!-- Research Notes -->
+        <section class="card research-notes">
 
             <div class="section-header">
 
                 <div>
-
-                    <h2>
-                        Security Analysis
-                    </h2>
+                    <h2>Research Interpretation</h2>
 
                     <p class="section-subtitle">
-                        Current channel assessment
+                        What the dashboard is demonstrating
                     </p>
-
                 </div>
 
-                <span
-                    class="badge"
-                    id="analysisBadge"
-                >
-                    NORMAL
+                <span class="badge">
+                    Q-SAFE
                 </span>
 
             </div>
 
+            <div class="research-points">
 
-            <div class="analysis-grid">
-
-                <div class="analysis-item">
-
-                    <span>
-                        Network Evidence
-                    </span>
-
-                    <strong id="networkEvidence">
-                        LOW THREAT
-                    </strong>
-
+                <div class="research-point">
+                    <strong>Classical Evidence</strong>
+                    <p>
+                        NSL-KDD provides the network-security evidence used to estimate threat probability.
+                    </p>
                 </div>
 
-
-                <div class="analysis-item">
-
-                    <span>
-                        Quantum Evidence
-                    </span>
-
-                    <strong id="quantumEvidence">
-                        NORMAL
-                    </strong>
-
+                <div class="research-point">
+                    <strong>Quantum Evidence</strong>
+                    <p>
+                        Qiskit BB84 experiments provide QBER and channel-condition information.
+                    </p>
                 </div>
 
+                <div class="research-point">
+                    <strong>Evidence Fusion</strong>
+                    <p>
+                        Q-Safe combines classical threat information with quantum-channel evidence to make a security decision.
+                    </p>
+                </div>
 
-                <div class="analysis-item">
-
-                    <span>
-                        Channel State
-                    </span>
-
-                    <strong id="analysisChannel">
-                        SECURE
-                    </strong>
-
+                <div class="research-point">
+                    <strong>Decision Policy</strong>
+                    <p>
+                        The system produces ACCEPT, MONITOR or REJECT depending on the combined security evidence.
+                    </p>
                 </div>
 
             </div>
@@ -451,8 +418,6 @@
 
     </main>
 
-
-    <!-- JavaScript -->
 
     <script src="app.js"></script>
 
