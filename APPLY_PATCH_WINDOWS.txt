@@ -1,0 +1,34 @@
+Q-SAFE PRODUCTION PATCH
+=======================
+
+Copy/replace these into your existing QSafe repository:
+
+frontend\\index.html
+frontend\\style.css
+frontend\\app.js
+frontend\\channel-flow.js
+frontend\\dragon-theme.js
+frontend\\ambient-field.js
+frontend\\assets\\*
+backend\\main.py
+backend\\api\\upload_routes.py
+backend\\services\\upload_analysis_service.py
+render.yaml
+
+Then add this line to the ROOT requirements.txt:
+python-multipart
+
+Install/run locally:
+    pip install -r requirements.txt
+    python -m uvicorn backend.main:app --reload
+
+Open:
+    http://127.0.0.1:8000/
+
+For Render, push the repository to GitHub and create a Python Web Service.
+Build command:
+    pip install -r requirements.txt
+Start command:
+    uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+Health check:
+    /api/health

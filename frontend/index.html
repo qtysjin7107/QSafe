@@ -37,6 +37,15 @@
 
         <div class="header-controls">
 
+            <div class="theme-control model-control">
+                <label for="modelSelect">Analysis Model</label>
+                <select id="modelSelect" aria-label="Select Q-Safe analysis model">
+                    <option value="classical">Classical ML · LightGBM</option>
+                    <option value="qber">QBER Model · Bayesian Evidence</option>
+                    <option value="hybrid" selected>Hybrid Model · Q-Safe Fusion</option>
+                </select>
+            </div>
+
             <div class="theme-control">
 
                 <label for="themeSelect">
@@ -103,6 +112,95 @@
 
 
     <main class="dashboard">
+
+        <section class="card live-data-card" id="liveDataLab">
+            <div class="section-header">
+                <div>
+                    <h2 id="uploadTitle">Hybrid Q-Safe Analysis</h2>
+                    <p class="section-subtitle" id="uploadHelper">
+                        Upload an NSL-KDD-compatible CSV/TXT dataset. The selected model will run on the real uploaded rows.
+                    </p>
+                </div>
+                <span class="badge" id="sourceBadge">LIVE DEMO</span>
+            </div>
+
+            <div class="model-strip">
+                <div class="model-strip-copy">
+                    <span class="eyebrow">ACTIVE MODEL</span>
+                    <strong id="selectedModelName">Hybrid Model</strong>
+                    <span id="selectedModelType">Q-Safe Fusion Engine</span>
+                    <small id="selectedModelDescription">
+                        Fuses classical network-threat probability with quantum-channel evidence.
+                    </small>
+                </div>
+                <span class="model-strip-badge" id="qberUploadHint"></span>
+            </div>
+
+            <div class="upload-grid">
+                <div class="upload-dropzone" id="uploadDropzone" tabindex="0" role="button" aria-label="Upload NSL-KDD dataset">
+                    <input id="datasetFile" type="file" accept=".csv,.txt" hidden>
+                    <div class="upload-icon">↑</div>
+                    <strong>Drop NSL-KDD CSV/TXT here</strong>
+                    <span>or</span>
+                    <button id="chooseFileButton" class="secondary-button" type="button">Choose file</button>
+                    <p id="selectedFileName">No file selected</p>
+                    <small>Supported: 41 NSL-KDD features, 43 columns with label + difficulty, or 44 columns with an empty trailing field.</small>
+                </div>
+
+                <div class="upload-controls">
+                    <div class="control-row">
+                        <label>Channel noise <strong><span id="uploadNoiseValue">0</span>%</strong></label>
+                        <input id="uploadNoise" type="range" min="0" max="20" value="0">
+                    </div>
+                    <div class="control-row">
+                        <label>Eve probability <strong><span id="uploadEveValue">0</span>%</strong></label>
+                        <input id="uploadEve" type="range" min="0" max="100" value="0">
+                    </div>
+                    <div class="control-row compact-controls">
+                        <label>Bits/trial <input id="uploadBits" type="number" min="10" max="5000" value="100"></label>
+                        <label>Trials <input id="uploadTrials" type="number" min="1" max="50" value="10"></label>
+                    </div>
+                    <button id="uploadAnalyzeButton" class="primary-button" type="button" disabled>Run Hybrid Q-Safe Analysis</button>
+                    <p class="upload-status" id="uploadStatus">Choose a dataset to run live analysis.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card model-workspace hidden" id="modelWorkspace">
+            <div class="section-header">
+                <div>
+                    <h2 id="modelResultName">Hybrid Model</h2>
+                    <p class="section-subtitle" id="modelResultType">Q-Safe Fusion Engine</p>
+                </div>
+                <span class="badge" id="modelResultSource">NO RESULT YET</span>
+            </div>
+
+            <div class="model-kpis">
+                <div class="model-kpi"><span id="modelMetric1Label">NETWORK THREAT</span><strong id="modelMetric1">—</strong></div>
+                <div class="model-kpi"><span id="modelMetric2Label">P(EVE)</span><strong id="modelMetric2">—</strong></div>
+                <div class="model-kpi"><span id="modelMetric3Label">QBER</span><strong id="modelMetric3">—</strong></div>
+                <div class="model-kpi"><span id="modelMetric4Label">DECISION</span><strong id="modelMetric4">—</strong></div>
+            </div>
+
+            <div class="research-charts">
+                <div class="research-chart">
+                    <div class="chart-title">Model Result 01</div>
+                    <div class="chart-description">Live output from the selected model.</div>
+                    <canvas id="modelChart1"></canvas>
+                </div>
+                <div class="research-chart">
+                    <div class="chart-title">Model Result 02</div>
+                    <div class="chart-description">Derived from the same analysis run.</div>
+                    <canvas id="modelChart2"></canvas>
+                </div>
+                <div class="research-chart">
+                    <div class="chart-title">Model Result 03</div>
+                    <div class="chart-description">No hard-coded dataset values are used.</div>
+                    <canvas id="modelChart3"></canvas>
+                </div>
+            </div>
+        </section>
+
 
 
         <!-- =====================================================
@@ -378,7 +476,7 @@
              ATTACK SIMULATION
              ===================================================== -->
 
-        <section class="card">
+        <section class="card" id="attackSimulationCard">
 
             <div class="section-header">
 
@@ -607,6 +705,53 @@
 
             </div>
 
+        </section>
+
+
+        <section class="card dataset-panel hidden" id="datasetPanel">
+            <div class="section-header">
+                <div>
+                    <h2>Uploaded Dataset Analysis</h2>
+                    <p class="section-subtitle">Actual rows, model predictions, evaluation metrics and dataset-level Q-Safe posture.</p>
+                </div>
+                <span class="badge">LIVE RESULTS</span>
+            </div>
+
+            <div class="dataset-kpis">
+                <div class="dataset-kpi"><span>Rows analyzed</span><strong id="rowsAnalyzed">—</strong></div>
+                <div class="dataset-kpi"><span>Observed attacks</span><strong id="datasetObservedAttack">—</strong></div>
+                <div class="dataset-kpi"><span>Predicted attacks</span><strong id="datasetPredictedAttack">—</strong></div>
+                <div class="dataset-kpi"><span>Average threat</span><strong id="datasetAverageThreat">—</strong></div>
+                <div class="dataset-kpi"><span>Peak threat</span><strong id="datasetPeakThreat">—</strong></div>
+            </div>
+
+            <div class="dataset-metrics-grid">
+                <div><span>Accuracy</span><strong id="datasetAccuracy">N/A</strong></div>
+                <div><span>Precision</span><strong id="datasetPrecision">N/A</strong></div>
+                <div><span>Recall</span><strong id="datasetRecall">N/A</strong></div>
+                <div><span>F1</span><strong id="datasetF1">N/A</strong></div>
+            </div>
+
+            <div class="confusion-grid">
+                <div class="cm-box"><span>TN</span><strong id="cmTN">—</strong></div>
+                <div class="cm-box"><span>FP</span><strong id="cmFP">—</strong></div>
+                <div class="cm-box"><span>FN</span><strong id="cmFN">—</strong></div>
+                <div class="cm-box"><span>TP</span><strong id="cmTP">—</strong></div>
+            </div>
+
+            <div class="research-charts dataset-charts">
+                <div class="research-chart"><div class="chart-title">Actual Attack Types</div><div class="chart-description">Distribution from the uploaded file.</div><canvas id="datasetAttackChart"></canvas></div>
+                <div class="research-chart"><div class="chart-title">Threat Probability Distribution</div><div class="chart-description">Where the uploaded rows fall relative to the trained threshold.</div><canvas id="threatHistogramChart"></canvas></div>
+                <div class="research-chart"><div class="chart-title">Actual vs Predicted</div><div class="chart-description">Only available when the upload contains a label column.</div><canvas id="predictionBreakdownChart"></canvas></div>
+            </div>
+
+            <div class="table-header"><strong>Row-level predictions</strong><span id="tableRowCount">0 shown</span></div>
+            <div class="table-wrap">
+                <table class="dataset-table">
+                    <thead><tr><th>Row</th><th>Protocol</th><th>Service</th><th>Flag</th><th>Actual</th><th>Predicted</th><th>Threat</th></tr></thead>
+                    <tbody id="datasetTableBody"></tbody>
+                </table>
+            </div>
         </section>
 
 

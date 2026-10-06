@@ -2970,3 +2970,284 @@ body[data-theme="dragon"] .dragon-guardian[data-state="normal"] .dragon-art {
         top: 56px;
     }
 }
+
+/* =========================================================
+   LIVE DATA LAB
+   ========================================================= */
+
+.live-data-card {
+    overflow: hidden;
+}
+
+.upload-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+    gap: 20px;
+    align-items: stretch;
+}
+
+.upload-dropzone {
+    min-height: 260px;
+    border: 1px dashed var(--panel-border-strong);
+    border-radius: var(--card-radius);
+    background: linear-gradient(145deg, rgba(255,255,255,.025), rgba(255,255,255,.008));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    text-align: center;
+    transition: .2s ease;
+}
+
+.upload-dropzone.dragging,
+.upload-dropzone:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+    box-shadow: 0 16px 40px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.03);
+}
+
+.upload-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    border: 1px solid var(--panel-border-strong);
+    color: var(--accent);
+}
+
+.upload-dropzone strong {
+    font-size: 18px;
+    color: var(--text-main);
+}
+
+.upload-dropzone span,
+.upload-dropzone small {
+    color: var(--text-muted);
+}
+
+.upload-dropzone p {
+    margin: 2px 0 0;
+    color: var(--text-soft);
+    max-width: 90%;
+    word-break: break-word;
+}
+
+.secondary-button,
+.primary-button {
+    border: 1px solid var(--panel-border-strong);
+    border-radius: 10px;
+    padding: 11px 18px;
+    font: inherit;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.secondary-button {
+    background: var(--button-bg);
+    color: var(--text-main);
+}
+
+.secondary-button:hover {
+    background: var(--button-hover);
+    border-color: var(--accent);
+}
+
+.primary-button {
+    width: 100%;
+    background: var(--accent);
+    color: #07111f;
+    font-weight: 800;
+}
+
+.primary-button:disabled {
+    opacity: .42;
+    cursor: not-allowed;
+}
+
+.upload-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 18px;
+    border-radius: var(--card-radius);
+    border: 1px solid var(--panel-border);
+    background: var(--panel-bg-secondary);
+}
+
+.control-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.control-row label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-soft);
+    font-size: 13px;
+}
+
+.control-row input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+}
+
+.compact-controls {
+    flex-direction: row;
+    gap: 12px;
+}
+
+.compact-controls label {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.compact-controls input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--panel-border);
+    border-radius: 9px;
+    padding: 9px 10px;
+    background: var(--selector-bg);
+    color: var(--text-main);
+}
+
+.upload-status {
+    margin: 0;
+    color: var(--text-muted);
+    min-height: 20px;
+    font-size: 12px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* =========================================================
+   DATASET ANALYSIS
+   ========================================================= */
+
+.dataset-kpis,
+.dataset-metrics-grid,
+.confusion-grid {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.dataset-kpis {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.dataset-metrics-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.confusion-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.dataset-kpi,
+.dataset-metrics-grid > div,
+.cm-box {
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    background: var(--panel-bg-secondary);
+    padding: 16px;
+}
+
+.dataset-kpi span,
+.dataset-metrics-grid span,
+.cm-box span {
+    display: block;
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 7px;
+}
+
+.dataset-kpi strong,
+.dataset-metrics-grid strong,
+.cm-box strong {
+    color: var(--text-main);
+    font-size: 21px;
+}
+
+.dataset-charts {
+    margin-top: 18px;
+}
+
+.table-header {
+    margin: 22px 0 10px;
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-soft);
+}
+
+.table-wrap {
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    overflow: auto;
+    max-height: 420px;
+}
+
+.dataset-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 850px;
+}
+
+.dataset-table th,
+.dataset-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--panel-border);
+    text-align: left;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.dataset-table th {
+    position: sticky;
+    top: 0;
+    background: var(--panel-bg);
+    color: var(--text-soft);
+    z-index: 1;
+}
+
+.dataset-table td {
+    color: var(--text-main);
+}
+
+.dataset-table tr:last-child td {
+    border-bottom: 0;
+}
+
+@media (max-width: 980px) {
+    .upload-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dataset-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .dataset-kpis,
+    .dataset-metrics-grid,
+    .confusion-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .compact-controls {
+        flex-direction: column;
+    }
+}
