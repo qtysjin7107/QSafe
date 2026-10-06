@@ -5,14 +5,18 @@ def make_security_decision(
     threat_probability: float,
     qber: float,
     expected_qber: float,
+    quantum_attack_probability: float | None = None,
 ) -> dict:
     """
-    Combine the classical network-threat signal
-    with the quantum-channel security signal.
+    Combine classical network-threat evidence
+    with quantum-channel evidence.
     """
 
     return evaluate_security(
         threat_probability=threat_probability,
         qber=qber,
         expected_qber=expected_qber,
+        quantum_attack_probability=(
+            quantum_attack_probability
+        ),
     )
