@@ -11,3 +11,4 @@ data/processed/*
 experiments/figures/*
 *.pkl
 *.joblib
+!models/threat_model_best.joblib

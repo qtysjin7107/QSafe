@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Q-Safe | Quantum-Secure Communication</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body data-theme="quantum-core">
+
+    <header class="topbar">
+
+        <div class="brand">
+
+            <div class="brand-mark">
+                Q
+            </div>
+
+            <div class="brand-copy">
+
+                <h1>
+                    Q-Safe
+                </h1>
+
+                <p>
+                    Threat-Aware Quantum-Secure Communication
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="header-controls">
+
+            <div class="theme-control">
+
+                <label for="themeSelect">
+                    Theme
+                </label>
+
+                <select
+                    id="themeSelect"
+                    aria-label="Select Q-Safe theme"
+                >
+
+                    <option value="quantum-core">
+                        Quantum Core
+                    </option>
+
+                    <option value="cyber-neon">
+                        Cyber Neon
+                    </option>
+
+                    <option value="clinical-secure">
+                        Clinical Secure
+                    </option>
+
+                    <option value="threat-command">
+                        Threat Command
+                    </option>
+
+                    <option value="neo-brutalism">
+                        Neo Brutalism
+                    </option>
+
+                    <option value="midnight-violet">
+                        Midnight Violet
+                    </option>
+
+                    <option value="arctic-lab">
+                        Arctic Lab
+                    </option>
+
+                    <option value="carbon-matrix">
+                        Carbon Matrix
+                    </option>
+
+                    <option value="dragon">
+                        Dragon Guardian
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+                SYSTEM ONLINE
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <main class="dashboard">
+
+
+        <!-- =====================================================
+             BIOMEDICAL NETWORK
+             ===================================================== -->
+
+        <section class="card network-card">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>
+                        Biomedical Network
+                    </h2>
+
+                    <p class="section-subtitle">
+                        Secure communication simulation
+                    </p>
+                </div>
+
+                <span class="badge">
+                    SIMULATION
+                </span>
+
+            </div>
+
+
+            <div class="network">
+
+
+                <!-- Hospital -->
+
+                <div class="node secure">
+
+                    <div class="node-icon">
+                        A
+                    </div>
+
+                    <h3 id="leftNodeLabel">
+                        Hospital A
+                    </h3>
+
+                    <p>
+                        Secure
+                    </p>
+
+                </div>
+
+
+                <!-- Quantum Channel -->
+
+                <div
+                    class="connection"
+                    id="quantumConnection"
+                    data-flow-state="secure"
+                >
+
+                    <span class="connection-line"></span>
+
+
+                    <div
+                        class="flow-track"
+                        id="flowTrack"
+                        aria-hidden="true"
+                    ></div>
+
+                    <svg
+                        class="dragon-channel-svg"
+                        id="dragonChannelSvg"
+                        viewBox="0 0 700 120"
+                        preserveAspectRatio="none"
+                        aria-hidden="true"
+                    >
+                        <polyline id="dragonChannelPath" points="8,60 692,60"></polyline>
+                        <polyline id="dragonChannelGlow" points="8,60 692,60"></polyline>
+                    </svg>
+
+                    <div
+                        class="dragon-flow-track"
+                        id="dragonFlowTrack"
+                        aria-hidden="true"
+                    ></div>
+
+
+                    <div class="connection-label">
+
+                        <strong id="channelStatus">
+                            SECURE
+                        </strong>
+
+                        <small>
+                            Quantum Channel
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Cloud -->
+
+                <div class="node secure">
+
+                    <div class="node-icon">
+                        B
+                    </div>
+
+                    <h3 id="rightNodeLabel">
+                        Cloud
+                    </h3>
+
+                    <p>
+                        Secure
+                    </p>
+
+                </div>
+
+
+            </div>
+
+            <div class="dragon-guardian" id="dragonGuardian" aria-hidden="true">
+
+                <div class="dragon-halo"></div>
+
+                <img
+                    class="dragon-art"
+                    src="assets/dragon-guardian.svg"
+                    alt=""
+                >
+
+                <div class="dragon-smoke" id="dragonSmoke">
+                    <span></span><span></span><span></span>
+                </div>
+
+                <div class="dragon-fire" id="dragonFire">
+                    <span class="flame f1"></span>
+                    <span class="flame f2"></span>
+                    <span class="flame f3"></span>
+                </div>
+
+                <div class="dragon-caption">
+                    <span class="dragon-caption-kicker">Q-SAFE GUARDIAN</span>
+                    <strong>CELESTIAL DRAGON</strong>
+                </div>
+
+            </div>
+
+            <div class="dragon-state-readout" id="dragonStateReadout">
+                GUARDIAN // CALM
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             METRICS
+             ===================================================== -->
+
+        <section class="metrics">
+
+            <div class="metric-card">
+
+                <p>
+                    Threat Probability
+                </p>
+
+                <h2 id="threatProbability">
+                    8.0%
+                </h2>
+
+                <span id="threatStatus">
+                    LOW RISK
+                </span>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <p>
+                    QBER
+                </p>
+
+                <h2 id="qber">
+                    0.8%
+                </h2>
+
+                <span>
+                    Quantum Channel
+                </span>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <p>
+                    Channel Noise
+                </p>
+
+                <h2 id="noise">
+                    0.3%
+                </h2>
+
+                <span>
+                    Estimated
+                </span>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <p>
+                    Eavesdropper
+                </p>
+
+                <h2 id="eve">
+                    NOT DETECTED
+                </h2>
+
+                <span>
+                    Quantum Channel
+                </span>
+
+            </div>
+
+
+            <div class="metric-card dragon-metric-card">
+
+                <p>
+                    Quantum Attack Probability
+                </p>
+
+                <h2 id="quantumAttackProbability">
+                    0.0%
+                </h2>
+
+                <span>
+                    Bayesian Evidence
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             SECURITY DECISION
+             ===================================================== -->
+
+        <section
+            class="card decision-card"
+            id="decisionCard"
+        >
+
+            <p class="decision-label">
+                Q-SAFE SECURITY DECISION
+            </p>
+
+            <h1 id="decision">
+                ACCEPT
+            </h1>
+
+            <p id="decisionReason">
+                Network and quantum-channel evidence indicate a normal secure channel.
+            </p>
+
+        </section>
+
+
+        <!-- =====================================================
+             ATTACK SIMULATION
+             ===================================================== -->
+
+        <section class="card">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Attack Simulation
+                    </h2>
+
+                    <p class="section-subtitle">
+                        Test different security conditions
+                    </p>
+
+                </div>
+
+                <span class="badge">
+                    DEMO MODE
+                </span>
+
+            </div>
+
+
+            <div class="scenario-buttons">
+
+                <button
+                    onclick="runScenario('normal')"
+                    class="scenario-button"
+                >
+                    Normal
+                </button>
+
+
+                <button
+                    onclick="runScenario('noise')"
+                    class="scenario-button"
+                >
+                    Channel Noise
+                </button>
+
+
+                <button
+                    onclick="runScenario('network')"
+                    class="scenario-button"
+                >
+                    Network Attack
+                </button>
+
+
+                <button
+                    onclick="runScenario('eve')"
+                    class="scenario-button"
+                >
+                    Eavesdropper
+                </button>
+
+
+                <button
+                    onclick="runScenario('combined')"
+                    class="scenario-button"
+                >
+                    Combined Attack
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             QUANTUM CHANNEL
+             ===================================================== -->
+
+        <section class="card">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Quantum Channel
+                    </h2>
+
+                    <p class="section-subtitle">
+                        BB84 simulation
+                    </p>
+
+                </div>
+
+                <span class="badge">
+                    QISKIT
+                </span>
+
+            </div>
+
+
+            <div class="quantum-info">
+
+                <div>
+                    <p>
+                        Protocol
+                    </p>
+
+                    <strong>
+                        BB84
+                    </strong>
+                </div>
+
+
+                <div>
+                    <p>
+                        Qubits Sent
+                    </p>
+
+                    <strong id="qubitsSent">
+                        1000
+                    </strong>
+                </div>
+
+
+                <div>
+                    <p>
+                        Sifted Key
+                    </p>
+
+                    <strong id="siftedKey">
+                        493 bits
+                    </strong>
+                </div>
+
+
+                <div>
+                    <p>
+                        QBER
+                    </p>
+
+                    <strong id="quantumQber">
+                        0.8%
+                    </strong>
+                </div>
+
+                <div>
+                    <p>
+                        Expected QBER
+                    </p>
+
+                    <strong id="expectedQber">
+                        0.0%
+                    </strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             SECURITY ANALYSIS
+             ===================================================== -->
+
+        <section class="card analysis-card">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Security Analysis
+                    </h2>
+
+                    <p class="section-subtitle">
+                        Current channel assessment
+                    </p>
+
+                </div>
+
+
+                <span
+                    class="badge"
+                    id="analysisBadge"
+                >
+                    NORMAL
+                </span>
+
+            </div>
+
+
+            <div class="analysis-grid">
+
+                <div class="analysis-item">
+
+                    <span>
+                        Network Evidence
+                    </span>
+
+                    <strong id="networkEvidence">
+                        LOW THREAT
+                    </strong>
+
+                </div>
+
+
+                <div class="analysis-item">
+
+                    <span>
+                        Quantum Evidence
+                    </span>
+
+                    <strong id="quantumEvidence">
+                        NORMAL
+                    </strong>
+
+                </div>
+
+
+                <div class="analysis-item">
+
+                    <span>
+                        Channel State
+                    </span>
+
+                    <strong id="analysisChannel">
+                        SECURE
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             RESEARCH ANALYSIS
+             ===================================================== -->
+
+        <section class="card research-card">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Research Analysis
+                    </h2>
+
+                    <p class="section-subtitle">
+                        Quantum-channel and threat-analysis experiments
+                    </p>
+
+                </div>
+
+
+                <span class="badge">
+                    EXPERIMENTS
+                </span>
+
+            </div>
+
+
+            <div class="research-charts">
+
+                <div class="research-chart">
+
+                    <div class="chart-title">
+                        QBER vs Channel Noise
+                    </div>
+
+                    <div class="chart-description">
+                        Relationship between estimated channel noise and quantum bit error rate.
+                    </div>
+
+                    <canvas id="qberNoiseChart"></canvas>
+
+                </div>
+
+
+                <div class="research-chart">
+
+                    <div class="chart-title">
+                        QBER vs Eavesdropper Probability
+                    </div>
+
+                    <div class="chart-description">
+                        Effect of increasing interception probability on QBER.
+                    </div>
+
+                    <canvas id="qberEveChart"></canvas>
+
+                </div>
+
+            </div>
+
+
+            <div class="research-charts">
+
+                <div class="research-chart">
+
+                    <div class="chart-title">
+                        Threat Probability vs QBER
+                    </div>
+
+                    <div class="chart-description">
+                        Combined view of classical threat evidence and quantum-channel evidence.
+                    </div>
+
+                    <canvas id="threatQberChart"></canvas>
+
+                </div>
+
+
+                <div class="research-chart">
+
+                    <div class="chart-title">
+                        Threat vs Quantum Evidence
+                    </div>
+
+                    <div class="chart-description">
+                        Comparison of network threat probability and QBER across attack scenarios.
+                    </div>
+
+                    <canvas id="evidenceComparisonChart"></canvas>
+
+                </div>
+
+            </div>
+
+
+            <div class="research-charts single-chart-row">
+
+                <div class="research-chart">
+
+                    <div class="chart-title">
+                        Security Decision Distribution
+                    </div>
+
+                    <div class="chart-description">
+                        Distribution of ACCEPT, MONITOR and REJECT decisions.
+                    </div>
+
+                    <canvas id="decisionDistributionChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             RESEARCH INTERPRETATION
+             ===================================================== -->
+
+        <section class="card research-notes">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Research Interpretation
+                    </h2>
+
+                    <p class="section-subtitle">
+                        What the dashboard is demonstrating
+                    </p>
+
+                </div>
+
+                <span class="badge">
+                    Q-SAFE
+                </span>
+
+            </div>
+
+
+            <div class="research-points">
+
+                <div class="research-point">
+
+                    <strong>
+                        Classical Evidence
+                    </strong>
+
+                    <p>
+                        NSL-KDD provides the network-security evidence used to estimate threat probability.
+                    </p>
+
+                </div>
+
+
+                <div class="research-point">
+
+                    <strong>
+                        Quantum Evidence
+                    </strong>
+
+                    <p>
+                        Qiskit BB84 experiments provide QBER and channel-condition information.
+                    </p>
+
+                </div>
+
+
+                <div class="research-point">
+
+                    <strong>
+                        Evidence Fusion
+                    </strong>
+
+                    <p>
+                        Q-Safe combines classical threat information with quantum-channel evidence.
+                    </p>
+
+                </div>
+
+
+                <div class="research-point">
+
+                    <strong>
+                        Decision Policy
+                    </strong>
+
+                    <p>
+                        The system produces ACCEPT, MONITOR or REJECT based on combined evidence.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+    <script src="app.js"></script>
+    <script src="channel-flow.js"></script>
+    <script src="dragon-theme.js"></script>
+    <script src="ambient-field.js"></script>
+
+</body>
+
+</html>
