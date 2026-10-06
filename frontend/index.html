@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Q-Safe | Quantum-Secure Communication</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- =========================
+         TOP BAR
+    ========================== -->
+
+    <header class="topbar">
+
+        <div class="brand">
+            <h1>Q-Safe</h1>
+            <p>Threat-Aware Quantum-Secure Communication</p>
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            SYSTEM ONLINE
+        </div>
+
+    </header>
+
+
+    <main class="dashboard">
+
+        <!-- =========================
+             BIOMEDICAL NETWORK
+        ========================== -->
+
+        <section class="card network-card">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Biomedical Network</h2>
+                    <p class="section-subtitle">
+                        Secure communication simulation
+                    </p>
+                </div>
+
+                <span class="badge">SIMULATION</span>
+
+            </div>
+
+
+            <div class="network">
+
+                <!-- Hospital -->
+
+                <div class="node secure">
+
+                    <div class="node-icon">
+                        H
+                    </div>
+
+                    <h3>Hospital A</h3>
+
+                    <p>Secure</p>
+
+                </div>
+
+
+                <!-- Quantum Channel -->
+
+                <div
+                    class="connection"
+                    id="quantumConnection"
+                >
+
+                    <span></span>
+
+                    <div class="connection-label">
+
+                        <strong id="channelStatus">
+                            SECURE
+                        </strong>
+
+                        <small>
+                            Quantum Channel
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Cloud -->
+
+                <div class="node secure">
+
+                    <div class="node-icon">
+                        C
+                    </div>
+
+                    <h3>Cloud</h3>
+
+                    <p>Secure</p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =========================
+             SECURITY METRICS
+        ========================== -->
+
+        <section class="metrics">
+
+            <!-- Threat Probability -->
+
+            <div class="metric-card">
+
+                <p>Threat Probability</p>
+
+                <h2 id="threatProbability">
+                    8.0%
+                </h2>
+
+                <span id="threatStatus">
+                    LOW RISK
+                </span>
+
+            </div>
+
+
+            <!-- QBER -->
+
+            <div class="metric-card">
+
+                <p>QBER</p>
+
+                <h2 id="qber">
+                    0.8%
+                </h2>
+
+                <span>
+                    Quantum Channel
+                </span>
+
+            </div>
+
+
+            <!-- Channel Noise -->
+
+            <div class="metric-card">
+
+                <p>Channel Noise</p>
+
+                <h2 id="noise">
+                    0.3%
+                </h2>
+
+                <span>
+                    Estimated
+                </span>
+
+            </div>
+
+
+            <!-- Eavesdropper -->
+
+            <div class="metric-card">
+
+                <p>Eavesdropper</p>
+
+                <h2 id="eve">
+                    NOT DETECTED
+                </h2>
+
+                <span>
+                    Quantum Channel
+                </span>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =========================
+             SECURITY DECISION
+        ========================== -->
+
+        <section
+            class="card decision-card"
+            id="decisionCard"
+        >
+
+            <p class="decision-label">
+                Q-SAFE SECURITY DECISION
+            </p>
+
+            <h1 id="decision">
+                ACCEPT
+            </h1>
+
+            <p id="decisionReason">
+
+                Network and quantum-channel evidence
+                indicate a normal secure channel.
+
+            </p>
+
+        </section>
+
+
+
+        <!-- =========================
+             ATTACK SIMULATION
+        ========================== -->
+
+        <section class="card">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Attack Simulation
+                    </h2>
+
+                    <p class="section-subtitle">
+                        Test different security conditions
+                    </p>
+
+                </div>
+
+                <span class="badge">
+                    DEMO MODE
+                </span>
+
+            </div>
+
+
+            <div class="scenario-buttons">
+
+                <button
+                    onclick="runScenario('normal')"
+                    class="scenario-button"
+                >
+                    Normal
+                </button>
+
+                <button
+                    onclick="runScenario('noise')"
+                    class="scenario-button"
+                >
+                    Channel Noise
+                </button>
+
+                <button
+                    onclick="runScenario('network')"
+                    class="scenario-button"
+                >
+                    Network Attack
+                </button>
+
+                <button
+                    onclick="runScenario('eve')"
+                    class="scenario-button"
+                >
+                    Eavesdropper
+                </button>
+
+                <button
+                    onclick="runScenario('combined')"
+                    class="scenario-button"
+                >
+                    Combined Attack
+                </button>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =========================
+             QUANTUM CHANNEL
+        ========================== -->
+
+        <section class="card">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Quantum Channel
+                    </h2>
+
+                    <p class="section-subtitle">
+                        BB84 simulation
+                    </p>
+
+                </div>
+
+                <span class="badge">
+                    QISKIT
+                </span>
+
+            </div>
+
+
+            <div class="quantum-info">
+
+                <div>
+
+                    <p>
+                        Protocol
+                    </p>
+
+                    <strong>
+                        BB84
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <p>
+                        Qubits Sent
+                    </p>
+
+                    <strong id="qubitsSent">
+                        1000
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <p>
+                        Sifted Key
+                    </p>
+
+                    <strong id="siftedKey">
+                        493 bits
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <p>
+                        QBER
+                    </p>
+
+                    <strong id="quantumQber">
+                        0.8%
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =========================
+             CURRENT ANALYSIS
+        ========================== -->
+
+        <section class="card analysis-card">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Security Analysis
+                    </h2>
+
+                    <p class="section-subtitle">
+                        Current channel assessment
+                    </p>
+
+                </div>
+
+                <span
+                    class="badge"
+                    id="analysisBadge"
+                >
+                    NORMAL
+                </span>
+
+            </div>
+
+
+            <div class="analysis-grid">
+
+                <div class="analysis-item">
+
+                    <span>
+                        Network Evidence
+                    </span>
+
+                    <strong id="networkEvidence">
+                        LOW THREAT
+                    </strong>
+
+                </div>
+
+
+                <div class="analysis-item">
+
+                    <span>
+                        Quantum Evidence
+                    </span>
+
+                    <strong id="quantumEvidence">
+                        NORMAL
+                    </strong>
+
+                </div>
+
+
+                <div class="analysis-item">
+
+                    <span>
+                        Channel State
+                    </span>
+
+                    <strong id="analysisChannel">
+                        SECURE
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- JavaScript -->
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
