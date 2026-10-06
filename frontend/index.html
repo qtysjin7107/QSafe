@@ -1,853 +1,838 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-    <title>Q-Safe — Threat-Aware Quantum-Secure Communication</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-        rel="stylesheet"
-    >
+    <title>Q-Safe | Quantum-Secure Communication</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body data-theme="quantum-core">
 
-    <canvas id="ambient-field"></canvas>
-
-    <div class="dragon-atmosphere" id="dragonAtmosphere" aria-hidden="true">
-        <div class="dragon-orbit dragon-orbit-left">
-            <img src="assets/dragon-guardian.svg" alt="">
-        </div>
-        <div class="dragon-orbit dragon-orbit-right">
-            <img src="assets/dragon-guardian.svg" alt="">
-        </div>
-    </div>
-
-
-    <!-- ==================== TOP BAR ==================== -->
-
     <header class="topbar">
-        <div class="brand-block">
-            <div class="brand-mark">QS</div>
 
-            <div>
-                <h1>Q-Safe</h1>
-                <p>Threat-Aware Quantum-Secure Communication</p>
+        <div class="brand">
+
+            <div class="brand-mark">
+                Q
             </div>
+
+            <div class="brand-copy">
+
+                <h1>
+                    Q-Safe
+                </h1>
+
+                <p>
+                    Threat-Aware Quantum-Secure Communication
+                </p>
+
+            </div>
+
         </div>
 
-        <div class="topbar-controls">
-            <label class="theme-control">
-                <span>THEME</span>
 
-                <select id="themeSelect">
-                    <option value="quantum-core">Quantum Core</option>
-                    <option value="cyber-neon">Cyber Neon</option>
-                    <option value="clinical-secure">Clinical Secure</option>
-                    <option value="threat-command">Threat Command</option>
-                    <option value="neo-brutalism">Neo Brutalism</option>
-                    <option value="midnight-violet">Midnight Violet</option>
-                    <option value="arctic-lab">Arctic Lab</option>
-                    <option value="carbon-matrix">Carbon Matrix</option>
+        <div class="header-controls">
+
+            <div class="theme-control">
+
+                <label for="themeSelect">
+                    Theme
+                </label>
+
+                <select
+                    id="themeSelect"
+                    aria-label="Select Q-Safe theme"
+                >
+
+                    <option value="quantum-core">
+                        Quantum Core
+                    </option>
+
+                    <option value="cyber-neon">
+                        Cyber Neon
+                    </option>
+
+                    <option value="clinical-secure">
+                        Clinical Secure
+                    </option>
+
+                    <option value="threat-command">
+                        Threat Command
+                    </option>
+
+                    <option value="neo-brutalism">
+                        Neo Brutalism
+                    </option>
+
+                    <option value="midnight-violet">
+                        Midnight Violet
+                    </option>
+
+                    <option value="arctic-lab">
+                        Arctic Lab
+                    </option>
+
+                    <option value="carbon-matrix">
+                        Carbon Matrix
+                    </option>
+
+                    <option value="dragon">
+                        Dragon Guardian
+                    </option>
+
                 </select>
-            </label>
+
+            </div>
+
 
             <div class="system-status">
-                <span class="status-dot"></span>
-                SYSTEM ONLINE
-            </div>
-        </div>
-    </header>
 
+                <span class="status-dot"></span>
+
+                SYSTEM ONLINE
+
+            </div>
+
+        </div>
+
+    </header>
 
 
     <main class="dashboard">
 
-    <!-- =====================================================
-         MODEL + DATA CONTROL
-         ===================================================== -->
 
-    <section class="card model-data-card">
+        <!-- =====================================================
+             BIOMEDICAL NETWORK
+             ===================================================== -->
 
-        <div class="card-header">
-            <div>
-                <span class="eyebrow">MODEL + DATA CONTROL</span>
-                <h2>Analysis Source</h2>
-                <p class="section-subtitle">
-                    Choose the security model, then upload a dataset. Uploading automatically updates the relevant results.
-                </p>
-            </div>
+        <section class="card network-card">
 
-            <span class="analysis-mode-badge" id="activeModelBadge">HYBRID MODEL</span>
-        </div>
+            <div class="section-header">
 
-        <div class="model-data-layout">
-
-            <div class="dataset-dropzone" id="datasetDropzone" tabindex="0">
-                <input
-                    id="dataFileInput"
-                    type="file"
-                    accept=".csv,.txt,text/csv,text/plain"
-                    hidden
-                >
-
-                <div class="upload-symbol">↑</div>
-
-                <div class="upload-copy">
-                    <strong id="uploadHeadline">UPLOAD DATASET</strong>
-                    <span id="uploadSubline">NSL-KDD CSV/TXT or experiment CSV/TXT</span>
-                </div>
-
-                <div class="upload-actions">
-                    <button class="data-upload-button" id="chooseDataButton" type="button">
-                        SELECT FILE
-                    </button>
-                    <button class="data-clear-button" id="clearDataButton" type="button" disabled>
-                        CLEAR
-                    </button>
-                </div>
-            </div>
-
-            <div class="model-selector-block">
-                <label for="modelSelect" class="model-selector-label">MODEL SELECTION</label>
-
-                <select id="modelSelect" class="model-select" aria-label="Select security model">
-                    <option value="hybrid">Hybrid Model</option>
-                    <option value="ml">ML Model</option>
-                    <option value="qber">QBER Model</option>
-                </select>
-
-                <div class="selected-model-meta">
-                    <div>
-                        <span>MODEL NAME</span>
-                        <strong id="selectedModelName">Q-Safe Hybrid Evidence Fusion</strong>
-                    </div>
-                    <div>
-                        <span>MODEL TYPE</span>
-                        <strong id="selectedModelType">Hybrid Model · ML + QBER + Channel Noise</strong>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="dataset-summary">
-            <div>
-                <span>DATASET</span>
-                <strong id="datasetFile">No file loaded</strong>
-            </div>
-            <div>
-                <span>ROWS</span>
-                <strong id="datasetRows">—</strong>
-            </div>
-            <div>
-                <span>COLUMNS</span>
-                <strong id="datasetColumns">—</strong>
-            </div>
-            <div>
-                <span>STATUS</span>
-                <strong id="datasetStatus">READY</strong>
-            </div>
-        </div>
-
-        <div class="dataset-message" id="datasetMessage">
-            No uploaded dataset. The dashboard is showing the controlled Q-Safe demonstration data.
-        </div>
-
-        <div class="dataset-preview" id="datasetPreview">
-            <div class="preview-heading">
-                <span>DATA PREVIEW</span>
-                <small id="datasetPreviewMeta">Upload a dataset to inspect its first rows.</small>
-            </div>
-            <div class="preview-table-wrap" id="previewTableWrap">
-                <div class="preview-empty">No dataset loaded.</div>
-            </div>
-        </div>
-
-    </section>
-
-        <!-- ==================== NETWORK + SECURITY ==================== -->
-
-        <section class="top-grid">
-
-            <!-- Biomedical Network -->
-
-            <article class="card network-card">
-
-                <div class="card-header">
-                    <div>
-                        <span class="eyebrow">NETWORK TOPOLOGY</span>
-                        <h2>Biomedical Network</h2>
-                    </div>
-
-                    <span class="live-badge">
-                        <span></span>
-                        LIVE
-                    </span>
-                </div>
-
-                <div class="network">
-
-                    <div class="node node-hospital">
-                        <div class="node-icon">H</div>
-
-                        <div class="node-copy">
-                            <strong>Hospital A</strong>
-                            <span>Clinical Gateway</span>
-                        </div>
-                    </div>
-
-                    <div
-                        class="connection"
-                        id="mainConnection"
-                        data-state="secure"
-                    >
-                        <div class="connection-label">
-                            <span>QUANTUM CHANNEL</span>
-                            <small>BB84</small>
-                        </div>
-
-                        <div class="flow-track">
-                            <div class="flow-particle"></div>
-                            <div class="flow-particle"></div>
-                            <div class="flow-particle"></div>
-                        </div>
-                    </div>
-
-                    <div class="node node-cloud">
-                        <div class="node-icon">C</div>
-
-                        <div class="node-copy">
-                            <strong>Secure Cloud</strong>
-                            <span>Data Repository</span>
-                        </div>
-                    </div>
-
-                    <div class="network-threat-layer" id="networkThreatLayer">
-                        <div class="threat-line"></div>
-                        <div class="threat-marker">!</div>
-                    </div>
-
-                </div>
-
-                <div class="dragon-guardian" id="dragonGuardian" aria-hidden="true">
-                    <div class="dragon-halo"></div>
-                    <img class="dragon-art" src="assets/dragon-guardian.svg" alt="">
-                    <div class="dragon-smoke" aria-hidden="true"><span></span><span></span><span></span></div>
-                    <div class="dragon-fire" id="dragonFire" aria-hidden="true">
-                        <span class="flame f1"></span>
-                        <span class="flame f2"></span>
-                        <span class="flame f3"></span>
-                    </div>
-                    <div class="dragon-caption">
-                        <span class="dragon-caption-kicker">Q-SAFE GUARDIAN</span>
-                        <strong>CELESTIAL DRAGON</strong>
-                    </div>
-                </div>
-
-                <div class="dragon-state-readout" id="dragonStateReadout">GUARDIAN // CALM</div>
-
-                <div class="network-footer">
-                    <div>
-                        <span>PROTOCOL</span>
-                        <strong>BB84</strong>
-                    </div>
-
-                    <div>
-                        <span>CHANNEL</span>
-                        <strong id="networkChannelStatus">SECURE</strong>
-                    </div>
-
-                    <div>
-                        <span>LINK</span>
-                        <strong>HOSPITAL ↔ CLOUD</strong>
-                    </div>
-                </div>
-
-            </article>
-
-
-            <!-- Security Decision -->
-
-            <article class="card decision-card">
-
-                <div class="card-header">
-                    <div>
-                        <span class="eyebrow">SECURITY ENGINE</span>
-                        <h2>Security Decision</h2>
-                    </div>
-
-                    <span class="decision-engine-status">
-                        ADAPTIVE POLICY
-                    </span>
-                </div>
-
-                <!-- Live Security Pulse -->
-
-                <div
-                    class="security-pulse pulse-stable"
-                    id="securityPulse"
-                >
-                    <span class="pulse-indicator"></span>
-
-                    <div>
-                        <strong id="pulseTitle">SECURITY STABLE</strong>
-                        <span id="pulseDescription">
-                            Channel and network evidence are within secure limits.
-                        </span>
-                    </div>
-                </div>
-
-
-                <!-- Security Gauge -->
-
-                <div class="risk-gauge-section">
-
-                    <div class="gauge-heading">
-                        <span>SECURITY RISK SCORE</span>
-                        <strong id="riskScore">8</strong>
-                    </div>
-
-                    <div class="risk-gauge">
-                        <div class="risk-gauge-track">
-                            <div
-                                class="risk-gauge-fill"
-                                id="riskGaugeFill"
-                            ></div>
-
-                            <div
-                                class="risk-gauge-marker"
-                                id="riskGaugeMarker"
-                            ></div>
-                        </div>
-
-                        <div class="risk-gauge-scale">
-                            <span>LOW</span>
-                            <span>MEDIUM</span>
-                            <span>HIGH</span>
-                        </div>
-                    </div>
-
-                    <div
-                        class="risk-gauge-label"
-                        id="riskGaugeLabel"
-                    >
-                        LOW RISK
-                    </div>
-
-                </div>
-
-
-                <!-- Decision -->
-
-                <div
-                    class="decision-state decision-accept"
-                    id="decisionState"
-                >
-                    <span class="decision-label">CURRENT POLICY</span>
-                    <strong id="decisionValue">ACCEPT</strong>
-                    <p id="decisionReason">
-                        Network and quantum-channel evidence indicate a normal secure channel.
-                    </p>
-                </div>
-
-
-                <!-- Evidence -->
-
-                <div class="evidence-row">
-
-                    <div class="evidence-item">
-                        <span>THREAT</span>
-                        <strong id="decisionThreat">8%</strong>
-                    </div>
-
-                    <div class="evidence-item">
-                        <span>QBER</span>
-                        <strong id="decisionQber">0.8%</strong>
-                    </div>
-
-                    <div class="evidence-item">
-                        <span>NOISE</span>
-                        <strong id="decisionNoise">0.3%</strong>
-                    </div>
-
-                    <div class="evidence-item">
-                        <span>EVE</span>
-                        <strong id="decisionEve">NO</strong>
-                    </div>
-
-                </div>
-
-            </article>
-
-        </section>
-
-
-        <!-- ==================== METRICS ==================== -->
-
-        <section class="metrics-grid">
-
-            <article class="metric-card" id="threatMetricCard">
-                <span class="metric-label">THREAT PROBABILITY</span>
-                <strong id="threatProbability">8.0%</strong>
-                <div class="metric-bar">
-                    <span id="threatBar"></span>
-                </div>
-            </article>
-
-            <article class="metric-card" id="qberMetricCard">
-                <span class="metric-label">QBER</span>
-                <strong id="qberValue">0.8%</strong>
-                <div class="metric-bar">
-                    <span id="qberBar"></span>
-                </div>
-            </article>
-
-            <article class="metric-card" id="noiseMetricCard">
-                <span class="metric-label">CHANNEL NOISE</span>
-                <strong id="noiseValue">0.3%</strong>
-                <div class="metric-bar">
-                    <span id="noiseBar"></span>
-                </div>
-            </article>
-
-            <article class="metric-card" id="eveMetricCard">
-                <span class="metric-label">EAVESDROPPER</span>
-                <strong id="eveValue">NOT DETECTED</strong>
-                <div class="metric-state state-safe" id="eveState">
-                    SECURE
-                </div>
-            </article>
-
-        </section>
-
-
-        <!-- ==================== MODEL RESULTS ==================== -->
-
-        <section class="card model-results-card">
-
-            <div class="card-header">
                 <div>
-                    <span class="eyebrow">MODEL OUTPUT</span>
-                    <h2>Selected Model Results</h2>
+                    <h2>
+                        Biomedical Network
+                    </h2>
+
                     <p class="section-subtitle">
-                        Only the selected model is active. Unused evidence panels remain visible but are explicitly marked NOT IN USE.
+                        Secure communication simulation
                     </p>
                 </div>
-                <span class="model-output-badge" id="modelOutputSource">CONTROLLED DEMO</span>
-            </div>
 
-            <div class="model-results-grid">
-
-                <article class="model-result-panel" data-result-model="ml" id="mlResultPanel">
-                    <div class="model-result-top">
-                        <div class="model-result-icon">M</div>
-                        <div>
-                            <span>ML MODEL</span>
-                            <strong id="mlResultName">NSL-KDD Attack Classifier</strong>
-                        </div>
-                    </div>
-                    <small id="mlResultType">Classical ML · Binary Classification</small>
-                    <div class="model-result-value" id="mlResultValue">8.0%</div>
-                    <div class="model-result-label" id="mlResultLabel">THREAT PROBABILITY</div>
-                    <p id="mlResultDetail">Normal traffic evidence is within the expected baseline.</p>
-                </article>
-
-                <article class="model-result-panel" data-result-model="qber" id="qberResultPanel">
-                    <div class="model-result-top">
-                        <div class="model-result-icon">Q</div>
-                        <div>
-                            <span>QBER MODEL</span>
-                            <strong id="qberResultName">BB84 QBER Detector</strong>
-                        </div>
-                    </div>
-                    <small id="qberResultType">Quantum Model · Error-Rate Threshold</small>
-                    <div class="model-result-value" id="qberResultValue">0.8%</div>
-                    <div class="model-result-label" id="qberResultLabel">QUANTUM BIT ERROR RATE</div>
-                    <p id="qberResultDetail">Quantum-channel errors are within the secure baseline.</p>
-                </article>
-
-                <article class="model-result-panel" data-result-model="hybrid" id="hybridResultPanel">
-                    <div class="model-result-top">
-                        <div class="model-result-icon">H</div>
-                        <div>
-                            <span>HYBRID MODEL</span>
-                            <strong id="hybridResultName">Q-Safe Hybrid Evidence Fusion</strong>
-                        </div>
-                    </div>
-                    <small id="hybridResultType">Hybrid Model · ML + QBER + Channel Noise</small>
-                    <div class="model-result-value" id="hybridResultValue">ACCEPT</div>
-                    <div class="model-result-label" id="hybridResultLabel">POLICY DECISION</div>
-                    <p id="hybridResultDetail">Classical and quantum evidence are fused by the Q-Safe security layer.</p>
-                </article>
-
-            </div>
-
-        </section>
-
-
-        <!-- ==================== SIMULATION ==================== -->
-
-        <section class="card simulation-card">
-
-            <div class="card-header">
-                <div>
-                    <span class="eyebrow">THREAT SIMULATION</span>
-                    <h2>Attack Scenarios</h2>
-                </div>
-
-                <span class="simulation-hint">
-                    CONTROLLED EXPERIMENT
+                <span class="badge">
+                    SIMULATION
                 </span>
+
             </div>
 
-            <div class="scenario-grid">
 
-                <button class="scenario-btn active" data-scenario="normal">
-                    <span class="scenario-icon">✓</span>
-                    <span>
-                        <strong>Normal</strong>
-                        <small>Baseline secure state</small>
-                    </span>
-                </button>
+            <div class="network">
 
-                <button class="scenario-btn" data-scenario="noise">
-                    <span class="scenario-icon">≈</span>
-                    <span>
-                        <strong>Channel Noise</strong>
-                        <small>Elevated transmission noise</small>
-                    </span>
-                </button>
 
-                <button class="scenario-btn" data-scenario="network">
-                    <span class="scenario-icon">!</span>
-                    <span>
-                        <strong>Network Attack</strong>
-                        <small>Classical threat detected</small>
-                    </span>
-                </button>
+                <!-- Hospital -->
 
-                <button class="scenario-btn" data-scenario="eve">
-                    <span class="scenario-icon">E</span>
-                    <span>
-                        <strong>Eavesdropper</strong>
-                        <small>Quantum interception</small>
-                    </span>
-                </button>
+                <div class="node secure">
 
-                <button class="scenario-btn" data-scenario="combined">
-                    <span class="scenario-icon">⚠</span>
-                    <span>
-                        <strong>Combined Attack</strong>
-                        <small>Multi-layer compromise</small>
-                    </span>
-                </button>
+                    <div class="node-icon">
+                        A
+                    </div>
 
+                    <h3 id="leftNodeLabel">
+                        Hospital A
+                    </h3>
+
+                    <p>
+                        Secure
+                    </p>
+
+                </div>
+
+
+                <!-- Quantum Channel -->
+
+                <div
+                    class="connection"
+                    id="quantumConnection"
+                    data-flow-state="secure"
+                >
+
+                    <span class="connection-line"></span>
+
+
+                    <div
+                        class="flow-track"
+                        id="flowTrack"
+                        aria-hidden="true"
+                    ></div>
+
+                    <svg
+                        class="dragon-channel-svg"
+                        id="dragonChannelSvg"
+                        viewBox="0 0 700 120"
+                        preserveAspectRatio="none"
+                        aria-hidden="true"
+                    >
+                        <polyline id="dragonChannelPath" points="8,60 692,60"></polyline>
+                        <polyline id="dragonChannelGlow" points="8,60 692,60"></polyline>
+                    </svg>
+
+                    <div
+                        class="dragon-flow-track"
+                        id="dragonFlowTrack"
+                        aria-hidden="true"
+                    ></div>
+
+
+                    <div class="connection-label">
+
+                        <strong id="channelStatus">
+                            SECURE
+                        </strong>
+
+                        <small>
+                            Quantum Channel
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Cloud -->
+
+                <div class="node secure">
+
+                    <div class="node-icon">
+                        B
+                    </div>
+
+                    <h3 id="rightNodeLabel">
+                        Cloud
+                    </h3>
+
+                    <p>
+                        Secure
+                    </p>
+
+                </div>
+
+
+            </div>
+
+            <div class="dragon-guardian" id="dragonGuardian" aria-hidden="true">
+
+                <div class="dragon-halo"></div>
+
+                <img
+                    class="dragon-art"
+                    src="assets/dragon-guardian.svg"
+                    alt=""
+                >
+
+                <div class="dragon-smoke" id="dragonSmoke">
+                    <span></span><span></span><span></span>
+                </div>
+
+                <div class="dragon-fire" id="dragonFire">
+                    <span class="flame f1"></span>
+                    <span class="flame f2"></span>
+                    <span class="flame f3"></span>
+                </div>
+
+                <div class="dragon-caption">
+                    <span class="dragon-caption-kicker">Q-SAFE GUARDIAN</span>
+                    <strong>CELESTIAL DRAGON</strong>
+                </div>
+
+            </div>
+
+            <div class="dragon-state-readout" id="dragonStateReadout">
+                GUARDIAN // CALM
             </div>
 
         </section>
 
 
-        <!-- ==================== QUANTUM + EVENTS ==================== -->
+        <!-- =====================================================
+             METRICS
+             ===================================================== -->
 
-        <section class="two-column-grid">
+        <section class="metrics">
 
-            <!-- Quantum Channel -->
+            <div class="metric-card">
 
-            <article class="card quantum-card">
+                <p>
+                    Threat Probability
+                </p>
 
-                <div class="card-header">
-                    <div>
-                        <span class="eyebrow">QUANTUM LAYER</span>
-                        <h2>Quantum Channel</h2>
-                    </div>
+                <h2 id="threatProbability">
+                    8.0%
+                </h2>
 
-                    <span class="protocol-badge">BB84</span>
-                </div>
-
-                <div class="quantum-flow">
-
-                    <div class="quantum-endpoint">
-                        <div class="quantum-icon">A</div>
-                        <strong>ALICE</strong>
-                        <span>Hospital A</span>
-                    </div>
-
-                    <div class="quantum-beam" id="quantumBeam">
-
-                        <div class="qubit q1">|0⟩</div>
-                        <div class="qubit q2">|+⟩</div>
-                        <div class="qubit q3">|1⟩</div>
-                        <div class="qubit q4">|−⟩</div>
-
-                        <span class="beam-label">
-                            QUANTUM TRANSMISSION
-                        </span>
-
-                        <div
-                            class="eve-interceptor"
-                            id="eveInterceptor"
-                        >
-                            EVE
-                        </div>
-
-                    </div>
-
-                    <div class="quantum-endpoint">
-                        <div class="quantum-icon">B</div>
-                        <strong>BOB</strong>
-                        <span>Secure Cloud</span>
-                    </div>
-
-                </div>
-
-                <div class="quantum-metrics">
-
-                    <div>
-                        <span>QUBITS SENT</span>
-                        <strong id="qubitsSent">1,000</strong>
-                    </div>
-
-                    <div>
-                        <span>SIFTED KEY</span>
-                        <strong id="siftedKey">493</strong>
-                    </div>
-
-                    <div>
-                        <span>QBER</span>
-                        <strong id="quantumQber">0.8%</strong>
-                    </div>
-
-                </div>
-
-            </article>
-
-
-            <!-- Event Feed -->
-
-            <article class="card events-card">
-
-                <div class="card-header">
-                    <div>
-                        <span class="eyebrow">SECURITY TELEMETRY</span>
-                        <h2>Security Event Feed</h2>
-                    </div>
-
-                    <span class="event-live">
-                        LIVE FEED
-                    </span>
-                </div>
-
-                <div class="event-feed" id="eventFeed">
-                    <!-- Populated by app.js -->
-                </div>
-
-            </article>
-
-        </section>
-
-
-        <!-- ==================== EVIDENCE FUSION ==================== -->
-
-        <section class="card fusion-card">
-
-            <div class="card-header">
-                <div>
-                    <span class="eyebrow">ADAPTIVE SECURITY</span>
-                    <h2>Evidence Fusion</h2>
-                </div>
-
-                <span class="fusion-badge">
-                    THREAT + QUANTUM
+                <span id="threatStatus">
+                    LOW RISK
                 </span>
+
             </div>
 
-            <div class="fusion-layout">
 
-                <div class="fusion-inputs">
+            <div class="metric-card">
 
-                    <div class="fusion-input">
-                        <div class="fusion-icon classical">T</div>
+                <p>
+                    QBER
+                </p>
 
-                        <div>
-                            <span>CLASSICAL THREAT</span>
-                            <strong id="fusionThreat">8%</strong>
-                            <small>NSL-KDD classifier</small>
-                        </div>
-                    </div>
+                <h2 id="qber">
+                    0.8%
+                </h2>
 
-                    <div class="fusion-input">
-                        <div class="fusion-icon quantum">Q</div>
+                <span>
+                    Quantum Channel
+                </span>
 
-                        <div>
-                            <span>QUANTUM ERROR</span>
-                            <strong id="fusionQber">0.8%</strong>
-                            <small>Qiskit BB84 QBER</small>
-                        </div>
-                    </div>
+            </div>
 
-                    <div class="fusion-input">
-                        <div class="fusion-icon noise">N</div>
 
-                        <div>
-                            <span>CHANNEL NOISE</span>
-                            <strong id="fusionNoise">0.3%</strong>
-                            <small>Estimated channel condition</small>
-                        </div>
-                    </div>
+            <div class="metric-card">
+
+                <p>
+                    Channel Noise
+                </p>
+
+                <h2 id="noise">
+                    0.3%
+                </h2>
+
+                <span>
+                    Estimated
+                </span>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <p>
+                    Eavesdropper
+                </p>
+
+                <h2 id="eve">
+                    NOT DETECTED
+                </h2>
+
+                <span>
+                    Quantum Channel
+                </span>
+
+            </div>
+
+
+            <div class="metric-card dragon-metric-card">
+
+                <p>
+                    Quantum Attack Probability
+                </p>
+
+                <h2 id="quantumAttackProbability">
+                    0.0%
+                </h2>
+
+                <span>
+                    Bayesian Evidence
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             SECURITY DECISION
+             ===================================================== -->
+
+        <section
+            class="card decision-card"
+            id="decisionCard"
+        >
+
+            <p class="decision-label">
+                Q-SAFE SECURITY DECISION
+            </p>
+
+            <h1 id="decision">
+                ACCEPT
+            </h1>
+
+            <p id="decisionReason">
+                Network and quantum-channel evidence indicate a normal secure channel.
+            </p>
+
+        </section>
+
+
+        <!-- =====================================================
+             ATTACK SIMULATION
+             ===================================================== -->
+
+        <section class="card">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Attack Simulation
+                    </h2>
+
+                    <p class="section-subtitle">
+                        Test different security conditions
+                    </p>
 
                 </div>
 
-                <div class="fusion-engine">
-                    <div class="fusion-engine-core">
-                        <span>ADAPTIVE</span>
-                        <strong>POLICY</strong>
-                        <small>EVIDENCE FUSION</small>
-                    </div>
+                <span class="badge">
+                    DEMO MODE
+                </span>
 
-                    <div class="fusion-lines">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
+            </div>
+
+
+            <div class="scenario-buttons">
+
+                <button
+                    onclick="runScenario('normal')"
+                    class="scenario-button"
+                >
+                    Normal
+                </button>
+
+
+                <button
+                    onclick="runScenario('noise')"
+                    class="scenario-button"
+                >
+                    Channel Noise
+                </button>
+
+
+                <button
+                    onclick="runScenario('network')"
+                    class="scenario-button"
+                >
+                    Network Attack
+                </button>
+
+
+                <button
+                    onclick="runScenario('eve')"
+                    class="scenario-button"
+                >
+                    Eavesdropper
+                </button>
+
+
+                <button
+                    onclick="runScenario('combined')"
+                    class="scenario-button"
+                >
+                    Combined Attack
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             QUANTUM CHANNEL
+             ===================================================== -->
+
+        <section class="card">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Quantum Channel
+                    </h2>
+
+                    <p class="section-subtitle">
+                        BB84 simulation
+                    </p>
+
                 </div>
 
-                <div class="fusion-output">
+                <span class="badge">
+                    QISKIT
+                </span>
 
-                    <span>SECURITY DECISION</span>
+            </div>
 
-                    <strong id="fusionDecision">
-                        ACCEPT
+
+            <div class="quantum-info">
+
+                <div>
+                    <p>
+                        Protocol
+                    </p>
+
+                    <strong>
+                        BB84
+                    </strong>
+                </div>
+
+
+                <div>
+                    <p>
+                        Qubits Sent
+                    </p>
+
+                    <strong id="qubitsSent">
+                        1000
+                    </strong>
+                </div>
+
+
+                <div>
+                    <p>
+                        Sifted Key
+                    </p>
+
+                    <strong id="siftedKey">
+                        493 bits
+                    </strong>
+                </div>
+
+
+                <div>
+                    <p>
+                        QBER
+                    </p>
+
+                    <strong id="quantumQber">
+                        0.8%
+                    </strong>
+                </div>
+
+                <div>
+                    <p>
+                        Expected QBER
+                    </p>
+
+                    <strong id="expectedQber">
+                        0.0%
+                    </strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             SECURITY ANALYSIS
+             ===================================================== -->
+
+        <section class="card analysis-card">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Security Analysis
+                    </h2>
+
+                    <p class="section-subtitle">
+                        Current channel assessment
+                    </p>
+
+                </div>
+
+
+                <span
+                    class="badge"
+                    id="analysisBadge"
+                >
+                    NORMAL
+                </span>
+
+            </div>
+
+
+            <div class="analysis-grid">
+
+                <div class="analysis-item">
+
+                    <span>
+                        Network Evidence
+                    </span>
+
+                    <strong id="networkEvidence">
+                        LOW THREAT
                     </strong>
 
-                    <small id="fusionDecisionReason">
-                        Evidence indicates a secure channel.
+                </div>
+
+
+                <div class="analysis-item">
+
+                    <span>
+                        Quantum Evidence
+                    </span>
+
+                    <strong id="quantumEvidence">
+                        NORMAL
+                    </strong>
+
+                </div>
+
+
+                <div class="analysis-item">
+
+                    <span>
+                        Channel State
+                    </span>
+
+                    <strong id="analysisChannel">
+                        SECURE
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             DATASET ANALYSIS
+             Added without changing existing dashboard sections
+             ===================================================== -->
+        <section class="card dataset-analysis-card" id="datasetAnalysisCard">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>
+                        Dataset Analysis
+                    </h2>
+
+                    <p class="section-subtitle">
+                        Upload an NSL-KDD-compatible dataset and run the Q-Safe model on the actual data.
+                    </p>
+                </div>
+
+                <span class="badge">
+                    LIVE DATA
+                </span>
+
+            </div>
+
+
+            <div class="dataset-upload-layout">
+
+                <div
+                    class="dataset-dropzone"
+                    id="datasetDropzone"
+                    tabindex="0"
+                    role="button"
+                    aria-label="Upload dataset for Q-Safe analysis"
+                >
+
+                    <input
+                        type="file"
+                        id="datasetFileInput"
+                        accept=".csv,.txt,.tsv"
+                        hidden
+                    >
+
+                    <div class="dataset-upload-icon">
+                        ↑
+                    </div>
+
+                    <strong id="datasetDropTitle">
+                        DROP YOUR DATASET HERE
+                    </strong>
+
+                    <span>
+                        or click to browse
+                    </span>
+
+                    <small>
+                        CSV · TXT · TSV · NSL-KDD compatible
                     </small>
 
                 </div>
 
-            </div>
 
-        </section>
+                <div class="dataset-controls">
+
+                    <div class="dataset-file-card" id="datasetFileCard">
+
+                        <div class="dataset-file-meta">
+
+                            <span class="dataset-file-label">
+                                SELECTED FILE
+                            </span>
+
+                            <strong id="datasetFileName">
+                                No file selected
+                            </strong>
+
+                            <small id="datasetFileInfo">
+                                Choose a dataset to begin.
+                            </small>
+
+                        </div>
 
 
-        <!-- ==================== THREAT VISUALIZATION ==================== -->
+                        <button
+                            type="button"
+                            class="dataset-clear-button"
+                            id="datasetClearButton"
+                        >
+                            CLEAR
+                        </button>
 
-        <section class="card threat-card">
+                    </div>
 
-            <div class="card-header">
-                <div>
-                    <span class="eyebrow">THREAT ANALYSIS</span>
-                    <h2>Attack Surface Visualization</h2>
-                </div>
 
-                <span id="attackSurfaceStatus">
-                    BASELINE
-                </span>
-            </div>
+                    <button
+                        type="button"
+                        class="dataset-analyze-button"
+                        id="datasetAnalyzeButton"
+                    >
+                        <span>
+                            ANALYZE DATASET
+                        </span>
 
-            <div class="attack-map">
+                        <span>
+                            →
+                        </span>
 
-                <div class="attack-node hospital-threat-node">
-                    <div class="attack-node-icon">H</div>
-                    <strong>HOSPITAL A</strong>
-                    <span>Classical Network</span>
-                </div>
+                    </button>
 
-                <div class="attack-route route-classical">
-                    <span></span>
-                    <label>NETWORK THREAT</label>
-                </div>
 
-                <div class="attack-center">
-                    <div class="attack-ring"></div>
-                    <div class="attack-core">Q</div>
-                    <span>SECURITY<br>ENGINE</span>
-                </div>
+                    <div
+                        class="dataset-upload-status"
+                        id="datasetUploadStatus"
+                        role="status"
+                        aria-live="polite"
+                    >
+                        Waiting for a dataset.
+                    </div>
 
-                <div class="attack-route route-quantum">
-                    <span></span>
-                    <label>QUANTUM CHANNEL</label>
-                </div>
-
-                <div class="attack-node cloud-threat-node">
-                    <div class="attack-node-icon">C</div>
-                    <strong>SECURE CLOUD</strong>
-                    <span>Protected Endpoint</span>
-                </div>
-
-                <div
-                    class="attack-vector network-vector"
-                    id="networkVector"
-                >
-                    NETWORK ATTACK
-                </div>
-
-                <div
-                    class="attack-vector quantum-vector"
-                    id="quantumVector"
-                >
-                    EAVESDROPPER
                 </div>
 
             </div>
 
-        </section>
 
+            <div class="dataset-results">
 
-        <!-- ==================== SECURITY ANALYSIS ==================== -->
+                <div class="section-header dataset-results-header">
 
-        <section class="card analysis-card">
+                    <div>
+                        <h3>
+                            Analysis Results
+                        </h3>
 
-            <div class="card-header">
-                <div>
-                    <span class="eyebrow">SECURITY ANALYSIS</span>
-                    <h2>System Interpretation</h2>
-                </div>
-            </div>
+                        <p class="section-subtitle">
+                            These values are filled from the Q-Safe backend response for the uploaded dataset.
+                        </p>
+                    </div>
 
-            <div class="analysis-content">
-
-                <div class="analysis-main">
-                    <span class="analysis-label">
-                        CURRENT ASSESSMENT
+                    <span class="badge" id="datasetResultBadge">
+                        WAITING
                     </span>
 
-                    <p id="analysisText">
-                        Network and quantum-channel evidence indicate a normal secure channel.
-                    </p>
                 </div>
 
-                <div class="analysis-factors">
+
+                <div class="dataset-result-grid">
+
+                    <div class="dataset-result-box">
+                        <span>
+                            Rows Analyzed
+                        </span>
+
+                        <strong id="datasetRows">
+                            —
+                        </strong>
+                    </div>
+
+
+                    <div class="dataset-result-box">
+                        <span>
+                            Predicted Normal
+                        </span>
+
+                        <strong id="datasetNormal">
+                            —
+                        </strong>
+                    </div>
+
+
+                    <div class="dataset-result-box">
+                        <span>
+                            Predicted Attack
+                        </span>
+
+                        <strong id="datasetAttack">
+                            —
+                        </strong>
+                    </div>
+
+
+                    <div class="dataset-result-box">
+                        <span>
+                            Avg. Threat
+                        </span>
+
+                        <strong id="datasetThreat">
+                            —
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <div class="dataset-metrics-row">
 
                     <div>
-                        <span>CLASSICAL SIGNAL</span>
-                        <strong id="analysisThreat">LOW</strong>
+                        <span>Accuracy</span>
+                        <strong id="datasetAccuracy">—</strong>
                     </div>
 
                     <div>
-                        <span>QUANTUM SIGNAL</span>
-                        <strong id="analysisQuantum">LOW</strong>
+                        <span>Precision</span>
+                        <strong id="datasetPrecision">—</strong>
                     </div>
 
                     <div>
-                        <span>CHANNEL CONDITION</span>
-                        <strong id="analysisChannel">STABLE</strong>
+                        <span>Recall</span>
+                        <strong id="datasetRecall">—</strong>
                     </div>
 
                     <div>
-                        <span>EVIDENCE CONFIDENCE</span>
-                        <strong id="analysisConfidence">HIGH</strong>
+                        <span>F1</span>
+                        <strong id="datasetF1">—</strong>
                     </div>
 
+                </div>
+
+
+                <div
+                    class="dataset-result-message"
+                    id="datasetResultMessage"
+                >
+                    No dataset has been analyzed yet.
                 </div>
 
             </div>
@@ -855,96 +840,207 @@
         </section>
 
 
-        <!-- ==================== RESEARCH ==================== -->
+        <!-- =====================================================
+             RESEARCH ANALYSIS
+             ===================================================== -->
 
         <section class="card research-card">
 
-            <div class="card-header">
+            <div class="section-header">
+
                 <div>
-                    <span class="eyebrow">EXPERIMENTAL RESULTS</span>
-                    <h2>Research Analysis</h2>
+
+                    <h2>
+                        Research Analysis
+                    </h2>
+
+                    <p class="section-subtitle">
+                        Quantum-channel and threat-analysis experiments
+                    </p>
+
                 </div>
 
-                <span class="research-badge">
-                    CONTROLLED DATA
+
+                <span class="badge">
+                    EXPERIMENTS
                 </span>
+
             </div>
+
 
             <div class="research-charts">
 
                 <div class="research-chart">
-                    <div class="chart-heading">
-                        <strong>QBER vs Channel Noise</strong>
-                        <span>Noise → QBER</span>
+
+                    <div class="chart-title">
+                        QBER vs Channel Noise
                     </div>
+
+                    <div class="chart-description">
+                        Relationship between estimated channel noise and quantum bit error rate.
+                    </div>
+
                     <canvas id="qberNoiseChart"></canvas>
+
                 </div>
 
+
                 <div class="research-chart">
-                    <div class="chart-heading">
-                        <strong>QBER vs Eavesdropping</strong>
-                        <span>Eve Probability → QBER</span>
+
+                    <div class="chart-title">
+                        QBER vs Eavesdropper Probability
                     </div>
+
+                    <div class="chart-description">
+                        Effect of increasing interception probability on QBER.
+                    </div>
+
                     <canvas id="qberEveChart"></canvas>
-                </div>
 
-                <div class="research-chart">
-                    <div class="chart-heading">
-                        <strong>Threat Probability vs QBER</strong>
-                        <span>Scenario comparison</span>
-                    </div>
-                    <canvas id="threatQberChart"></canvas>
-                </div>
-
-                <div class="research-chart">
-                    <div class="chart-heading">
-                        <strong>Evidence Comparison</strong>
-                        <span>Threat + QBER</span>
-                    </div>
-                    <canvas id="evidenceComparisonChart"></canvas>
-                </div>
-
-                <div class="research-chart research-chart-wide">
-                    <div class="chart-heading">
-                        <strong>Security Decision Distribution</strong>
-                        <span>Scenario outcomes</span>
-                    </div>
-                    <canvas id="decisionDistributionChart"></canvas>
                 </div>
 
             </div>
 
-            <div class="research-notes">
 
-                <div>
-                    <span>OBSERVATION 01</span>
-                    <p>
-                        Increasing channel noise produces increasing QBER,
-                        demonstrating the sensitivity of the quantum layer
-                        to channel conditions.
-                    </p>
+            <div class="research-charts">
+
+                <div class="research-chart">
+
+                    <div class="chart-title">
+                        Threat Probability vs QBER
+                    </div>
+
+                    <div class="chart-description">
+                        Combined view of classical threat evidence and quantum-channel evidence.
+                    </div>
+
+                    <canvas id="threatQberChart"></canvas>
+
                 </div>
 
-                <div>
-                    <span>OBSERVATION 02</span>
-                    <p>
-                        Eavesdropping increases QBER because interception
-                        and measurement disturb the transmitted quantum states.
-                    </p>
+
+                <div class="research-chart">
+
+                    <div class="chart-title">
+                        Threat vs Quantum Evidence
+                    </div>
+
+                    <div class="chart-description">
+                        Comparison of network threat probability and QBER across attack scenarios.
+                    </div>
+
+                    <canvas id="evidenceComparisonChart"></canvas>
+
                 </div>
 
-                <div>
-                    <span>OBSERVATION 03</span>
-                    <p>
-                        The adaptive security layer combines classical threat
-                        information with quantum-channel evidence rather than
-                        relying on a single signal.
-                    </p>
+            </div>
+
+
+            <div class="research-charts single-chart-row">
+
+                <div class="research-chart">
+
+                    <div class="chart-title">
+                        Security Decision Distribution
+                    </div>
+
+                    <div class="chart-description">
+                        Distribution of ACCEPT, MONITOR and REJECT decisions.
+                    </div>
+
+                    <canvas id="decisionDistributionChart"></canvas>
+
                 </div>
 
             </div>
 
         </section>
+
+
+        <!-- =====================================================
+             RESEARCH INTERPRETATION
+             ===================================================== -->
+
+        <section class="card research-notes">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Research Interpretation
+                    </h2>
+
+                    <p class="section-subtitle">
+                        What the dashboard is demonstrating
+                    </p>
+
+                </div>
+
+                <span class="badge">
+                    Q-SAFE
+                </span>
+
+            </div>
+
+
+            <div class="research-points">
+
+                <div class="research-point">
+
+                    <strong>
+                        Classical Evidence
+                    </strong>
+
+                    <p>
+                        NSL-KDD provides the network-security evidence used to estimate threat probability.
+                    </p>
+
+                </div>
+
+
+                <div class="research-point">
+
+                    <strong>
+                        Quantum Evidence
+                    </strong>
+
+                    <p>
+                        Qiskit BB84 experiments provide QBER and channel-condition information.
+                    </p>
+
+                </div>
+
+
+                <div class="research-point">
+
+                    <strong>
+                        Evidence Fusion
+                    </strong>
+
+                    <p>
+                        Q-Safe combines classical threat information with quantum-channel evidence.
+                    </p>
+
+                </div>
+
+
+                <div class="research-point">
+
+                    <strong>
+                        Decision Policy
+                    </strong>
+
+                    <p>
+                        The system produces ACCEPT, MONITOR or REJECT based on combined evidence.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
 
     </main>
 
@@ -955,4 +1051,5 @@
     <script src="ambient-field.js"></script>
 
 </body>
+
 </html>

@@ -1,313 +1,418 @@
+/*
+    Q-Safe Frontend
+    ----------------
+
+    Current data source:
+        FastAPI
+
+    Demo source:
+        Q-Safe /api/demo
+
+    This file also owns:
+        - theme switching
+        - theme persistence
+        - dashboard updates
+        - research visualizations
+*/
+
+
 /* =========================================================
-   Q-SAFE FRONTEND CONTROLLER
-   Restored visual system + model selection + proper data upload
+   API CONFIGURATION
    ========================================================= */
 
 const API_CONFIG = {
+
     USE_MOCK_API: false,
-    BASE_URL: "http://localhost:8000",
-    SECURITY_ENDPOINT: "/api/demo",
-    HEALTH_ENDPOINT: "/api/health",
-    HEALTH_CHECK_INTERVAL: 15000,
-    REQUEST_TIMEOUT: 60000,
-    DEMO_REQUEST_TIMEOUT: 10000,
-    UPLOAD_API_ENABLED: false,
-    UPLOAD_API_ENDPOINT: "/api/model/evaluate"
+
+    BASE_URL:
+        "http://localhost:8000",
+
+    SECURITY_ENDPOINT:
+        "/api/demo",
+
+    UPLOAD_ENDPOINT:
+        "/api/upload/analyze"
+
 };
 
-const MODEL_CATALOG = {
-    ml: {
-        key: "ml",
-        short: "ML MODEL",
-        badge: "ML MODEL",
-        name: "NSL-KDD Attack Classifier",
-        type: "Classical ML · Binary Classification",
-        description: "Classifies uploaded network records into normal/attack evidence and estimates threat probability."
-    },
-    qber: {
-        key: "qber",
-        short: "QBER MODEL",
-        badge: "QBER MODEL",
-        name: "BB84 QBER Detector",
-        type: "Quantum Model · Error-Rate Threshold",
-        description: "Uses BB84 quantum-channel error behavior to evaluate QBER and channel disturbance."
-    },
-    hybrid: {
-        key: "hybrid",
-        short: "HYBRID MODEL",
-        badge: "HYBRID MODEL",
-        name: "Q-Safe Hybrid Evidence Fusion",
-        type: "Hybrid Model · ML + QBER + Channel Noise",
-        description: "Combines classical threat evidence with quantum-channel evidence for the final Q-Safe policy decision."
-    }
-};
-
-const SCENARIOS = {
-    normal: {
-        threat_probability: 0.08,
-        qber: 0.008,
-        channel_noise: 0.003,
-        expected_qber: 0.003,
-        eavesdropper_detected: false,
-        quantum_attack_probability: 0.04,
-        decision: "ACCEPT",
-        reason: "Network and quantum-channel evidence indicate a normal secure channel.",
-        qubits_sent: 1000,
-        sifted_key_length: 493
-    },
-    noise: {
-        threat_probability: 0.10,
-        qber: 0.041,
-        channel_noise: 0.035,
-        expected_qber: 0.024,
-        eavesdropper_detected: false,
-        quantum_attack_probability: 0.34,
-        decision: "MONITOR",
-        reason: "Elevated QBER is consistent with channel noise, but the channel should be monitored.",
-        qubits_sent: 1000,
-        sifted_key_length: 491
-    },
-    network: {
-        threat_probability: 0.91,
-        qber: 0.012,
-        channel_noise: 0.004,
-        expected_qber: 0.004,
-        eavesdropper_detected: false,
-        quantum_attack_probability: 0.09,
-        decision: "MONITOR",
-        reason: "High network threat detected, but the quantum channel currently appears stable.",
-        qubits_sent: 1000,
-        sifted_key_length: 496
-    },
-    eve: {
-        threat_probability: 0.12,
-        qber: 0.063,
-        channel_noise: 0.008,
-        expected_qber: 0.006,
-        eavesdropper_detected: true,
-        quantum_attack_probability: 0.86,
-        decision: "MONITOR",
-        reason: "Quantum-channel errors are elevated, but classical network evidence is weak.",
-        qubits_sent: 1000,
-        sifted_key_length: 487
-    },
-    combined: {
-        threat_probability: 0.93,
-        qber: 0.067,
-        channel_noise: 0.018,
-        expected_qber: 0.008,
-        eavesdropper_detected: true,
-        quantum_attack_probability: 0.95,
-        decision: "REJECT",
-        reason: "High network threat combined with elevated quantum-channel error indicates a likely compromise.",
-        qubits_sent: 1000,
-        sifted_key_length: 486
-    }
-};
-
-const RESEARCH_DATA = {
-    qberNoise: [
-        { x: 0, y: 0.8 }, { x: 1, y: 1.4 }, { x: 2, y: 2.3 }, { x: 3, y: 3.2 },
-        { x: 4, y: 4.1 }, { x: 5, y: 5.3 }, { x: 6, y: 6.1 }, { x: 7, y: 7.0 },
-        { x: 8, y: 8.2 }, { x: 10, y: 10.1 }
-    ],
-    qberEve: [
-        { x: 0, y: 0.8 }, { x: 10, y: 2.1 }, { x: 20, y: 4.3 }, { x: 30, y: 6.4 },
-        { x: 40, y: 8.1 }, { x: 50, y: 10.2 }, { x: 60, y: 12.4 }, { x: 70, y: 14.8 },
-        { x: 80, y: 17.0 }, { x: 90, y: 19.2 }, { x: 100, y: 21.0 }
-    ]
-};
-
-const scenarioHistory = [
-    { name: "Normal", threat: 8, qber: 0.8, decision: "ACCEPT" },
-    { name: "Noise", threat: 10, qber: 4.1, decision: "MONITOR" },
-    { name: "Network Attack", threat: 91, qber: 1.2, decision: "MONITOR" },
-    { name: "Eavesdropper", threat: 12, qber: 6.3, decision: "MONITOR" },
-    { name: "Combined Attack", threat: 93, qber: 6.7, decision: "REJECT" }
-];
-
-const NORMALS = new Set(["normal", "normal.0", "normal traffic", "benign", "0", "false", "no", "secure"]);
-const NSL_KDD_HEADERS = [
-    "duration", "protocol_type", "service", "flag", "src_bytes", "dst_bytes", "land", "wrong_fragment", "urgent",
-    "hot", "num_failed_logins", "logged_in", "num_compromised", "root_shell", "su_attempted", "num_root",
-    "num_file_creations", "num_shells", "num_access_files", "num_outbound_cmds", "is_host_login", "is_guest_login",
-    "count", "srv_count", "serror_rate", "srv_serror_rate", "rerror_rate", "srv_rerror_rate", "same_srv_rate",
-    "diff_srv_rate", "srv_diff_host_rate", "dst_host_count", "dst_host_srv_count", "dst_host_same_srv_rate",
-    "dst_host_diff_srv_rate", "dst_host_same_src_port_rate", "dst_host_srv_diff_host_rate", "dst_host_serror_rate",
-    "dst_host_srv_serror_rate", "dst_host_rerror_rate", "dst_host_srv_rerror_rate", "label", "difficulty"
-];
-
-let selectedModel = "hybrid";
-let uploadedDataset = null;
-let currentDatasetResult = null;
-let currentScenario = "normal";
-let lastData = normalizeScenario(SCENARIOS.normal);
-let backendHealthTimer = null;
-
-const $ = (id) => document.getElementById(id);
-
-function clamp(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-}
-
-function safeNumber(value, fallback = null) {
-    const n = Number(value);
-    return Number.isFinite(n) ? n : fallback;
-}
-
-function percent(value, decimals = 1) {
-    const n = safeNumber(value, 0);
-    return `${(n * 100).toFixed(decimals)}%`;
-}
-
-function nowTime() {
-    return new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-    });
-}
-
-function mean(values) {
-    const valid = values.filter(Number.isFinite);
-    if (!valid.length) return null;
-    return valid.reduce((a, b) => a + b, 0) / valid.length;
-}
-
-function median(values) {
-    const valid = values.filter(Number.isFinite).slice().sort((a, b) => a - b);
-    if (!valid.length) return null;
-    const mid = Math.floor(valid.length / 2);
-    return valid.length % 2 ? valid[mid] : (valid[mid - 1] + valid[mid]) / 2;
-}
-
-function normalizeHeader(value) {
-    return String(value ?? "")
-        .trim()
-        .toLowerCase()
-        .replace(/[\s\-\/]+/g, "_")
-        .replace(/[^a-z0-9_]/g, "");
-}
-
-function normalizeScenario(raw) {
-    return {
-        threat_probability: clamp(safeNumber(raw?.threat_probability, 0), 0, 1),
-        qber: clamp(safeNumber(raw?.qber, 0), 0, 1),
-        channel_noise: clamp(safeNumber(raw?.channel_noise, 0), 0, 1),
-        expected_qber: clamp(safeNumber(raw?.expected_qber, 0), 0, 1),
-        eavesdropper_detected: Boolean(raw?.eavesdropper_detected),
-        quantum_attack_probability: clamp(safeNumber(raw?.quantum_attack_probability, 0), 0, 1),
-        decision: String(raw?.decision || "MONITOR").toUpperCase(),
-        reason: raw?.reason || "Security evaluation completed.",
-        qkd: {
-            protocol: "BB84",
-            qubits_sent: Math.max(0, Math.round(safeNumber(raw?.qubits_sent, raw?.qkd?.qubits_sent || 0))),
-            sifted_key_length: Math.max(0, Math.round(safeNumber(raw?.sifted_key_length, raw?.qkd?.sifted_key_length || 0)))
-        },
-        metadata: raw?.metadata || {}
-    };
-}
-
-function getRiskScore(data) {
-    const score =
-        data.threat_probability * 55 +
-        data.qber * 100 * 0.30 +
-        data.channel_noise * 100 * 0.15 +
-        (data.eavesdropper_detected ? 10 : 0);
-    return Math.round(clamp(score, 0, 100));
-}
-
-function decisionFromScore(score) {
-    if (score < 30) return "ACCEPT";
-    if (score < 65) return "MONITOR";
-    return "REJECT";
-}
-
-function modelDecisionFromML(threatProbability) {
-    if (threatProbability < 0.30) return "ACCEPT";
-    if (threatProbability < 0.70) return "MONITOR";
-    return "REJECT";
-}
-
-function modelDecisionFromQber(qber) {
-    if (qber < 0.03) return "ACCEPT";
-    if (qber < 0.05) return "MONITOR";
-    return "REJECT";
-}
-
-function setText(id, value) {
-    const el = $(id);
-    if (el) el.textContent = value;
-}
-
-function setClass(id, classNames, active = true) {
-    const el = $(id);
-    if (!el) return;
-    String(classNames).split(/\s+/).filter(Boolean).forEach(cls => el.classList.toggle(cls, active));
-}
 
 /* =========================================================
-   BACKEND
+   THEME CONFIGURATION
    ========================================================= */
 
-function setBackendStatus(state) {
-    const status = $("backendStatus");
-    if (!status) return;
+const THEME_CONFIG = {
 
-    status.classList.remove("backend-checking", "backend-online", "backend-offline");
-    status.classList.add(`backend-${state}`);
+    defaultTheme:
+        "quantum-core",
 
-    const text = {
-        checking: " BACKEND CHECKING",
-        online: " BACKEND ONLINE",
-        offline: " BACKEND OFFLINE"
-    }[state] || " BACKEND CHECKING";
+    storageKey:
+        "qsafe-theme"
 
-    status.lastChild.textContent = text;
-}
+};
 
-async function fetchWithTimeout(url, options = {}, timeoutMs = API_CONFIG.REQUEST_TIMEOUT) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-        return await fetch(url, { ...options, signal: controller.signal });
-    } finally {
-        clearTimeout(timer);
+
+/* =========================================================
+   THEME FUNCTIONS
+   ========================================================= */
+
+function applyTheme(themeName) {
+
+    const validThemes = [
+
+        "quantum-core",
+        "cyber-neon",
+        "clinical-secure",
+        "threat-command",
+        "neo-brutalism",
+        "midnight-violet",
+        "arctic-lab",
+        "carbon-matrix",
+        "dragon"
+
+    ];
+
+
+    if (
+        !validThemes.includes(themeName)
+    ) {
+
+        themeName =
+            THEME_CONFIG.defaultTheme;
+
     }
-}
 
-async function checkBackendHealth() {
-    if (API_CONFIG.USE_MOCK_API) {
-        setBackendStatus("online");
-        return true;
-    }
 
-    setBackendStatus("checking");
-    try {
-        const response = await fetchWithTimeout(
-            `${API_CONFIG.BASE_URL}${API_CONFIG.HEALTH_ENDPOINT}`,
-            { method: "GET", cache: "no-store" },
-            5000
+    document.body.dataset.theme =
+        themeName;
+
+
+    const themeSelect =
+        document.getElementById(
+            "themeSelect"
         );
-        if (!response.ok) throw new Error(`Health endpoint returned ${response.status}`);
-        setBackendStatus("online");
-        return true;
-    } catch (error) {
-        console.warn("Q-Safe backend health check failed:", error);
-        setBackendStatus("offline");
-        return false;
+
+
+    if (themeSelect) {
+
+        themeSelect.value =
+            themeName;
+
     }
+
+
+    localStorage.setItem(
+        THEME_CONFIG.storageKey,
+        themeName
+    );
+
+
+    const leftNodeLabel = getElement("leftNodeLabel");
+    const rightNodeLabel = getElement("rightNodeLabel");
+
+    if (leftNodeLabel && rightNodeLabel) {
+        if (themeName === "dragon") {
+            leftNodeLabel.textContent = "PERSON A";
+            rightNodeLabel.textContent = "PERSON B";
+        } else {
+            leftNodeLabel.textContent = "Hospital A";
+            rightNodeLabel.textContent = "Cloud";
+        }
+    }
+
+
+    if (typeof window.updateDragonTheme === "function") {
+        window.updateDragonTheme(themeName);
+    }
+
+
+    /*
+        Ambient field reads the theme CSS variables
+        dynamically, so no direct call is needed.
+    */
+
 }
 
-function startBackendHealthMonitoring() {
-    checkBackendHealth();
-    clearInterval(backendHealthTimer);
-    backendHealthTimer = setInterval(checkBackendHealth, API_CONFIG.HEALTH_CHECK_INTERVAL);
+
+function initializeTheme() {
+
+    const savedTheme =
+        localStorage.getItem(
+            THEME_CONFIG.storageKey
+        );
+
+
+    const initialTheme =
+        savedTheme ||
+        THEME_CONFIG.defaultTheme;
+
+
+    applyTheme(
+        initialTheme
+    );
+
+
+    const themeSelect =
+        document.getElementById(
+            "themeSelect"
+        );
+
+
+    if (themeSelect) {
+
+        themeSelect.addEventListener(
+            "change",
+            event => {
+
+                applyTheme(
+                    event.target.value
+                );
+
+            }
+        );
+
+    }
+
 }
 
-async function fetchDemoScenario(scenarioName) {
-    const scenario = SCENARIOS[scenarioName] || SCENARIOS.normal;
-    if (API_CONFIG.USE_MOCK_API) return normalizeScenario({ ...scenario, metadata: { source: "mock" } });
+
+/* =========================================================
+   SCENARIO DATA
+   ========================================================= */
+
+const scenarios = {
+
+    normal: true,
+    noise: true,
+    network: true,
+    eve: true,
+    combined: true
+
+};
+
+
+/* =========================================================
+   LIVE RESEARCH DATA
+   ========================================================= */
+
+const qberNoiseData = [];
+
+const qberEveData = [];
+
+const threatQberData = [];
+
+const evidenceComparisonData = [];
+
+const decisionDistributionData = [
+
+    {
+        decision: "ACCEPT",
+        count: 0
+    },
+
+    {
+        decision: "MONITOR",
+        count: 0
+    },
+
+    {
+        decision: "REJECT",
+        count: 0
+    }
+
+];
+
+
+function recordLiveResearchData(
+    scenarioName,
+    data
+) {
+
+    const qberPercent =
+        (data.qber || 0) *
+        100;
+
+    const noisePercent =
+        (data.channel_noise || 0) *
+        100;
+
+    const evePercent =
+        (
+            data.quantum_attack_probability ??
+            data.eve_probability ??
+            0
+        ) *
+        100;
+
+    const threatPercent =
+        (data.threat_probability || 0) *
+        100;
+
+    qberNoiseData.push({
+        noise: Number(noisePercent.toFixed(3)),
+        qber: Number(qberPercent.toFixed(3))
+    });
+
+    qberNoiseData.sort((a, b) => a.noise - b.noise);
+
+    qberEveData.push({
+        eve: Number(evePercent.toFixed(3)),
+        qber: Number(qberPercent.toFixed(3))
+    });
+
+    qberEveData.sort((a, b) => a.eve - b.eve);
+
+    const replacePoint = (array, point) => {
+        const existingIndex =
+            array.findIndex(
+                item => item.name === point.name
+            );
+
+        if (existingIndex >= 0) {
+            array[existingIndex] = point;
+        } else {
+            array.push(point);
+        }
+    };
+
+    replacePoint(
+        threatQberData,
+        {
+            name: scenarioName.toUpperCase(),
+            threat: Number(threatPercent.toFixed(2)),
+            qber: Number(qberPercent.toFixed(3))
+        }
+    );
+
+    replacePoint(
+        evidenceComparisonData,
+        {
+            name: scenarioName.toUpperCase(),
+            threat: Number(threatPercent.toFixed(2)),
+            qber: Number(qberPercent.toFixed(3))
+        }
+    );
+
+    const decision =
+        String(data.decision || "MONITOR")
+            .toUpperCase();
+
+    const decisionItem =
+        decisionDistributionData.find(
+            item => item.decision === decision
+        );
+
+    if (decisionItem) {
+        decisionItem.count += 1;
+    }
+
+    drawAllCharts();
+
+}
+
+
+/* =========================================================
+   DOM HELPER
+   ========================================================= */
+
+function getElement(id) {
+
+    return document.getElementById(
+        id
+    );
+
+}
+
+
+/* =========================================================
+   MOCK API
+   ========================================================= */
+
+async function mockSecurityEvaluation(
+    scenarioName
+) {
+
+    return new Promise(
+        resolve => {
+
+            setTimeout(
+                () => {
+
+                    const scenario =
+                        scenarios[
+                            scenarioName
+                        ];
+
+
+                    resolve({
+
+                        success:
+                            true,
+
+                        data: {
+
+                            threat_probability:
+                                scenario.threatProbability,
+
+                            qber:
+                                scenario.qber,
+
+                            channel_noise:
+                                scenario.noiseRate,
+
+                            eavesdropper_detected:
+                                scenario.eveDetected,
+
+                            decision:
+                                scenario.decision,
+
+                            reason:
+                                scenario.reason,
+
+                            qkd: {
+
+                                protocol:
+                                    "BB84",
+
+                                qubits_sent:
+                                    scenario.qubitsSent,
+
+                                sifted_key_length:
+                                    scenario.siftedKeyLength
+
+                            },
+
+                            metadata: {
+
+                                source:
+                                    "mock",
+
+                                scenario:
+                                    scenarioName
+
+                            }
+
+                        }
+
+                    });
+
+                },
+
+                350
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   FASTAPI REQUEST
+   ========================================================= */
+
+async function fetchSecurityEvaluation(
+    scenarioName
+) {
 
     const modeMap = {
         normal: "NORMAL",
@@ -317,31 +422,48 @@ async function fetchDemoScenario(scenarioName) {
         combined: "COMBINED_ATTACK"
     };
 
-    const bits = Number($("nBitsControl")?.value || 100);
-    const trials = Number($("trialsControl")?.value || 10);
-
-    try {
-        const response = await fetchWithTimeout(
-            `${API_CONFIG.BASE_URL}${API_CONFIG.SECURITY_ENDPOINT}`,
+    const response =
+        await fetch(
+            API_CONFIG.BASE_URL +
+            API_CONFIG.SECURITY_ENDPOINT,
             {
+
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ mode: modeMap[scenarioName] || "NORMAL", n_bits: bits, trials })
-            },
-            API_CONFIG.DEMO_REQUEST_TIMEOUT
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    mode: modeMap[scenarioName] || "NORMAL",
+                    n_bits: 100,
+                    trials: 10
+                })
+            }
         );
 
-        if (!response.ok) throw new Error(`Backend returned HTTP ${response.status}`);
-        const payload = await response.json();
-        const result = payload?.result;
-        if (!result) throw new Error("Backend response missing result.");
+    if (!response.ok) {
 
-        const threat = result.threat || {};
-        const quantum = result.quantum || {};
-        const decision = result.decision || {};
+        throw new Error(
+            `Backend returned HTTP ${response.status}`
+        );
 
-        setBackendStatus("online");
-        return normalizeScenario({
+    }
+
+    const payload = await response.json();
+
+    if (!payload || !payload.result) {
+        throw new Error("Backend response missing result.");
+    }
+
+    const result = payload.result;
+    const threat = result.threat || {};
+    const quantum = result.quantum || {};
+    const decision = result.decision || {};
+
+    return {
+        success: true,
+        data: {
             threat_probability: threat.threat_probability ?? 0,
             qber: quantum.qber ?? 0,
             channel_noise: quantum.noise_rate ?? 0,
@@ -350,1226 +472,3171 @@ async function fetchDemoScenario(scenarioName) {
             eavesdropper_detected: (quantum.quantum_attack_probability ?? 0) >= 0.80,
             decision: decision.decision || "MONITOR",
             reason: decision.reason || "Security evaluation completed.",
-            qubits_sent: (quantum.trials || trials) * (quantum.bits_per_trial || bits),
-            sifted_key_length: Math.round(quantum.mean_sifted_key_length || 0),
+            qkd: {
+                protocol: "BB84",
+                qubits_sent: (quantum.trials || 0) * (quantum.bits_per_trial || 0),
+                sifted_key_length: Math.round(quantum.mean_sifted_key_length || 0)
+            },
             metadata: {
                 source: "q-safe-fastapi",
                 scenario: scenarioName,
-                n_bits: bits,
-                trials,
-                likelihood_ratio: quantum.likelihood_ratio ?? 0
+                quantum_attack_probability: quantum.quantum_attack_probability ?? 0
             }
-        });
-    } catch (error) {
-        console.warn("Falling back to controlled scenario data:", error);
-        setBackendStatus("offline");
-        return normalizeScenario({
-            ...scenario,
-            metadata: { source: "controlled-fallback", reason: error.message }
-        });
-    }
-}
-
-async function evaluateUploadWithBackend(file, modelKey) {
-    if (!API_CONFIG.UPLOAD_API_ENABLED) return null;
-
-    const form = new FormData();
-    form.append("file", file);
-    form.append("model", modelKey);
-
-    const response = await fetchWithTimeout(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.UPLOAD_API_ENDPOINT}`,
-        { method: "POST", body: form },
-        API_CONFIG.REQUEST_TIMEOUT
-    );
-
-    if (!response.ok) {
-        throw new Error(`Upload analysis API returned HTTP ${response.status}`);
-    }
-
-    return response.json();
-}
-
-/* =========================================================
-   THEME
-   ========================================================= */
-
-function applyTheme(themeName) {
-    const validThemes = [
-        "quantum-core", "cyber-neon", "clinical-secure", "threat-command",
-        "neo-brutalism", "midnight-violet", "arctic-lab", "carbon-matrix", "dragon"
-    ];
-    const theme = validThemes.includes(themeName) ? themeName : "quantum-core";
-    document.body.dataset.theme = theme;
-    localStorage.setItem("qsafe-theme", theme);
-    const themeSelect = $("themeSelect");
-    if (themeSelect) themeSelect.value = theme;
-    window.updateDragonTheme?.(theme);
-    updateModelView();
-    drawAllCharts();
-}
-
-function initializeTheme() {
-    const savedTheme = localStorage.getItem("qsafe-theme") || "quantum-core";
-    applyTheme(savedTheme);
-    $("themeSelect")?.addEventListener("change", e => applyTheme(e.target.value));
-}
-
-/* =========================================================
-   MODEL SELECTION
-   ========================================================= */
-
-function updateModelMetadata() {
-    const model = MODEL_CATALOG[selectedModel];
-    setText("selectedModelName", model.name);
-    setText("selectedModelType", model.type);
-    setText("activeModelBadge", model.badge);
-    setText("modelOutputSource", uploadedDataset ? "UPLOADED DATA" : "CONTROLLED DEMO");
-}
-
-function initializeModelSelector() {
-    const select = $("modelSelect");
-    if (!select) return;
-    selectedModel = localStorage.getItem("qsafe-model") || "hybrid";
-    if (!MODEL_CATALOG[selectedModel]) selectedModel = "hybrid";
-    select.value = selectedModel;
-    select.addEventListener("change", async e => {
-        selectedModel = MODEL_CATALOG[e.target.value] ? e.target.value : "hybrid";
-        localStorage.setItem("qsafe-model", selectedModel);
-        updateModelMetadata();
-        await refreshForSelectedModel();
-    });
-    updateModelMetadata();
-}
-
-function setPanelActive(modelKey, active) {
-    const panel = document.querySelector(`[data-result-model="${modelKey}"]`);
-    if (!panel) return;
-    panel.classList.toggle("is-active", active);
-    panel.classList.toggle("is-inactive", !active);
-}
-
-function updateModelResultPanels(result) {
-    const ml = result.ml;
-    const qber = result.qber;
-    const hybrid = result.hybrid;
-
-    setPanelActive("ml", selectedModel === "ml" || selectedModel === "hybrid");
-    setPanelActive("qber", selectedModel === "qber" || selectedModel === "hybrid");
-    setPanelActive("hybrid", selectedModel === "hybrid");
-
-    setText("mlResultName", MODEL_CATALOG.ml.name);
-    setText("mlResultType", MODEL_CATALOG.ml.type);
-    setText("qberResultName", MODEL_CATALOG.qber.name);
-    setText("qberResultType", MODEL_CATALOG.qber.type);
-    setText("hybridResultName", MODEL_CATALOG.hybrid.name);
-    setText("hybridResultType", MODEL_CATALOG.hybrid.type);
-
-    if (ml?.available) {
-        setText("mlResultValue", percent(ml.threat_probability));
-        setText("mlResultLabel", "THREAT PROBABILITY");
-        setText("mlResultDetail", ml.detail || "ML analysis completed.");
-    } else {
-        setText("mlResultValue", "NOT AVAILABLE");
-        setText("mlResultLabel", "ML RESULT");
-        setText("mlResultDetail", ml?.detail || "An attack/normal target column was not detected.");
-    }
-
-    if (qber?.available) {
-        setText("qberResultValue", percent(qber.qber));
-        setText("qberResultLabel", "QUANTUM BIT ERROR RATE");
-        setText("qberResultDetail", qber.detail || "QBER analysis completed.");
-    } else {
-        setText("qberResultValue", "NOT AVAILABLE");
-        setText("qberResultLabel", "QBER RESULT");
-        setText("qberResultDetail", qber?.detail || "QBER data is not available.");
-    }
-
-    if (hybrid?.available) {
-        setText("hybridResultValue", hybrid.decision || "MONITOR");
-        setText("hybridResultLabel", `RISK SCORE ${Math.round(hybrid.risk_score ?? 0)}/100`);
-        setText("hybridResultDetail", hybrid.detail || hybrid.reason || "Hybrid evidence fusion completed.");
-    } else {
-        setText("hybridResultValue", "NOT AVAILABLE");
-        setText("hybridResultLabel", "HYBRID RESULT");
-        setText("hybridResultDetail", hybrid?.detail || "Both ML and QBER evidence are required for hybrid evaluation.");
-    }
-}
-
-function updateModelView() {
-    document.querySelector(".dashboard")?.classList.remove("model-mode-ml", "model-mode-qber", "model-mode-hybrid");
-    document.querySelector(".dashboard")?.classList.add(`model-mode-${selectedModel}`);
-
-    const metadata = MODEL_CATALOG[selectedModel];
-    setText("activeModelBadge", metadata.badge);
-    setText("selectedModelName", metadata.name);
-    setText("selectedModelType", metadata.type);
-}
-
-/* =========================================================
-   CSV/TXT PARSING
-   ========================================================= */
-
-function splitDelimitedLine(line, delimiter) {
-    if (delimiter === "whitespace") return line.trim().split(/\s+/);
-
-    const cells = [];
-    let current = "";
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i += 1) {
-        const char = line[i];
-        const next = line[i + 1];
-
-        if (char === '"' && inQuotes && next === '"') {
-            current += '"';
-            i += 1;
-        } else if (char === '"') {
-            inQuotes = !inQuotes;
-        } else if (char === delimiter && !inQuotes) {
-            cells.push(current.trim());
-            current = "";
-        } else {
-            current += char;
         }
-    }
-
-    cells.push(current.trim());
-    return cells;
-}
-
-function detectDelimiter(line) {
-    const counts = [
-        [",", (line.match(/,/g) || []).length],
-        ["\t", (line.match(/\t/g) || []).length],
-        [";", (line.match(/;/g) || []).length]
-    ].sort((a, b) => b[1] - a[1]);
-    return counts[0][1] > 0 ? counts[0][0] : "whitespace";
-}
-
-function looksLikeHeader(row) {
-    if (!row?.length) return false;
-    const normalized = row.map(normalizeHeader);
-    const known = [
-        "label", "class", "target", "attack", "threat", "qber", "noise", "noise_rate",
-        "eavesdropper", "eavesdropping", "anomaly", "risk", "difficulty", "protocol_type", "service"
-    ];
-    const knownHits = normalized.filter(x => known.includes(x)).length;
-    const numericCount = row.filter(v => v !== "" && Number.isFinite(Number(v))).length;
-    return knownHits > 0 || numericCount < row.length * 0.45;
-}
-
-function parseDataset(text, fileName) {
-    const cleanText = text.replace(/^\uFEFF/, "").replace(/\r/g, "");
-    const lines = cleanText.split("\n").map(line => line.trimEnd()).filter(line => line.trim().length > 0);
-    if (!lines.length) throw new Error("The uploaded file is empty.");
-
-    const delimiter = detectDelimiter(lines[0]);
-    const firstRow = splitDelimitedLine(lines[0], delimiter);
-    const firstRowIsHeader = looksLikeHeader(firstRow);
-    const looksLikeNSLKDD = !firstRowIsHeader && firstRow.length === NSL_KDD_HEADERS.length;
-
-    let headers;
-    let rawRows;
-
-    if (firstRowIsHeader) {
-        headers = firstRow.map((h, i) => normalizeHeader(h) || `column_${i + 1}`);
-        rawRows = lines.slice(1).map(line => splitDelimitedLine(line, delimiter));
-    } else if (looksLikeNSLKDD) {
-        // NSL-KDD KDDTrain+.txt / KDDTest+.txt files commonly arrive without a header.
-        // Preserve the first data record and attach the canonical NSL-KDD schema.
-        headers = NSL_KDD_HEADERS.slice();
-        rawRows = lines.map(line => splitDelimitedLine(line, delimiter));
-    } else {
-        headers = firstRow.map((_, i) => `column_${i + 1}`);
-        rawRows = lines.map(line => splitDelimitedLine(line, delimiter));
-    }
-
-    const rows = rawRows
-        .filter(row => row.some(cell => String(cell).trim() !== ""))
-        .map(row => {
-            const normalized = [];
-            for (let i = 0; i < headers.length; i += 1) normalized.push(row[i] ?? "");
-            return normalized;
-        });
-
-    if (!rows.length) throw new Error("No data rows were found in the uploaded file.");
-
-    return {
-        fileName,
-        delimiter,
-        headers,
-        rows,
-        fileFormat: fileName.toLowerCase().endsWith(".txt") ? "TXT" : "CSV"
     };
 }
 
-function columnIndex(dataset, aliases) {
-    const normalized = dataset.headers.map(normalizeHeader);
-    for (const alias of aliases) {
-        const target = normalizeHeader(alias);
-        const exact = normalized.indexOf(target);
-        if (exact >= 0) return exact;
+
+async function getSecurityEvaluation(
+    scenarioName
+) {
+
+    if (API_CONFIG.USE_MOCK_API) {
+        return await mockSecurityEvaluation(
+            scenarioName
+        );
     }
-    for (const alias of aliases) {
-        const target = normalizeHeader(alias);
-        const fuzzy = normalized.findIndex(value => value.includes(target));
-        if (fuzzy >= 0) return fuzzy;
-    }
-    return -1;
+
+    return await fetchSecurityEvaluation(
+        scenarioName
+    );
 }
 
-function numericColumn(dataset, index) {
-    if (index < 0) return [];
-    return dataset.rows
-        .map(row => Number(String(row[index] ?? "").replace(/[%]/g, "")))
-        .map(value => value > 1 ? value / 100 : value)
-        .filter(Number.isFinite);
+
+/* =========================================================
+   RESPONSE VALIDATION
+   ========================================================= */
+
+function validateSecurityResponse(
+    response
+) {
+
+    if (!response) {
+
+        throw new Error(
+            "Empty API response."
+        );
+
+    }
+
+
+    if (!response.data) {
+
+        throw new Error(
+            "API response is missing data."
+        );
+
+    }
+
+
+    const data =
+        response.data;
+
+
+    const requiredFields = [
+
+        "threat_probability",
+        "qber",
+        "channel_noise",
+        "eavesdropper_detected",
+        "decision"
+
+    ];
+
+
+    for (
+        const field of requiredFields
+    ) {
+
+        if (
+            data[field] === undefined ||
+            data[field] === null
+        ) {
+
+            throw new Error(
+                `API response missing field: ${field}`
+            );
+
+        }
+
+    }
+
+
+    return true;
+
 }
 
-function booleanish(value) {
-    const v = String(value ?? "").trim().toLowerCase();
-    if (!v) return null;
-    if (["1", "true", "yes", "y", "detected", "attack", "attacker"].includes(v)) return true;
-    if (["0", "false", "no", "n", "secure", "normal", "benign", "not_detected"].includes(v)) return false;
+
+/* =========================================================
+   UPDATE DASHBOARD
+   ========================================================= */
+
+function updateDashboard(
+    response
+) {
+
+    validateSecurityResponse(
+        response
+    );
+
+
+    const data =
+        response.data;
+
+
+    /* ---------- Metrics ---------- */
+
+    getElement(
+        "threatProbability"
+    ).textContent =
+        `${(
+            data.threat_probability *
+            100
+        ).toFixed(1)}%`;
+
+
+    getElement(
+        "qber"
+    ).textContent =
+        `${(
+            data.qber *
+            100
+        ).toFixed(1)}%`;
+
+
+    getElement(
+        "noise"
+    ).textContent =
+        `${(
+            data.channel_noise *
+            100
+        ).toFixed(1)}%`;
+
+
+    if (getElement("quantumAttackProbability")) {
+        getElement("quantumAttackProbability").textContent =
+            `${(
+                (data.quantum_attack_probability || 0) *
+                100
+            ).toFixed(1)}%`;
+    }
+
+
+    if (getElement("expectedQber")) {
+        getElement("expectedQber").textContent =
+            `${(
+                (data.expected_qber || 0) *
+                100
+            ).toFixed(1)}%`;
+    }
+
+
+    /* ---------- Eavesdropper ---------- */
+
+    getElement(
+        "eve"
+    ).textContent =
+
+        data.eavesdropper_detected
+            ? "DETECTED"
+            : "NOT DETECTED";
+
+
+    /* ---------- Threat Status ---------- */
+
+    let threatStatus =
+        "LOW RISK";
+
+
+    if (
+        data.threat_probability >=
+        0.75
+    ) {
+
+        threatStatus =
+            "HIGH RISK";
+
+    }
+    else if (
+        data.threat_probability >=
+        0.30
+    ) {
+
+        threatStatus =
+            "MEDIUM RISK";
+
+    }
+
+
+    getElement(
+        "threatStatus"
+    ).textContent =
+        threatStatus;
+
+
+    /* ---------- Decision ---------- */
+
+    getElement(
+        "decision"
+    ).textContent =
+        data.decision;
+
+
+    getElement(
+        "decisionReason"
+    ).textContent =
+        data.reason ||
+        "Security assessment completed.";
+
+
+    /* ---------- QKD ---------- */
+
+    getElement(
+        "quantumQber"
+    ).textContent =
+        `${(
+            data.qber *
+            100
+        ).toFixed(1)}%`;
+
+
+    if (data.qkd) {
+
+        if (
+            data.qkd.qubits_sent !==
+            undefined
+        ) {
+
+            getElement(
+                "qubitsSent"
+            ).textContent =
+                data.qkd.qubits_sent;
+
+        }
+
+
+        if (
+            data.qkd.sifted_key_length !==
+            undefined
+        ) {
+
+            getElement(
+                "siftedKey"
+            ).textContent =
+                `${data.qkd.sifted_key_length} bits`;
+
+        }
+
+    }
+
+
+    /* ---------- Channel ---------- */
+
+    const connection =
+        getElement(
+            "quantumConnection"
+        );
+
+
+    const connectionLine =
+        connection.querySelector(
+            ".connection-line"
+        );
+
+
+    const channelStatus =
+        getElement(
+            "channelStatus"
+        );
+
+
+    let channelText =
+        "SECURE";
+
+
+    let channelColor =
+        "#4ee39a";
+
+
+    if (
+        data.decision ===
+        "MONITOR"
+    ) {
+
+        channelText =
+            "MONITOR";
+
+        channelColor =
+            "#e8c75c";
+
+    }
+
+
+    if (
+        data.decision ===
+        "REJECT"
+    ) {
+
+        channelText =
+            "COMPROMISED";
+
+        channelColor =
+            "#e86b6b";
+
+    }
+
+
+    channelStatus.textContent =
+        channelText;
+
+
+    channelStatus.style.color =
+        channelColor;
+
+
+    connectionLine.style.background =
+        channelColor;
+
+
+    connectionLine.style.boxShadow =
+        `0 0 12px ${channelColor}`;
+
+
+    /* ---------- Decision Color ---------- */
+
+    const decisionCard =
+        getElement(
+            "decisionCard"
+        );
+
+
+    if (
+        data.decision ===
+        "ACCEPT"
+    ) {
+
+        decisionCard.style.borderColor =
+            "#28543e";
+
+        getElement(
+            "decision"
+        ).style.color =
+            "#67e59a";
+
+    }
+    else if (
+        data.decision ===
+        "MONITOR"
+    ) {
+
+        decisionCard.style.borderColor =
+            "#66592a";
+
+        getElement(
+            "decision"
+        ).style.color =
+            "#e8c75c";
+
+    }
+    else {
+
+        decisionCard.style.borderColor =
+            "#633535";
+
+        getElement(
+            "decision"
+        ).style.color =
+            "#e86b6b";
+
+    }
+
+
+    /* ---------- Security Analysis ---------- */
+
+    let networkEvidence =
+        "LOW THREAT";
+
+
+    if (
+        data.threat_probability >=
+        0.75
+    ) {
+
+        networkEvidence =
+            "HIGH THREAT";
+
+    }
+    else if (
+        data.threat_probability >=
+        0.30
+    ) {
+
+        networkEvidence =
+            "MEDIUM THREAT";
+
+    }
+
+
+    let quantumEvidence =
+        "NORMAL";
+
+
+    if (
+        data.qber >=
+        0.05
+    ) {
+
+        quantumEvidence =
+            "HIGH ERROR";
+
+    }
+    else if (
+        data.qber >=
+        0.03
+    ) {
+
+        quantumEvidence =
+            "ELEVATED ERROR";
+
+    }
+
+
+    getElement(
+        "networkEvidence"
+    ).textContent =
+        networkEvidence;
+
+
+    getElement(
+        "quantumEvidence"
+    ).textContent =
+        quantumEvidence;
+
+
+    getElement(
+        "analysisChannel"
+    ).textContent =
+        channelText;
+
+
+    /* ---------- Badge ---------- */
+
+    let badgeText =
+        "NORMAL";
+
+
+    if (
+        data.decision ===
+        "MONITOR"
+    ) {
+
+        badgeText =
+            "MONITOR";
+
+    }
+
+
+    if (
+        data.decision ===
+        "REJECT"
+    ) {
+
+        badgeText =
+            "CRITICAL";
+
+    }
+
+
+    getElement(
+        "analysisBadge"
+    ).textContent =
+        badgeText;
+
+
+    if (getElement("decisionCard")) {
+        getElement("decisionCard").dataset.decision =
+            data.decision || "MONITOR";
+    }
+
+
+    if (typeof window.updateDragonThemeState === "function") {
+        window.updateDragonThemeState(
+            data.decision || "MONITOR"
+        );
+    }
+
+}
+
+
+/* =========================================================
+   LOADING STATE
+   ========================================================= */
+
+function setLoadingState(
+    isLoading
+) {
+
+    const decision =
+        getElement(
+            "decision"
+        );
+
+
+    if (isLoading) {
+
+        decision.textContent =
+            "ANALYZING";
+
+
+        decision.style.color =
+            "var(--accent)";
+
+    }
+
+}
+
+
+/* =========================================================
+   ERROR STATE
+   ========================================================= */
+
+function showApiError(
+    error
+) {
+
+    console.error(
+        "Q-Safe API error:",
+        error
+    );
+
+
+    getElement(
+        "decision"
+    ).textContent =
+        "ERROR";
+
+
+    getElement(
+        "decision"
+    ).style.color =
+        "#e86b6b";
+
+
+    getElement(
+        "decisionReason"
+    ).textContent =
+        "Security evaluation could not be completed. Check the backend connection.";
+
+
+    getElement(
+        "analysisBadge"
+    ).textContent =
+        "API ERROR";
+
+
+    getElement(
+        "analysisChannel"
+    ).textContent =
+        "UNAVAILABLE";
+
+
+    getElement(
+        "networkEvidence"
+    ).textContent =
+        "UNAVAILABLE";
+
+
+    getElement(
+        "quantumEvidence"
+    ).textContent =
+        "UNAVAILABLE";
+
+}
+
+
+/* =========================================================
+   RUN SCENARIO
+   ========================================================= */
+
+async function runScenario(
+    name
+) {
+
+    if (
+        !scenarios[name]
+    ) {
+
+        return;
+
+    }
+
+
+    /* ---------- Active button ---------- */
+
+    document
+        .querySelectorAll(
+            ".scenario-button"
+        )
+        .forEach(
+            button => {
+
+                button.classList.remove(
+                    "active"
+                );
+
+            }
+        );
+
+
+    const buttons =
+        document.querySelectorAll(
+            ".scenario-button"
+        );
+
+
+    buttons.forEach(
+        button => {
+
+            const text =
+                button.textContent
+                    .trim()
+                    .toLowerCase();
+
+
+            if (
+
+                (
+                    name === "normal" &&
+                    text === "normal"
+                )
+
+                ||
+
+                (
+                    name === "noise" &&
+                    text === "channel noise"
+                )
+
+                ||
+
+                (
+                    name === "network" &&
+                    text === "network attack"
+                )
+
+                ||
+
+                (
+                    name === "eve" &&
+                    text === "eavesdropper"
+                )
+
+                ||
+
+                (
+                    name === "combined" &&
+                    text === "combined attack"
+                )
+
+            ) {
+
+                button.classList.add(
+                    "active"
+                );
+
+            }
+
+        }
+    );
+
+
+    setLoadingState(
+        true
+    );
+
+
+    try {
+
+        const response =
+            await getSecurityEvaluation(
+                name
+            );
+
+
+        updateDashboard(
+            response
+        );
+
+        if (response && response.data) {
+            recordLiveResearchData(
+                name,
+                response.data
+            );
+        }
+
+    }
+    catch (error) {
+
+        showApiError(
+            error
+        );
+
+    }
+
+}
+
+
+
+/* =========================================================
+   DATASET UPLOAD + LIVE ANALYSIS
+   ========================================================= */
+
+const DATASET_UPLOAD_CONFIG = {
+    maxBytes: 25 * 1024 * 1024,
+    allowedExtensions: [
+        ".csv",
+        ".txt",
+        ".tsv"
+    ]
+};
+
+
+const datasetState = {
+    file: null,
+    analyzing: false
+};
+
+
+function setDatasetStatus(
+    message,
+    type = ""
+) {
+    const status =
+        getElement("datasetUploadStatus");
+
+    if (!status) {
+        return;
+    }
+
+    status.textContent =
+        message;
+
+    status.className =
+        "dataset-upload-status";
+
+    if (type) {
+        status.classList.add(
+            type
+        );
+    }
+}
+
+
+function updateDatasetFileUI() {
+    const name =
+        getElement("datasetFileName");
+
+    const info =
+        getElement("datasetFileInfo");
+
+    const clearButton =
+        getElement("datasetClearButton");
+
+    const analyzeButton =
+        getElement("datasetAnalyzeButton");
+
+    if (!name || !info) {
+        return;
+    }
+
+    if (!datasetState.file) {
+        name.textContent =
+            "No file selected";
+
+        info.textContent =
+            "Choose a dataset to begin.";
+
+        if (clearButton) {
+            clearButton.disabled = true;
+        }
+
+        if (analyzeButton) {
+            analyzeButton.disabled = true;
+        }
+
+        return;
+    }
+
+    const sizeKb =
+        datasetState.file.size /
+        1024;
+
+    name.textContent =
+        datasetState.file.name;
+
+    info.textContent =
+        `${sizeKb.toFixed(1)} KB`;
+
+    if (clearButton) {
+        clearButton.disabled = false;
+    }
+
+    if (analyzeButton) {
+        analyzeButton.disabled =
+            datasetState.analyzing;
+    }
+}
+
+
+function clearDatasetFile() {
+    datasetState.file =
+        null;
+
+    const input =
+        getElement("datasetFileInput");
+
+    if (input) {
+        input.value =
+            "";
+    }
+
+    updateDatasetFileUI();
+
+    const title =
+        getElement("datasetDropTitle");
+
+    if (title) {
+        title.textContent =
+            "DROP YOUR DATASET HERE";
+    }
+
+    setDatasetStatus(
+        "Waiting for a dataset."
+    );
+}
+
+
+function setDatasetFile(file) {
+    if (!file) {
+        return;
+    }
+
+    const lowerName =
+        file.name.toLowerCase();
+
+    const validExtension =
+        DATASET_UPLOAD_CONFIG
+            .allowedExtensions
+            .some(
+                extension =>
+                    lowerName.endsWith(
+                        extension
+                    )
+            );
+
+    if (!validExtension) {
+        setDatasetStatus(
+            "Unsupported file type. Use CSV, TXT or TSV.",
+            "error"
+        );
+        return;
+    }
+
+    if (
+        file.size >
+        DATASET_UPLOAD_CONFIG.maxBytes
+    ) {
+        setDatasetStatus(
+            "File is larger than the 25 MB upload limit.",
+            "error"
+        );
+        return;
+    }
+
+    datasetState.file =
+        file;
+
+    updateDatasetFileUI();
+
+    const title =
+        getElement("datasetDropTitle");
+
+    if (title) {
+        title.textContent =
+            "DATASET SELECTED";
+    }
+
+    setDatasetStatus(
+        `${file.name} is ready to analyze.`,
+        "success"
+    );
+}
+
+
+function firstDefinedValue(
+    ...values
+) {
+    for (
+        const value of values
+    ) {
+        if (
+            value !== undefined &&
+            value !== null
+        ) {
+            return value;
+        }
+    }
+
     return null;
 }
 
-function analyzeMLDataset(dataset) {
-    const labelIndex = columnIndex(dataset, [
-        "label", "class", "target", "attack", "threat", "outcome", "category"
-    ]);
 
-    if (labelIndex < 0) {
-        return {
-            available: false,
-            detail: "No normal/attack target column was found in this dataset. NSL-KDD label detection requires a label/class/target column."
-        };
+function unwrapUploadPayload(
+    payload
+) {
+    if (
+        payload &&
+        payload.data &&
+        typeof payload.data === "object"
+    ) {
+        return payload.data;
     }
 
-    const labels = dataset.rows.map(row => String(row[labelIndex] ?? "").trim().toLowerCase()).filter(Boolean);
-    if (!labels.length) {
-        return { available: false, detail: "The detected target column contains no usable labels." };
-    }
+    return payload || {};
+}
 
-    const attackCount = labels.filter(value => !NORMALS.has(value)).length;
-    const threatProbability = clamp(attackCount / labels.length, 0, 1);
-    const decision = modelDecisionFromML(threatProbability);
-    const confidence = Math.max(threatProbability, 1 - threatProbability);
+
+function getUploadResult(
+    payload
+) {
+    const raw =
+        unwrapUploadPayload(
+            payload
+        );
+
+    const threatSignal =
+        raw.threat_signal ||
+        raw.threat ||
+        {};
+
+    const quantum =
+        raw.quantum ||
+        raw.qkd ||
+        {};
+
+    const decision =
+        raw.decision_result ||
+        raw.decision ||
+        {};
+
+    const metrics =
+        raw.metrics ||
+        raw.model_metrics ||
+        {};
+
+    const summary =
+        raw.summary ||
+        raw.dataset_summary ||
+        {};
+
+    const rows =
+        firstDefinedValue(
+            raw.rows_analyzed,
+            raw.row_count,
+            summary.rows_analyzed,
+            summary.row_count,
+            0
+        );
+
+    const threatProbability =
+        Number(
+            firstDefinedValue(
+                raw.threat_probability,
+                threatSignal.threat_probability,
+                threatSignal.probability,
+                raw.attack_probability,
+                0
+            )
+        );
+
+    const qber =
+        Number(
+            firstDefinedValue(
+                raw.qber,
+                quantum.qber,
+                quantum.mean_qber,
+                0
+            )
+        );
+
+    const noise =
+        Number(
+            firstDefinedValue(
+                raw.channel_noise,
+                raw.noise_rate,
+                quantum.noise_rate,
+                quantum.channel_noise,
+                0
+            )
+        );
+
+    const expectedQber =
+        Number(
+            firstDefinedValue(
+                raw.expected_qber,
+                quantum.expected_qber,
+                0
+            )
+        );
+
+    const quantumAttackProbability =
+        Number(
+            firstDefinedValue(
+                raw.quantum_attack_probability,
+                quantum.quantum_attack_probability,
+                quantum.posterior_eve_probability,
+                raw.posterior_eve_probability,
+                raw.eve_probability,
+                0
+            )
+        );
+
+    const decisionValue =
+        String(
+            firstDefinedValue(
+                raw.decision,
+                decision.decision,
+                "MONITOR"
+            )
+        ).toUpperCase();
+
+    const normalCount =
+        firstDefinedValue(
+            raw.normal_count,
+            summary.normal_count,
+            summary.predicted_normal,
+            summary.normal,
+            raw.predicted_normal,
+            0
+        );
+
+    const attackCount =
+        firstDefinedValue(
+            raw.attack_count,
+            summary.attack_count,
+            summary.predicted_attack,
+            summary.predicted_attacks,
+            summary.attack,
+            raw.predicted_attack,
+            0
+        );
+
+    const averageThreat =
+        firstDefinedValue(
+            raw.average_threat_probability,
+            raw.mean_threat_probability,
+            summary.average_threat_probability,
+            summary.mean_threat_probability,
+            threatProbability
+        );
 
     return {
-        available: true,
-        threat_probability: threatProbability,
-        prediction: threatProbability >= 0.5 ? "ATTACK" : "NORMAL",
-        confidence,
-        decision,
-        detail: `${attackCount.toLocaleString()} of ${labels.length.toLocaleString()} records are classified as attack/non-normal evidence (${percent(threatProbability)}).`
+        payload,
+        raw,
+        data: {
+            threat_probability:
+                Number.isFinite(
+                    threatProbability
+                )
+                    ? threatProbability
+                    : 0,
+
+            qber:
+                Number.isFinite(
+                    qber
+                )
+                    ? qber
+                    : 0,
+
+            channel_noise:
+                Number.isFinite(
+                    noise
+                )
+                    ? noise
+                    : 0,
+
+            expected_qber:
+                Number.isFinite(
+                    expectedQber
+                )
+                    ? expectedQber
+                    : 0,
+
+            quantum_attack_probability:
+                Number.isFinite(
+                    quantumAttackProbability
+                )
+                    ? quantumAttackProbability
+                    : 0,
+
+            eavesdropper_detected:
+                quantumAttackProbability >=
+                0.80,
+
+            decision:
+                decisionValue,
+
+            reason:
+                firstDefinedValue(
+                    raw.reason,
+                    decision.reason,
+                    raw.decision_reason,
+                    "Security assessment completed."
+                ),
+
+            qkd: {
+                protocol:
+                    "BB84",
+
+                qubits_sent:
+                    firstDefinedValue(
+                        quantum.qubits_sent,
+                        quantum.trials &&
+                        quantum.bits_per_trial
+                            ? quantum.trials *
+                              quantum.bits_per_trial
+                            : undefined
+                    ),
+
+                sifted_key_length:
+                    firstDefinedValue(
+                        quantum.mean_sifted_key_length,
+                        quantum.sifted_key_length
+                    )
+            },
+
+            metadata: {
+                source:
+                    "uploaded-dataset",
+
+                filename:
+                    raw.filename ||
+                    raw.file_name ||
+                    datasetState.file?.name ||
+                    "uploaded dataset",
+
+                rows_analyzed:
+                    rows,
+
+                normal_count:
+                    normalCount,
+
+                attack_count:
+                    attackCount,
+
+                average_threat_probability:
+                    averageThreat,
+
+                accuracy:
+                    firstDefinedValue(
+                        metrics.accuracy,
+                        raw.accuracy
+                    ),
+
+                precision:
+                    firstDefinedValue(
+                        metrics.precision,
+                        raw.precision
+                    ),
+
+                recall:
+                    firstDefinedValue(
+                        metrics.recall,
+                        raw.recall
+                    ),
+
+                f1:
+                    firstDefinedValue(
+                        metrics.f1,
+                        raw.f1
+                    )
+            }
+        }
     };
 }
 
-function readUploadedQber(dataset) {
-    const qberIndex = columnIndex(dataset, [
-        "qber", "quantum_bit_error_rate", "error_rate", "bit_error_rate"
-    ]);
-    const noiseIndex = columnIndex(dataset, [
-        "noise", "noise_rate", "channel_noise", "channel_noise_rate"
-    ]);
-    const eveIndex = columnIndex(dataset, [
-        "eavesdropper", "eavesdropping", "eve", "intercept", "interception", "eavesdropper_detected"
-    ]);
 
-    const qberValues = numericColumn(dataset, qberIndex);
-    const noiseValues = numericColumn(dataset, noiseIndex);
+function updateDatasetResults(
+    uploadResult
+) {
+    const data =
+        uploadResult.data;
 
-    let eveDetected = false;
-    if (eveIndex >= 0) {
-        const bools = dataset.rows.map(row => booleanish(row[eveIndex])).filter(value => value !== null);
-        eveDetected = bools.some(Boolean);
-    }
+    const meta =
+        data.metadata ||
+        {};
 
-    if (!qberValues.length && !noiseValues.length && eveIndex < 0) {
-        return {
-            available: false,
-            needsQiskit: true,
-            detail: "No QBER/noise/eavesdropper fields were found; the QBER model should use its Qiskit BB84 experiment output."
+    const setText =
+        (
+            id,
+            value
+        ) => {
+            const element =
+                getElement(id);
+
+            if (
+                element
+            ) {
+                element.textContent =
+                    value;
+            }
         };
+
+
+    setText(
+        "datasetRows",
+        Number(
+            meta.rows_analyzed ||
+            0
+        ).toLocaleString()
+    );
+
+    setText(
+        "datasetNormal",
+        Number(
+            meta.normal_count ||
+            0
+        ).toLocaleString()
+    );
+
+    setText(
+        "datasetAttack",
+        Number(
+            meta.attack_count ||
+            0
+        ).toLocaleString()
+    );
+
+    setText(
+        "datasetThreat",
+        `${(
+            Number(
+                meta.average_threat_probability ||
+                data.threat_probability ||
+                0
+            ) *
+            100
+        ).toFixed(1)}%`
+    );
+
+    const percentMetric =
+        value =>
+            value ===
+            null ||
+            value ===
+            undefined
+                ? "—"
+                : `${(
+                    Number(
+                        value
+                    ) *
+                    100
+                ).toFixed(2)}%`;
+
+    setText(
+        "datasetAccuracy",
+        percentMetric(
+            meta.accuracy
+        )
+    );
+
+    setText(
+        "datasetPrecision",
+        percentMetric(
+            meta.precision
+        )
+    );
+
+    setText(
+        "datasetRecall",
+        percentMetric(
+            meta.recall
+        )
+    );
+
+    setText(
+        "datasetF1",
+        percentMetric(
+            meta.f1
+        )
+    );
+
+    const badge =
+        getElement(
+            "datasetResultBadge"
+        );
+
+    if (badge) {
+        badge.textContent =
+            data.decision ||
+            "ANALYZED";
     }
 
-    const qber = clamp(mean(qberValues) ?? 0, 0, 1);
-    const noise = clamp(mean(noiseValues) ?? 0, 0, 1);
-    const decision = modelDecisionFromQber(qber);
+    const resultMessage =
+        getElement(
+            "datasetResultMessage"
+        );
 
-    return {
-        available: true,
-        qber,
-        channel_noise: noise,
-        expected_qber: noise * 0.8,
-        eavesdropper_detected: eveDetected || qber >= 0.08,
-        quantum_attack_probability: clamp(qber * 5 + noise * 2, 0, 1),
-        decision,
-        detail: `QBER mean ${percent(qber)} from ${qberValues.length.toLocaleString()} quantum-error records${noiseValues.length ? `; mean channel noise ${percent(noise)}.` : "."}`
+    if (resultMessage) {
+        const name =
+            meta.filename ||
+            datasetState.file?.name ||
+            "uploaded dataset";
+
+        resultMessage.textContent =
+            `${name} was processed by the Q-Safe backend. ` +
+            `Threat probability: ` +
+            `${(
+                data.threat_probability *
+                100
+            ).toFixed(1)}%. ` +
+            `QBER: ` +
+            `${(
+                data.qber *
+                100
+            ).toFixed(1)}%. ` +
+            `Quantum attack probability: ` +
+            `${(
+                data.quantum_attack_probability *
+                100
+            ).toFixed(1)}%.`;
+    }
+}
+
+
+function recordDatasetResearchData(data) {
+    const threatPercent = Number(data.threat_probability || 0) * 100;
+    const qberPercent = Number(data.qber || 0) * 100;
+    const decision = String(data.decision || "MONITOR").toUpperCase();
+
+    const replacePoint = (array, point) => {
+        const index = array.findIndex(item => item.name === point.name);
+        if (index >= 0) array[index] = point;
+        else array.push(point);
     };
-}
 
-function buildPreview(dataset) {
-    const table = $("previewTableWrap");
-    if (!table) return;
-    const previewRows = dataset.rows.slice(0, 8);
-    const maxColumns = Math.min(dataset.headers.length, 18);
-
-    let html = "<table class=\"preview-table\"><thead><tr>";
-    dataset.headers.slice(0, maxColumns).forEach(header => {
-        html += `<th>${escapeHtml(header)}</th>`;
-    });
-    html += "</tr></thead><tbody>";
-
-    previewRows.forEach(row => {
-        html += "<tr>";
-        for (let i = 0; i < maxColumns; i += 1) html += `<td>${escapeHtml(row[i] ?? "")}</td>`;
-        html += "</tr>";
+    replacePoint(threatQberData, {
+        name: "UPLOADED DATASET",
+        threat: Number(threatPercent.toFixed(2)),
+        qber: Number(qberPercent.toFixed(3))
     });
 
-    html += "</tbody></table>";
-    table.innerHTML = html;
-    setText("datasetPreviewMeta", `Showing ${previewRows.length} of ${dataset.rows.length.toLocaleString()} rows · ${maxColumns} of ${dataset.headers.length} columns`);
-}
-
-function escapeHtml(value) {
-    return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-function updateDatasetSummary(fileName, dataset) {
-    setText("datasetFile", fileName || "No file loaded");
-    setText("datasetRows", dataset ? dataset.rows.length.toLocaleString() : "—");
-    setText("datasetColumns", dataset ? dataset.headers.length.toLocaleString() : "—");
-}
-
-/* =========================================================
-   LOCAL MODEL EXECUTION
-   ========================================================= */
-
-async function buildUploadedResult(file, dataset) {
-    const ml = analyzeMLDataset(dataset);
-    let qber = readUploadedQber(dataset);
-
-    if (qber.needsQiskit) {
-        const qiskit = await fetchDemoScenario(currentScenario);
-        qber = {
-            available: true,
-            qber: qiskit.qber,
-            channel_noise: qiskit.channel_noise,
-            expected_qber: qiskit.expected_qber,
-            eavesdropper_detected: qiskit.eavesdropper_detected,
-            quantum_attack_probability: qiskit.quantum_attack_probability,
-            decision: modelDecisionFromQber(qiskit.qber),
-            qubits_sent: qiskit.qkd.qubits_sent,
-            sifted_key_length: qiskit.qkd.sifted_key_length,
-            source: qiskit.metadata?.source || "qiskit-fallback",
-            detail: `Qiskit BB84 output used because the uploaded dataset has no QBER column: QBER ${percent(qiskit.qber)}. ` +
-                    (qiskit.metadata?.source === "q-safe-fastapi" ? "Live backend experiment." : "Controlled fallback experiment.")
-        };
-    }
-
-    let hybrid = { available: false };
-    if (ml.available && qber.available) {
-        const fusedData = normalizeScenario({
-            threat_probability: ml.threat_probability,
-            qber: qber.qber,
-            channel_noise: qber.channel_noise,
-            expected_qber: qber.expected_qber,
-            eavesdropper_detected: qber.eavesdropper_detected,
-            quantum_attack_probability: qber.quantum_attack_probability
-        });
-        const riskScore = getRiskScore(fusedData);
-        hybrid = {
-            available: true,
-            risk_score: riskScore,
-            decision: decisionFromScore(riskScore),
-            reason: `Hybrid evidence fusion used uploaded ML threat probability (${percent(ml.threat_probability)}) and Qiskit/QBER evidence (${percent(qber.qber)} QBER, ${percent(qber.channel_noise)} noise).`,
-            detail: `Fused risk score ${riskScore}/100 from classical + quantum evidence.`
-        };
-    } else {
-        hybrid.detail = "Hybrid mode needs both a usable normal/attack target and quantum evidence.";
-    }
-
-    return {
-        ml,
-        qber,
-        hybrid,
-        dataset: {
-            file: file.name,
-            rows: dataset.rows.length,
-            columns: dataset.headers.length,
-            format: dataset.fileFormat,
-            delimiter: dataset.delimiter
-        }
-    };
-}
-
-function resultToDashboardData(result) {
-    const source = uploadedDataset ? "uploaded-data" : "controlled-demo";
-
-    if (selectedModel === "ml") {
-        const ml = result.ml;
-        return normalizeScenario({
-            threat_probability: ml?.threat_probability ?? 0,
-            qber: 0,
-            channel_noise: 0,
-            expected_qber: 0,
-            eavesdropper_detected: false,
-            quantum_attack_probability: 0,
-            decision: ml?.decision || "MONITOR",
-            reason: ml?.detail || "ML model completed.",
-            qubits_sent: 0,
-            sifted_key_length: 0,
-            metadata: { source, model: "ml" }
-        });
-    }
-
-    if (selectedModel === "qber") {
-        const qber = result.qber;
-        return normalizeScenario({
-            threat_probability: 0,
-            qber: qber?.qber ?? 0,
-            channel_noise: qber?.channel_noise ?? 0,
-            expected_qber: qber?.expected_qber ?? 0,
-            eavesdropper_detected: qber?.eavesdropper_detected ?? false,
-            quantum_attack_probability: qber?.quantum_attack_probability ?? 0,
-            decision: qber?.decision || modelDecisionFromQber(qber?.qber ?? 0),
-            reason: qber?.detail || "QBER model completed.",
-            qubits_sent: qber?.qubits_sent ?? 1000,
-            sifted_key_length: qber?.sifted_key_length ?? 493,
-            metadata: { source, model: "qber", qber_source: qber?.source || "uploaded-data" }
-        });
-    }
-
-    const hybrid = result.hybrid;
-    const ml = result.ml;
-    const qber = result.qber;
-    return normalizeScenario({
-        threat_probability: ml?.threat_probability ?? 0,
-        qber: qber?.qber ?? 0,
-        channel_noise: qber?.channel_noise ?? 0,
-        expected_qber: qber?.expected_qber ?? 0,
-        eavesdropper_detected: qber?.eavesdropper_detected ?? false,
-        quantum_attack_probability: qber?.quantum_attack_probability ?? 0,
-        decision: hybrid?.decision || "MONITOR",
-        reason: hybrid?.reason || "Hybrid evidence fusion completed.",
-        qubits_sent: qber?.qubits_sent ?? 1000,
-        sifted_key_length: qber?.sifted_key_length ?? 493,
-        metadata: { source, model: "hybrid" }
+    replacePoint(evidenceComparisonData, {
+        name: "UPLOADED DATASET",
+        threat: Number(threatPercent.toFixed(2)),
+        qber: Number(qberPercent.toFixed(3))
     });
-}
 
-async function analyzeUploadedFile(file) {
-    if (!file) return;
-    setText("datasetStatus", "READING");
-    setText("datasetMessage", "Reading the dataset and preparing the selected model.");
-    $("datasetMessage")?.classList.remove("is-success", "is-error");
+    const decisionItem = decisionDistributionData.find(
+        item => item.decision === decision
+    );
+    if (decisionItem) decisionItem.count += 1;
 
-    try {
-        const text = await file.text();
-        const dataset = parseDataset(text, file.name);
-        uploadedDataset = dataset;
-        updateDatasetSummary(file.name, dataset);
-        buildPreview(dataset);
-        $("clearDataButton") && ($("clearDataButton").disabled = false);
-        $("datasetDropzone")?.classList.remove("is-dragging");
-
-        let backendResult = null;
-        if (API_CONFIG.UPLOAD_API_ENABLED) {
-            backendResult = await evaluateUploadWithBackend(file, selectedModel);
-        }
-
-        if (backendResult?.results) {
-            currentDatasetResult = backendResult.results;
-        } else {
-            currentDatasetResult = await buildUploadedResult(file, dataset);
-        }
-
-        setText("datasetStatus", "ANALYZED");
-        const msg = backendResult?.message || `Dataset loaded successfully. ${dataset.rows.length.toLocaleString()} rows and ${dataset.headers.length.toLocaleString()} columns are available to the selected model.`;
-        setText("datasetMessage", msg);
-        $("datasetMessage")?.classList.add("is-success");
-        setText("uploadHeadline", file.name);
-        setText("uploadSubline", `${dataset.fileFormat} · ${dataset.rows.length.toLocaleString()} rows · ${dataset.headers.length.toLocaleString()} columns`);
-
-        await refreshForSelectedModel();
-    } catch (error) {
-        console.error("Q-Safe dataset upload failed:", error);
-        uploadedDataset = null;
-        currentDatasetResult = null;
-        updateDatasetSummary("No file loaded", null);
-        setText("datasetStatus", "ERROR");
-        setText("datasetMessage", error.message || "Could not read the uploaded dataset.");
-        $("datasetMessage")?.classList.add("is-error");
-        $("clearDataButton") && ($("clearDataButton").disabled = true);
-    }
-}
-
-function clearUploadedDataset() {
-    uploadedDataset = null;
-    currentDatasetResult = null;
-    updateDatasetSummary("No file loaded", null);
-    setText("datasetStatus", "READY");
-    setText("datasetMessage", "No uploaded dataset. The dashboard is showing the controlled Q-Safe demonstration data.");
-    $("datasetMessage")?.classList.remove("is-success", "is-error");
-    setText("uploadHeadline", "UPLOAD DATASET");
-    setText("uploadSubline", "NSL-KDD CSV/TXT or experiment CSV/TXT");
-    $("clearDataButton") && ($("clearDataButton").disabled = true);
-    const table = $("previewTableWrap");
-    if (table) table.innerHTML = '<div class="preview-empty">No dataset loaded.</div>';
-    setText("datasetPreviewMeta", "Upload a dataset to inspect its first rows.");
-    document.querySelectorAll(".scenario-button").forEach(button => button.disabled = false);
-    updateModelMetadata();
-    refreshForSelectedModel();
-}
-
-function initializeDataUpload() {
-    const input = $("dataFileInput");
-    const choose = $("chooseDataButton");
-    const clear = $("clearDataButton");
-    const zone = $("datasetDropzone");
-    if (!input || !choose || !clear || !zone) return;
-
-    choose.addEventListener("click", () => input.click());
-    input.addEventListener("change", () => {
-        const file = input.files?.[0];
-        if (file) analyzeUploadedFile(file);
-    });
-    clear.addEventListener("click", clearUploadedDataset);
-
-    ["dragenter", "dragover"].forEach(type => zone.addEventListener(type, event => {
-        event.preventDefault();
-        zone.classList.add("is-dragging");
-    }));
-    ["dragleave", "drop"].forEach(type => zone.addEventListener(type, event => {
-        event.preventDefault();
-        zone.classList.remove("is-dragging");
-    }));
-    zone.addEventListener("drop", event => {
-        const file = event.dataTransfer?.files?.[0];
-        if (file) {
-            analyzeUploadedFile(file);
-        }
-    });
-    zone.addEventListener("keydown", event => {
-        if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            input.click();
-        }
-    });
-}
-
-/* =========================================================
-   DASHBOARD RENDERING
-   ========================================================= */
-
-function updateSecurityPulse(decision) {
-    const pulse = $("securityPulse");
-    if (!pulse) return;
-    pulse.classList.remove("pulse-stable", "pulse-elevated", "pulse-critical", "pulse-analyzing");
-
-    if (decision === "ACCEPT") {
-        pulse.classList.add("pulse-stable");
-        setText("pulseTitle", "SECURITY STABLE");
-        setText("pulseDescription", "The active model is within secure limits.");
-    } else if (decision === "MONITOR") {
-        pulse.classList.add("pulse-elevated");
-        setText("pulseTitle", "SECURITY ELEVATED");
-        setText("pulseDescription", "The selected model reports evidence that requires monitoring.");
-    } else if (decision === "REJECT") {
-        pulse.classList.add("pulse-critical");
-        setText("pulseTitle", "SECURITY CRITICAL");
-        setText("pulseDescription", "The selected model reports a high-risk condition.");
-    } else {
-        pulse.classList.add("pulse-analyzing");
-        setText("pulseTitle", "SECURITY ANALYZING");
-        setText("pulseDescription", "Evaluating model evidence.");
-    }
-}
-
-function updateRiskGauge(data) {
-    const score = selectedModel === "hybrid" && currentDatasetResult?.hybrid?.available
-        ? currentDatasetResult.hybrid.risk_score
-        : selectedModel === "ml"
-            ? data.threat_probability * 100
-            : selectedModel === "qber"
-                ? data.qber * 100
-                : getRiskScore(data);
-
-    const safeScore = Math.round(clamp(score ?? 0, 0, 100));
-    setText("riskScore", String(safeScore));
-    const fill = $("riskGaugeFill");
-    const marker = $("riskGaugeMarker");
-    if (fill) fill.style.width = `${safeScore}%`;
-    if (marker) marker.style.left = `${safeScore}%`;
-
-    const label = $("riskGaugeLabel");
-    if (!label) return;
-    if (safeScore < 30) {
-        label.textContent = "LOW RISK";
-        label.style.color = "var(--success)";
-    } else if (safeScore < 65) {
-        label.textContent = "ELEVATED RISK";
-        label.style.color = "var(--warning)";
-    } else {
-        label.textContent = "HIGH / CRITICAL RISK";
-        label.style.color = "var(--danger)";
-    }
-}
-
-function updateDecisionState(data) {
-    const decision = data.decision;
-    const state = $("decisionState");
-    if (state) {
-        state.classList.remove("decision-accept", "decision-monitor", "decision-reject");
-        state.classList.add(`decision-${decision.toLowerCase()}`);
-    }
-    setText("decisionValue", decision);
-    setText("decisionReason", data.reason);
-    updateSecurityPulse(decision);
-}
-
-function updateEvidence(data) {
-    const activeML = selectedModel === "ml" || selectedModel === "hybrid";
-    const activeQBER = selectedModel === "qber" || selectedModel === "hybrid";
-
-    setText("decisionThreat", activeML ? percent(data.threat_probability) : "NOT IN USE");
-    setText("decisionQber", activeQBER ? percent(data.qber) : "NOT IN USE");
-    setText("decisionNoise", activeQBER ? percent(data.channel_noise) : "NOT IN USE");
-    setText("decisionEve", activeQBER ? (data.eavesdropper_detected ? "YES" : "NO") : "NOT IN USE");
-
-    setText("fusionThreat", activeML ? percent(data.threat_probability) : "NOT IN USE");
-    setText("fusionQber", activeQBER ? percent(data.qber) : "NOT IN USE");
-    setText("fusionNoise", activeQBER ? percent(data.channel_noise) : "NOT IN USE");
-    setText("fusionDecision", selectedModel === "hybrid" ? data.decision : `${selectedModel.toUpperCase()}-ONLY`);
-    setText("fusionDecisionReason", data.reason);
-}
-
-function updateMetrics(data) {
-    const activeML = selectedModel === "ml" || selectedModel === "hybrid";
-    const activeQBER = selectedModel === "qber" || selectedModel === "hybrid";
-
-    const threatCard = $("threatMetricCard");
-    const qberCard = $("qberMetricCard");
-    const noiseCard = $("noiseMetricCard");
-    const eveCard = $("eveMetricCard");
-
-    [threatCard, qberCard, noiseCard, eveCard].forEach(el => el?.classList.remove("is-not-in-use"));
-    if (!activeML) threatCard?.classList.add("is-not-in-use");
-    if (!activeQBER) {
-        qberCard?.classList.add("is-not-in-use");
-        noiseCard?.classList.add("is-not-in-use");
-        eveCard?.classList.add("is-not-in-use");
-    }
-
-    setText("threatProbability", activeML ? percent(data.threat_probability) : "NOT IN USE");
-    setText("qberValue", activeQBER ? percent(data.qber) : "NOT IN USE");
-    setText("noiseValue", activeQBER ? percent(data.channel_noise) : "NOT IN USE");
-    setText("eveValue", activeQBER ? (data.eavesdropper_detected ? "DETECTED" : "NOT DETECTED") : "NOT IN USE");
-
-    const threatBar = $("threatBar");
-    const qberBar = $("qberBar");
-    const noiseBar = $("noiseBar");
-    if (threatBar) threatBar.style.width = `${activeML ? data.threat_probability * 100 : 0}%`;
-    if (qberBar) qberBar.style.width = `${activeQBER ? clamp(data.qber * 100, 0, 100) : 0}%`;
-    if (noiseBar) noiseBar.style.width = `${activeQBER ? clamp(data.channel_noise * 100, 0, 100) : 0}%`;
-
-    const eveState = $("eveState");
-    if (eveState) {
-        eveState.className = `metric-state ${!activeQBER ? "state-off" : data.eavesdropper_detected ? "state-danger" : "state-safe"}`;
-        eveState.textContent = !activeQBER ? "NOT IN USE" : data.eavesdropper_detected ? "THREAT" : "SECURE";
-    }
-}
-
-function updateQuantumMetrics(data) {
-    const active = selectedModel === "qber" || selectedModel === "hybrid";
-    const value = active ? Number(data.qkd.qubits_sent).toLocaleString() : "NOT IN USE";
-    const sifted = active ? `${Number(data.qkd.sifted_key_length).toLocaleString()} bits` : "NOT IN USE";
-    setText("qubitsSent", value);
-    setText("siftedKey", sifted);
-    setText("quantumQber", active ? percent(data.qber) : "NOT IN USE");
-    setText("expectedQber", active ? percent(data.expected_qber) : "NOT IN USE");
-}
-
-function updateNetworkVisualization(data) {
-    const connection = $("mainConnection");
-    if (!connection) return;
-
-    const state = data.decision === "REJECT" ? "reject" : data.decision === "MONITOR" ? "monitor" : "secure";
-    connection.dataset.state = state;
-    setText("networkChannelStatus", selectedModel === "ml" ? "ML-ONLY" : state.toUpperCase());
-
-    const threatLayer = $("networkThreatLayer");
-    threatLayer?.classList.toggle("active", selectedModel !== "qber" && data.threat_probability >= 0.70);
-}
-
-function updateAttackSurface(data) {
-    const networkVector = $("networkVector");
-    const quantumVector = $("quantumVector");
-    const status = $("attackSurfaceStatus");
-    if (!networkVector || !quantumVector || !status) return;
-
-    const networkThreat = (selectedModel === "ml" || selectedModel === "hybrid") && data.threat_probability >= 0.70;
-    const quantumThreat = (selectedModel === "qber" || selectedModel === "hybrid") && (data.qber >= 0.05 || data.eavesdropper_detected);
-
-    networkVector.classList.toggle("active", networkThreat);
-    quantumVector.classList.toggle("active", quantumThreat);
-
-    status.textContent = networkThreat && quantumThreat
-        ? "MULTI-LAYER THREAT"
-        : networkThreat
-            ? "NETWORK THREAT"
-            : quantumThreat
-                ? "QUANTUM THREAT"
-                : "BASELINE";
-}
-
-function updateQuantumVisualization(data) {
-    const eve = $("eveInterceptor");
-    if (!eve) return;
-    eve.classList.toggle("active", (selectedModel === "qber" || selectedModel === "hybrid") && data.eavesdropper_detected);
-}
-
-function updateAnalysis(data) {
-    setText("analysisText", data.reason);
-    setText("analysisThreat", selectedModel === "qber" ? "NOT IN USE" : data.threat_probability >= 0.70 ? "HIGH" : data.threat_probability >= 0.30 ? "ELEVATED" : "LOW");
-    setText("analysisQuantum", selectedModel === "ml" ? "NOT IN USE" : data.qber >= 0.05 ? "HIGH" : data.qber >= 0.03 ? "ELEVATED" : "LOW");
-    setText("analysisChannel", selectedModel === "ml" ? "NOT IN USE" : data.channel_noise >= 0.03 ? "NOISY" : "STABLE");
-    const risk = getRiskScore(data);
-    setText("analysisConfidence", selectedModel === "hybrid" ? (risk >= 65 ? "HIGH" : risk >= 30 ? "MEDIUM" : "HIGH") : "MODEL SCORE");
-    setText("analysisBadge", selectedModel === "hybrid" ? "HYBRID" : selectedModel.toUpperCase() + " ONLY");
-}
-
-function updateSecurityEvents(data) {
-    const feed = $("eventFeed");
-    if (!feed) return;
-    const events = [
-        {
-            title: `Policy decision: ${data.decision}`,
-            message: data.reason,
-            severity: data.decision === "ACCEPT" ? "success" : data.decision === "MONITOR" ? "warning" : "danger"
-        }
-    ];
-
-    if (selectedModel !== "qber") {
-        events.push({
-            title: "Classical model",
-            message: `Threat probability ${percent(data.threat_probability)}.`,
-            severity: data.threat_probability >= 0.70 ? "danger" : data.threat_probability >= 0.30 ? "warning" : "success"
-        });
-    }
-
-    if (selectedModel !== "ml") {
-        events.push({
-            title: "Quantum model",
-            message: `QBER ${percent(data.qber)} · noise ${percent(data.channel_noise)}.`,
-            severity: data.qber >= 0.05 ? "danger" : data.qber >= 0.03 ? "warning" : "success"
-        });
-    }
-
-    if (data.eavesdropper_detected && selectedModel !== "ml") {
-        events.push({
-            title: "Eavesdropper evidence",
-            message: "Quantum-channel telemetry indicates possible interception.",
-            severity: "danger"
-        });
-    }
-
-    feed.innerHTML = events.map(event => `
-        <div class="security-event event-${event.severity}">
-            <span class="event-dot"></span>
-            <div class="event-copy">
-                <strong>${escapeHtml(event.title)}</strong>
-                <span>${escapeHtml(event.message)}</span>
-            </div>
-            <span class="event-time">${escapeHtml(nowTime())}</span>
-        </div>
-    `).join("");
-}
-
-function updateDragonState(data) {
-    window.updateDragonThemeState?.(data.decision, selectedModel);
-}
-
-function renderDashboard(data) {
-    lastData = data;
-    updateModelView();
-    updateDecisionState(data);
-    updateRiskGauge(data);
-    updateEvidence(data);
-    updateMetrics(data);
-    updateQuantumMetrics(data);
-    updateNetworkVisualization(data);
-    updateQuantumVisualization(data);
-    updateAttackSurface(data);
-    updateAnalysis(data);
-    updateSecurityEvents(data);
-    updateDragonState(data);
-    window.setChannelFlowState?.(data.decision === "REJECT" ? "reject" : data.decision === "MONITOR" ? "monitor" : "secure");
     drawAllCharts();
 }
 
-/* =========================================================
-   MODEL REFRESH
-   ========================================================= */
 
-async function refreshForSelectedModel() {
-    updateModelMetadata();
-
-    if (uploadedDataset && currentDatasetResult) {
-        updateModelResultPanels(currentDatasetResult);
-        const data = resultToDashboardData(currentDatasetResult);
-        renderDashboard(data);
+async function uploadAndAnalyzeDataset() {
+    if (
+        !datasetState.file
+    ) {
+        setDatasetStatus(
+            "Choose a dataset before analysis.",
+            "error"
+        );
         return;
     }
 
-    const demo = await fetchDemoScenario(currentScenario);
-    const result = {
-        ml: {
-            available: true,
-            threat_probability: demo.threat_probability,
-            decision: modelDecisionFromML(demo.threat_probability),
-            detail: `Controlled scenario threat evidence is ${percent(demo.threat_probability)}.`,
-            confidence: Math.max(demo.threat_probability, 1 - demo.threat_probability)
-        },
-        qber: {
-            available: true,
-            qber: demo.qber,
-            channel_noise: demo.channel_noise,
-            expected_qber: demo.expected_qber,
-            eavesdropper_detected: demo.eavesdropper_detected,
-            quantum_attack_probability: demo.quantum_attack_probability,
-            decision: modelDecisionFromQber(demo.qber),
-            detail: `Controlled Qiskit/QBER scenario: ${percent(demo.qber)} QBER and ${percent(demo.channel_noise)} noise.`,
-            qubits_sent: demo.qkd.qubits_sent,
-            sifted_key_length: demo.qkd.sifted_key_length,
-            source: demo.metadata?.source
+    datasetState.analyzing =
+        true;
+
+    document.body.classList.add(
+        "dataset-analyzing"
+    );
+
+    const analyzeButton =
+        getElement(
+            "datasetAnalyzeButton"
+        );
+
+    if (analyzeButton) {
+        analyzeButton.disabled =
+            true;
+    }
+
+    setDatasetStatus(
+        "Uploading dataset and running the Q-Safe model…"
+    );
+
+
+    try {
+        const formData =
+            new FormData();
+
+        formData.append(
+            "file",
+            datasetState.file
+        );
+
+        formData.append(
+            "analysis_mode",
+            "hybrid"
+        );
+
+        /*
+            These fields match the planned FastAPI upload
+            route. The backend controls the actual model
+            execution; the browser never computes predictions.
+        */
+        formData.append(
+            "n_bits",
+            "100"
+        );
+
+        formData.append(
+            "trials",
+            "10"
+        );
+
+        formData.append(
+            "noise_rate",
+            "0"
+        );
+
+        formData.append(
+            "eve_probability",
+            "0"
+        );
+
+        const response =
+            await fetch(
+                API_CONFIG.BASE_URL +
+                API_CONFIG.UPLOAD_ENDPOINT,
+                {
+                    method:
+                        "POST",
+
+                    body:
+                        formData
+                }
+            );
+
+
+        if (!response.ok) {
+            let detail =
+                `Backend returned HTTP ${response.status}.`;
+
+            try {
+                const errorPayload =
+                    await response.json();
+
+                detail =
+                    errorPayload.detail ||
+                    errorPayload.message ||
+                    detail;
+
+            }
+            catch (_) {
+                /*
+                    Keep the HTTP error if the backend
+                    does not return JSON.
+                */
+            }
+
+            throw new Error(
+                String(detail)
+            );
         }
-    };
-    const hybridData = normalizeScenario(demo);
-    const riskScore = getRiskScore(hybridData);
-    result.hybrid = {
-        available: true,
-        risk_score: riskScore,
-        decision: demo.decision,
-        reason: demo.reason,
-        detail: `Combined controlled evidence gives risk score ${riskScore}/100.`
-    };
 
-    currentDatasetResult = null;
-    updateModelResultPanels(result);
-    const data = selectedModel === "ml"
-        ? normalizeScenario({ ...demo, qber: 0, channel_noise: 0, eavesdropper_detected: false, decision: result.ml.decision, reason: result.ml.detail })
-        : selectedModel === "qber"
-            ? normalizeScenario({ ...demo, threat_probability: 0, decision: result.qber.decision, reason: result.qber.detail })
-            : demo;
-    renderDashboard(data);
+
+        const payload =
+            await response.json();
+
+        const uploadResult =
+            getUploadResult(
+                payload
+            );
+
+
+        updateDashboard(
+            {
+                success:
+                    true,
+
+                data:
+                    uploadResult.data
+            }
+        );
+
+
+        updateDatasetResults(
+            uploadResult
+        );
+
+
+        recordDatasetResearchData(
+            uploadResult.data
+        );
+
+
+        setDatasetStatus(
+            "Dataset analysis completed successfully.",
+            "success"
+        );
+
+        const source =
+            uploadResult.data
+                .metadata
+                .filename ||
+            datasetState.file.name;
+
+        const resultMessage =
+            getElement(
+                "datasetResultMessage"
+            );
+
+        if (resultMessage) {
+            resultMessage.textContent =
+                `${source} analyzed successfully. ` +
+                `The existing Q-Safe metric cards and research charts ` +
+                `now reflect this backend result.`;
+        }
+
+    }
+    catch (error) {
+        console.error(
+            "Q-Safe dataset upload error:",
+            error
+        );
+
+        setDatasetStatus(
+            error.message ||
+            "Dataset analysis failed.",
+            "error"
+        );
+
+        const resultMessage =
+            getElement(
+                "datasetResultMessage"
+            );
+
+        if (resultMessage) {
+            resultMessage.textContent =
+                "The dataset could not be analyzed. " +
+                "Check the FastAPI terminal for the backend error.";
+        }
+    }
+    finally {
+        datasetState.analyzing =
+            false;
+
+        document.body.classList.remove(
+            "dataset-analyzing"
+        );
+
+        updateDatasetFileUI();
+    }
 }
 
-/* =========================================================
-   SCENARIOS
-   ========================================================= */
 
-async function runScenario(scenarioName) {
-    if (uploadedDataset) {
-        setText("datasetMessage", "Demo scenarios are disabled while an uploaded dataset is active. Clear the dataset to return to the controlled scenario simulation.");
-        $("datasetMessage")?.classList.add("is-error");
+function initializeDatasetUpload() {
+    const dropzone =
+        getElement(
+            "datasetDropzone"
+        );
+
+    const input =
+        getElement(
+            "datasetFileInput"
+        );
+
+    const analyzeButton =
+        getElement(
+            "datasetAnalyzeButton"
+        );
+
+    const clearButton =
+        getElement(
+            "datasetClearButton"
+        );
+
+    if (
+        !dropzone ||
+        !input
+    ) {
         return;
     }
 
-    currentScenario = SCENARIOS[scenarioName] ? scenarioName : "normal";
-    document.querySelectorAll(".scenario-button").forEach(button => {
-        button.classList.toggle("active", button.dataset.scenario === currentScenario);
-    });
 
-    const data = await refreshForSelectedModel();
-    void data;
+    updateDatasetFileUI();
+
+
+    dropzone.addEventListener(
+        "click",
+        () => {
+            input.click();
+        }
+    );
+
+
+    dropzone.addEventListener(
+        "keydown",
+        event => {
+            if (
+                event.key ===
+                "Enter" ||
+                event.key ===
+                " "
+            ) {
+                event.preventDefault();
+                input.click();
+            }
+        }
+    );
+
+
+    input.addEventListener(
+        "change",
+        event => {
+            const files =
+                event.target.files;
+
+            if (
+                files &&
+                files.length
+            ) {
+                setDatasetFile(
+                    files[0]
+                );
+            }
+        }
+    );
+
+
+    [
+        "dragenter",
+        "dragover"
+    ].forEach(
+        eventName => {
+            dropzone.addEventListener(
+                eventName,
+                event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    dropzone.classList.add(
+                        "dragover"
+                    );
+                }
+            );
+        }
+    );
+
+
+    [
+        "dragleave",
+        "drop"
+    ].forEach(
+        eventName => {
+            dropzone.addEventListener(
+                eventName,
+                event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    dropzone.classList.remove(
+                        "dragover"
+                    );
+                }
+            );
+        }
+    );
+
+
+    dropzone.addEventListener(
+        "drop",
+        event => {
+            const files =
+                event.dataTransfer.files;
+
+            if (
+                files &&
+                files.length
+            ) {
+                setDatasetFile(
+                    files[0]
+                );
+            }
+        }
+    );
+
+
+    if (analyzeButton) {
+        analyzeButton.addEventListener(
+            "click",
+            uploadAndAnalyzeDataset
+        );
+    }
+
+
+    if (clearButton) {
+        clearButton.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+
+                clearDatasetFile();
+            }
+        );
+    }
 }
 
-window.runScenario = runScenario;
+
 
 /* =========================================================
-   EXPERIMENT CONTROLS
+   CANVAS SETUP
    ========================================================= */
 
-function updateExperimentLabels() {
-    setText("nBitsValue", $("nBitsControl")?.value || "100");
-    setText("trialsValue", $("trialsControl")?.value || "10");
-}
+function setupCanvas(
+    canvas
+) {
 
-function initializeExperimentControls() {
-    $("nBitsControl")?.addEventListener("input", updateExperimentLabels);
-    $("trialsControl")?.addEventListener("input", updateExperimentLabels);
-    updateExperimentLabels();
-}
+    if (!canvas) {
 
-/* =========================================================
-   CHARTS
-   ========================================================= */
+        return null;
 
-function chartColors() {
-    const style = getComputedStyle(document.body);
+    }
+
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+
+    const width =
+        Math.max(
+            rect.width,
+            100
+        );
+
+
+    const height =
+        Math.max(
+            rect.height,
+            180
+        );
+
+
+    const devicePixelRatio =
+        window.devicePixelRatio ||
+        1;
+
+
+    canvas.width =
+        width *
+        devicePixelRatio;
+
+
+    canvas.height =
+        height *
+        devicePixelRatio;
+
+
+    const ctx =
+        canvas.getContext(
+            "2d"
+        );
+
+
+    ctx.setTransform(
+        devicePixelRatio,
+        0,
+        0,
+        devicePixelRatio,
+        0,
+        0
+    );
+
+
     return {
-        accent: style.getPropertyValue("--accent").trim() || "#55d6ff",
-        accent2: style.getPropertyValue("--accent-2").trim() || "#7b61ff",
-        success: style.getPropertyValue("--success").trim() || "#43f5a1",
-        warning: style.getPropertyValue("--warning").trim() || "#ffc857",
-        danger: style.getPropertyValue("--danger").trim() || "#ff5268",
-        muted: style.getPropertyValue("--muted").trim() || "#8ca2b8",
-        text: style.getPropertyValue("--text").trim() || "#eef7ff"
+
+        canvas,
+        ctx,
+        width,
+        height
+
     };
+
 }
 
-function drawAxes(ctx, width, height, margin, xMax, yMax, colors, xLabel, yLabel) {
-    ctx.strokeStyle = "rgba(150,170,190,0.16)";
-    ctx.lineWidth = 1;
+
+/* =========================================================
+   CHART HELPERS
+   ========================================================= */
+
+function clearCanvas(
+    ctx,
+    width,
+    height
+) {
+
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+}
+
+
+function drawGrid(
+    ctx,
+    chartWidth,
+    chartHeight,
+    padding,
+    horizontalLines = 5
+) {
+
+    ctx.strokeStyle =
+        "rgba(128, 150, 170, 0.16)";
+
+
+    ctx.lineWidth =
+        1;
+
+
+    for (
+        let i = 0;
+        i <= horizontalLines;
+        i++
+    ) {
+
+        const y =
+            padding.top +
+            (
+                (
+                    chartHeight -
+                    padding.top -
+                    padding.bottom
+                )
+                *
+                i /
+                horizontalLines
+            );
+
+
+        ctx.beginPath();
+
+
+        ctx.moveTo(
+            padding.left,
+            y
+        );
+
+
+        ctx.lineTo(
+            chartWidth -
+            padding.right,
+            y
+        );
+
+
+        ctx.stroke();
+
+    }
+
+}
+
+
+function drawAxes(
+    ctx,
+    chartWidth,
+    chartHeight,
+    padding
+) {
+
+    ctx.strokeStyle =
+        "rgba(128, 150, 170, 0.42)";
+
+
+    ctx.lineWidth =
+        1;
+
+
     ctx.beginPath();
-    ctx.moveTo(margin.left, height - margin.bottom);
-    ctx.lineTo(width - margin.right, height - margin.bottom);
-    ctx.moveTo(margin.left, margin.top);
-    ctx.lineTo(margin.left, height - margin.bottom);
+
+
+    ctx.moveTo(
+        padding.left,
+        padding.top
+    );
+
+
+    ctx.lineTo(
+        padding.left,
+        chartHeight -
+        padding.bottom
+    );
+
+
+    ctx.lineTo(
+        chartWidth -
+        padding.right,
+        chartHeight -
+        padding.bottom
+    );
+
+
     ctx.stroke();
 
-    ctx.font = "10px 'JetBrains Mono', monospace";
-    ctx.fillStyle = colors.muted;
-    ctx.textAlign = "center";
-    ctx.fillText(xLabel, width / 2, height - 8);
+}
+
+
+function drawText(
+    ctx,
+    text,
+    x,
+    y,
+    color = "#8195ad",
+    font = "11px Arial",
+    align = "left"
+) {
+
+    ctx.fillStyle =
+        color;
+
+
+    ctx.font =
+        font;
+
+
+    ctx.textAlign =
+        align;
+
+
+    ctx.fillText(
+        text,
+        x,
+        y
+    );
+
+}
+
+
+/* =========================================================
+   LINE CHART
+   ========================================================= */
+
+function drawLineChart(
+    canvasId,
+    data,
+    xKey,
+    yKey,
+    xMax,
+    yMax,
+    xLabel,
+    yLabel
+) {
+
+    const canvas =
+        getElement(
+            canvasId
+        );
+
+
+    const setup =
+        setupCanvas(
+            canvas
+        );
+
+
+    if (!setup) {
+
+        return;
+
+    }
+
+
+    const {
+        ctx,
+        width,
+        height
+    } = setup;
+
+
+    clearCanvas(
+        ctx,
+        width,
+        height
+    );
+
+
+    const padding = {
+
+        top:
+            20,
+
+        right:
+            25,
+
+        bottom:
+            45,
+
+        left:
+            48
+
+    };
+
+
+    drawGrid(
+        ctx,
+        width,
+        height,
+        padding
+    );
+
+
+    drawAxes(
+        ctx,
+        width,
+        height,
+        padding
+    );
+
+
+    const chartWidth =
+        width -
+        padding.left -
+        padding.right;
+
+
+    const chartHeight =
+        height -
+        padding.top -
+        padding.bottom;
+
+
+    for (
+        let i = 0;
+        i <= 5;
+        i++
+    ) {
+
+        const value =
+            yMax -
+            (
+                yMax *
+                i /
+                5
+            );
+
+
+        const y =
+            padding.top +
+            chartHeight *
+            i /
+            5;
+
+
+        drawText(
+            ctx,
+            `${value.toFixed(0)}%`,
+            padding.left - 9,
+            y + 4,
+            "#72869f",
+            "10px Arial",
+            "right"
+        );
+
+    }
+
+
+    data.forEach(
+        (point, index) => {
+
+            const x =
+                padding.left +
+                (
+                    chartWidth *
+                    index /
+                    Math.max(
+                        data.length - 1,
+                        1
+                    )
+                );
+
+
+            if (
+                index === 0 ||
+                index === data.length - 1 ||
+                index % 2 === 0
+            ) {
+
+                drawText(
+                    ctx,
+                    `${point[xKey]}%`,
+                    x,
+                    height - 18,
+                    "#72869f",
+                    "10px Arial",
+                    "center"
+                );
+
+            }
+
+        }
+    );
+
+
+    drawText(
+        ctx,
+        xLabel,
+        width / 2,
+        height - 3,
+        "#9aacc1",
+        "10px Arial",
+        "center"
+    );
+
+
     ctx.save();
-    ctx.translate(10, height / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText(yLabel, 0, 0);
+
+
+    ctx.translate(
+        12,
+        height / 2
+    );
+
+
+    ctx.rotate(
+        -Math.PI / 2
+    );
+
+
+    drawText(
+        ctx,
+        yLabel,
+        0,
+        0,
+        "#9aacc1",
+        "10px Arial",
+        "center"
+    );
+
+
     ctx.restore();
 
-    const grid = 4;
-    ctx.textAlign = "right";
-    for (let i = 0; i <= grid; i += 1) {
-        const y = margin.top + (height - margin.top - margin.bottom) * (1 - i / grid);
-        const value = (yMax * i / grid).toFixed(yMax < 10 ? 1 : 0);
-        ctx.fillStyle = colors.muted;
-        ctx.fillText(value, margin.left - 6, y + 3);
-        if (i > 0) {
-            ctx.strokeStyle = "rgba(150,170,190,0.10)";
-            ctx.beginPath();
-            ctx.moveTo(margin.left, y);
-            ctx.lineTo(width - margin.right, y);
-            ctx.stroke();
+
+    ctx.strokeStyle =
+        "#62a9ff";
+
+
+    ctx.lineWidth =
+        2.5;
+
+
+    ctx.lineJoin =
+        "round";
+
+
+    ctx.lineCap =
+        "round";
+
+
+    ctx.beginPath();
+
+
+    data.forEach(
+        (point, index) => {
+
+            const x =
+                padding.left +
+                (
+                    chartWidth *
+                    index /
+                    Math.max(
+                        data.length - 1,
+                        1
+                    )
+                );
+
+
+            const y =
+                padding.top +
+                chartHeight -
+                (
+                    (
+                        point[yKey] /
+                        yMax
+                    )
+                    *
+                    chartHeight
+                );
+
+
+            if (
+                index === 0
+            ) {
+
+                ctx.moveTo(
+                    x,
+                    y
+                );
+
+            }
+            else {
+
+                ctx.lineTo(
+                    x,
+                    y
+                );
+
+            }
+
         }
-    }
+    );
 
-    ctx.textAlign = "center";
-    for (let i = 0; i <= grid; i += 1) {
-        const x = margin.left + (width - margin.left - margin.right) * i / grid;
-        const value = (xMax * i / grid).toFixed(xMax < 10 ? 1 : 0);
-        ctx.fillStyle = colors.muted;
-        ctx.fillText(value, x, height - margin.bottom + 16);
-    }
-}
 
-function clearCanvas(canvas) {
-    if (!canvas) return null;
-    const rect = canvas.getBoundingClientRect();
-    const dpr = Math.max(1, window.devicePixelRatio || 1);
-    const width = Math.max(260, Math.round(rect.width || 520));
-    const height = 280;
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-    return { ctx, width, height };
-}
-
-function showChartUnavailable(canvasId, message) {
-    const canvas = $(canvasId);
-    const setup = clearCanvas(canvas);
-    if (!setup) return;
-    const { ctx, width, height } = setup;
-    const colors = chartColors();
-    ctx.fillStyle = colors.muted;
-    ctx.font = "11px 'JetBrains Mono', monospace";
-    ctx.textAlign = "center";
-    ctx.fillText(message, width / 2, height / 2);
-}
-
-function drawLineChart(canvasId, points, xLabel, yLabel, stroke) {
-    if (!points?.length) {
-        showChartUnavailable(canvasId, "NO DATA FOR SELECTED MODEL");
-        return;
-    }
-    const canvas = $(canvasId);
-    const setup = clearCanvas(canvas);
-    if (!setup) return;
-    const { ctx, width, height } = setup;
-    const colors = chartColors();
-    const margin = { left: 50, right: 18, top: 14, bottom: 35 };
-    const xMax = Math.max(...points.map(p => p.x), 1);
-    const yMax = Math.max(...points.map(p => p.y), 1) * 1.15;
-    drawAxes(ctx, width, height, margin, xMax, yMax, colors, xLabel, yLabel);
-
-    const px = x => margin.left + (width - margin.left - margin.right) * (x / xMax);
-    const py = y => height - margin.bottom - (height - margin.top - margin.bottom) * (y / yMax);
-
-    ctx.strokeStyle = stroke;
-    ctx.lineWidth = 2.2;
-    ctx.beginPath();
-    points.forEach((p, i) => i === 0 ? ctx.moveTo(px(p.x), py(p.y)) : ctx.lineTo(px(p.x), py(p.y)));
     ctx.stroke();
 
-    points.forEach(p => {
-        ctx.fillStyle = stroke;
-        ctx.beginPath();
-        ctx.arc(px(p.x), py(p.y), 3.2, 0, Math.PI * 2);
-        ctx.fill();
-    });
+
+    data.forEach(
+        (point, index) => {
+
+            const x =
+                padding.left +
+                (
+                    chartWidth *
+                    index /
+                    Math.max(
+                        data.length - 1,
+                        1
+                    )
+                );
+
+
+            const y =
+                padding.top +
+                chartHeight -
+                (
+                    (
+                        point[yKey] /
+                        yMax
+                    )
+                    *
+                    chartHeight
+                );
+
+
+            ctx.fillStyle =
+                "#8ac0ff";
+
+
+            ctx.beginPath();
+
+
+            ctx.arc(
+                x,
+                y,
+                3.5,
+                0,
+                Math.PI * 2
+            );
+
+
+            ctx.fill();
+
+        }
+    );
+
 }
 
-function drawScatterChart(canvasId, points, xLabel, yLabel, stroke) {
-    drawLineChart(canvasId, points, xLabel, yLabel, stroke);
-}
-
-function drawEvidenceChart(canvasId) {
-    const canvas = $(canvasId);
-    const setup = clearCanvas(canvas);
-    if (!setup) return;
-    const { ctx, width, height } = setup;
-    const colors = chartColors();
-    const data = scenarioHistory;
-    const margin = { left: 45, right: 14, top: 18, bottom: 38 };
-    const max = 100;
-
-    ctx.font = "9px 'JetBrains Mono', monospace";
-    ctx.textAlign = "center";
-    data.forEach((item, index) => {
-        const groupWidth = (width - margin.left - margin.right) / data.length;
-        const x = margin.left + groupWidth * index + groupWidth / 2;
-        const barWidth = Math.max(9, groupWidth * 0.18);
-        const threatH = (height - margin.top - margin.bottom) * (item.threat / max);
-        const qberH = (height - margin.top - margin.bottom) * (item.qber / max);
-        ctx.fillStyle = colors.accent;
-        ctx.fillRect(x - barWidth - 2, height - margin.bottom - threatH, barWidth, threatH);
-        ctx.fillStyle = colors.danger;
-        ctx.fillRect(x + 2, height - margin.bottom - qberH, barWidth, qberH);
-        ctx.fillStyle = colors.muted;
-        ctx.save();
-        ctx.translate(x, height - margin.bottom + 13);
-        ctx.rotate(-Math.PI / 7);
-        ctx.fillText(item.name, 0, 0);
-        ctx.restore();
-    });
-
-    ctx.strokeStyle = "rgba(150,170,190,0.16)";
-    ctx.beginPath();
-    ctx.moveTo(margin.left, margin.top);
-    ctx.lineTo(margin.left, height - margin.bottom);
-    ctx.lineTo(width - margin.right, height - margin.bottom);
-    ctx.stroke();
-
-    ctx.fillStyle = colors.accent;
-    ctx.fillRect(width - 150, 10, 9, 9);
-    ctx.fillStyle = colors.muted;
-    ctx.textAlign = "left";
-    ctx.fillText("THREAT", width - 136, 18);
-    ctx.fillStyle = colors.danger;
-    ctx.fillRect(width - 90, 10, 9, 9);
-    ctx.fillStyle = colors.muted;
-    ctx.fillText("QBER", width - 76, 18);
-}
-
-function drawDecisionDistribution(canvasId) {
-    const canvas = $(canvasId);
-    const setup = clearCanvas(canvas);
-    if (!setup) return;
-    const { ctx, width, height } = setup;
-    const colors = chartColors();
-    const counts = { ACCEPT: 0, MONITOR: 0, REJECT: 0 };
-    scenarioHistory.forEach(item => { counts[item.decision] = (counts[item.decision] || 0) + 1; });
-    if (selectedModel === "ml") counts.ACCEPT = counts.MONITOR = counts.REJECT = 0;
-
-    const values = ["ACCEPT", "MONITOR", "REJECT"].map(k => ({ label: k, value: counts[k] || 0 }));
-    const max = Math.max(...values.map(v => v.value), 1);
-    const margin = { left: 48, right: 22, top: 18, bottom: 34 };
-    const groupW = (width - margin.left - margin.right) / values.length;
-    const barW = groupW * 0.42;
-    values.forEach((item, i) => {
-        const x = margin.left + groupW * i + (groupW - barW) / 2;
-        const h = (height - margin.top - margin.bottom) * (item.value / max);
-        const color = item.label === "ACCEPT" ? colors.success : item.label === "MONITOR" ? colors.warning : colors.danger;
-        ctx.fillStyle = color;
-        ctx.fillRect(x, height - margin.bottom - h, barW, h);
-        ctx.fillStyle = colors.muted;
-        ctx.font = "8px 'JetBrains Mono', monospace";
-        ctx.textAlign = "center";
-        ctx.fillText(item.label, x + barW / 2, height - margin.bottom + 16);
-        ctx.fillText(String(item.value), x + barW / 2, height - margin.bottom - h - 7);
-    });
-
-    ctx.strokeStyle = "rgba(150,170,190,0.16)";
-    ctx.beginPath();
-    ctx.moveTo(margin.left, margin.top);
-    ctx.lineTo(margin.left, height - margin.bottom);
-    ctx.lineTo(width - margin.right, height - margin.bottom);
-    ctx.stroke();
-}
-
-function drawResearchCharts() {
-    const colors = chartColors();
-    const activeQBER = selectedModel === "qber" || selectedModel === "hybrid";
-    const activeML = selectedModel === "ml" || selectedModel === "hybrid";
-
-    if (activeQBER) {
-        drawLineChart("qberNoiseChart", RESEARCH_DATA.qberNoise, "CHANNEL NOISE (%)", "QBER (%)", colors.accent);
-        drawLineChart("qberEveChart", RESEARCH_DATA.qberEve, "EAVESDROPPING (%)", "QBER (%)", colors.danger);
-    } else {
-        showChartUnavailable("qberNoiseChart", "QBER MODEL NOT IN USE");
-        showChartUnavailable("qberEveChart", "QBER MODEL NOT IN USE");
-    }
-
-    if (selectedModel === "hybrid") {
-        drawScatterChart("threatQberChart", scenarioHistory.map(item => ({ x: item.threat, y: item.qber })), "THREAT (%)", "QBER (%)", colors.accent2);
-        drawEvidenceChart("evidenceComparisonChart");
-    } else if (selectedModel === "ml") {
-        drawScatterChart("threatQberChart", scenarioHistory.map((item, index) => ({ x: index + 1, y: item.threat })), "SCENARIO INDEX", "THREAT (%)", colors.accent);
-        showChartUnavailable("evidenceComparisonChart", "QUANTUM EVIDENCE NOT IN USE");
-    } else {
-        drawScatterChart("threatQberChart", scenarioHistory.map((item, index) => ({ x: index + 1, y: item.qber })), "SCENARIO INDEX", "QBER (%)", colors.danger);
-        showChartUnavailable("evidenceComparisonChart", "CLASSICAL EVIDENCE NOT IN USE");
-    }
-
-    drawDecisionDistribution("decisionDistributionChart");
-
-    // Make sure the uploaded-data mode shows a small status line without replacing the research curves.
-    if (uploadedDataset) {
-        setText("experimentRunInfo", `Uploaded: ${uploadedDataset.fileName} · ${uploadedDataset.rows.length.toLocaleString()} rows`);
-    } else {
-        setText("experimentRunInfo", `Last run: ${currentScenario.toUpperCase()} · ${$("nBitsControl")?.value || 100} bits × ${$("trialsControl")?.value || 10} trials`);
-    }
-}
-
-function drawAllCharts() {
-    requestAnimationFrame(drawResearchCharts);
-}
 
 /* =========================================================
-   INITIALIZATION
+   QBER VS NOISE
    ========================================================= */
 
-document.addEventListener("DOMContentLoaded", async () => {
-    initializeTheme();
-    initializeModelSelector();
-    initializeExperimentControls();
-    initializeDataUpload();
+function drawQberNoiseChart() {
 
-    document.querySelectorAll(".scenario-button").forEach(button => {
-        button.addEventListener("click", () => runScenario(button.dataset.scenario));
-    });
+    drawLineChart(
+        "qberNoiseChart",
+        qberNoiseData,
+        "noise",
+        "qber",
+        10,
+        12,
+        "Channel Noise",
+        "QBER"
+    );
 
-    await refreshForSelectedModel();
-    startBackendHealthMonitoring();
-});
+}
+
+
+/* =========================================================
+   QBER VS EVE
+   ========================================================= */
+
+function drawQberEveChart() {
+
+    drawLineChart(
+        "qberEveChart",
+        qberEveData,
+        "eve",
+        "qber",
+        100,
+        24,
+        "Eavesdropper Probability",
+        "QBER"
+    );
+
+}
+
+
+/* =========================================================
+   THREAT VS QBER
+   ========================================================= */
+
+function drawThreatQberChart() {
+
+    const canvas =
+        getElement(
+            "threatQberChart"
+        );
+
+
+    const setup =
+        setupCanvas(
+            canvas
+        );
+
+
+    if (!setup) {
+
+        return;
+
+    }
+
+
+    const {
+        ctx,
+        width,
+        height
+    } = setup;
+
+
+    clearCanvas(
+        ctx,
+        width,
+        height
+    );
+
+
+    const padding = {
+
+        top:
+            20,
+
+        right:
+            25,
+
+        bottom:
+            45,
+
+        left:
+            48
+
+    };
+
+
+    drawGrid(
+        ctx,
+        width,
+        height,
+        padding
+    );
+
+
+    drawAxes(
+        ctx,
+        width,
+        height,
+        padding
+    );
+
+
+    const chartWidth =
+        width -
+        padding.left -
+        padding.right;
+
+
+    const chartHeight =
+        height -
+        padding.top -
+        padding.bottom;
+
+
+    for (
+        let i = 0;
+        i <= 5;
+        i++
+    ) {
+
+        const value =
+            100 -
+            (
+                100 *
+                i /
+                5
+            );
+
+
+        const y =
+            padding.top +
+            chartHeight *
+            i /
+            5;
+
+
+        drawText(
+            ctx,
+            `${value}%`,
+            padding.left - 9,
+            y + 4,
+            "#72869f",
+            "10px Arial",
+            "right"
+        );
+
+    }
+
+
+    const maxQber =
+        threatQberData.length
+            ? Math.max(
+                ...threatQberData.map(
+                    point => point.qber
+                )
+            )
+            : 10;
+
+    const xMax =
+        Math.max(
+            10,
+            Math.ceil(maxQber / 2) * 2
+        );
+
+
+    for (
+        let i = 0;
+        i <= 4;
+        i++
+    ) {
+
+        const value =
+            i *
+            2;
+
+
+        const x =
+            padding.left +
+            chartWidth *
+            value /
+            xMax;
+
+
+        drawText(
+            ctx,
+            `${value}%`,
+            x,
+            height - 18,
+            "#72869f",
+            "10px Arial",
+            "center"
+        );
+
+    }
+
+
+    drawText(
+        ctx,
+        "QBER",
+        width / 2,
+        height - 3,
+        "#9aacc1",
+        "10px Arial",
+        "center"
+    );
+
+
+    ctx.save();
+
+
+    ctx.translate(
+        12,
+        height / 2
+    );
+
+
+    ctx.rotate(
+        -Math.PI / 2
+    );
+
+
+    drawText(
+        ctx,
+        "Threat Probability",
+        0,
+        0,
+        "#9aacc1",
+        "10px Arial",
+        "center"
+    );
+
+
+    ctx.restore();
+
+
+    threatQberData.forEach(
+        point => {
+
+            const x =
+                padding.left +
+                (
+                    point.qber /
+                    xMax
+                )
+                *
+                chartWidth;
+
+
+            const y =
+                padding.top +
+                chartHeight -
+                (
+                    point.threat /
+                    100
+                )
+                *
+                chartHeight;
+
+
+            ctx.fillStyle =
+
+                point.threat >= 75
+                    ? "#e86b6b"
+
+                    : point.qber >= 5
+                        ? "#e8c75c"
+
+                        : "#62a9ff";
+
+
+            ctx.beginPath();
+
+
+            ctx.arc(
+                x,
+                y,
+                6,
+                0,
+                Math.PI * 2
+            );
+
+
+            ctx.fill();
+
+
+            drawText(
+                ctx,
+                point.name,
+                x,
+                y - 10,
+                "#9fb2c8",
+                "9px Arial",
+                "center"
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   EVIDENCE COMPARISON
+   ========================================================= */
+
+function drawEvidenceComparisonChart() {
+
+    const canvas =
+        getElement(
+            "evidenceComparisonChart"
+        );
+
+
+    const setup =
+        setupCanvas(
+            canvas
+        );
+
+
+    if (!setup) {
+
+        return;
+
+    }
+
+
+    const {
+        ctx,
+        width,
+        height
+    } = setup;
+
+
+    clearCanvas(
+        ctx,
+        width,
+        height
+    );
+
+
+    const padding = {
+
+        top:
+            20,
+
+        right:
+            25,
+
+        bottom:
+            65,
+
+        left:
+            48
+
+    };
+
+
+    drawGrid(
+        ctx,
+        width,
+        height,
+        padding
+    );
+
+
+    drawAxes(
+        ctx,
+        width,
+        height,
+        padding
+    );
+
+
+    const chartWidth =
+        width -
+        padding.left -
+        padding.right;
+
+
+    const chartHeight =
+        height -
+        padding.top -
+        padding.bottom;
+
+
+    for (
+        let i = 0;
+        i <= 5;
+        i++
+    ) {
+
+        const value =
+            100 -
+            (
+                100 *
+                i /
+                5
+            );
+
+
+        const y =
+            padding.top +
+            chartHeight *
+            i /
+            5;
+
+
+        drawText(
+            ctx,
+            `${value}%`,
+            padding.left - 9,
+            y + 4,
+            "#72869f",
+            "10px Arial",
+            "right"
+        );
+
+    }
+
+
+    const groupWidth =
+        chartWidth /
+        evidenceComparisonData.length;
+
+
+    evidenceComparisonData.forEach(
+        (point, index) => {
+
+            const centerX =
+                padding.left +
+                groupWidth *
+                index +
+                groupWidth /
+                2;
+
+
+            const barWidth =
+                Math.min(
+                    28,
+                    groupWidth *
+                    0.22
+                );
+
+
+            const threatHeight =
+                (
+                    point.threat /
+                    100
+                )
+                *
+                chartHeight;
+
+
+            const threatY =
+                padding.top +
+                chartHeight -
+                threatHeight;
+
+
+            ctx.fillStyle =
+                "#62a9ff";
+
+
+            ctx.fillRect(
+                centerX -
+                barWidth -
+                4,
+                threatY,
+                barWidth,
+                threatHeight
+            );
+
+
+            const qberHeight =
+                (
+                    point.qber /
+                    100
+                )
+                *
+                chartHeight;
+
+
+            const qberY =
+                padding.top +
+                chartHeight -
+                qberHeight;
+
+
+            ctx.fillStyle =
+                "#e8c75c";
+
+
+            ctx.fillRect(
+                centerX + 4,
+                qberY,
+                barWidth,
+                qberHeight
+            );
+
+
+            drawText(
+                ctx,
+                point.name,
+                centerX,
+                height - 28,
+                "#8296ae",
+                "9px Arial",
+                "center"
+            );
+
+        }
+    );
+
+
+    ctx.fillStyle =
+        "#62a9ff";
+
+
+    ctx.fillRect(
+        width - 170,
+        10,
+        10,
+        10
+    );
+
+
+    drawText(
+        ctx,
+        "Threat",
+        width - 154,
+        19,
+        "#9aacc1",
+        "10px Arial"
+    );
+
+
+    ctx.fillStyle =
+        "#e8c75c";
+
+
+    ctx.fillRect(
+        width - 90,
+        10,
+        10,
+        10
+    );
+
+
+    drawText(
+        ctx,
+        "QBER",
+        width - 74,
+        19,
+        "#9aacc1",
+        "10px Arial"
+    );
+
+}
+
+
+/* =========================================================
+   DECISION DISTRIBUTION
+   ========================================================= */
+
+function drawDecisionDistributionChart() {
+
+    const canvas =
+        getElement(
+            "decisionDistributionChart"
+        );
+
+
+    const setup =
+        setupCanvas(
+            canvas
+        );
+
+
+    if (!setup) {
+
+        return;
+
+    }
+
+
+    const {
+        ctx,
+        width,
+        height
+    } = setup;
+
+
+    clearCanvas(
+        ctx,
+        width,
+        height
+    );
+
+
+    const padding = {
+
+        top:
+            30,
+
+        right:
+            30,
+
+        bottom:
+            45,
+
+        left:
+            55
+
+    };
+
+
+    drawGrid(
+        ctx,
+        width,
+        height,
+        padding
+    );
+
+
+    drawAxes(
+        ctx,
+        width,
+        height,
+        padding
+    );
+
+
+    const chartWidth =
+        width -
+        padding.left -
+        padding.right;
+
+
+    const chartHeight =
+        height -
+        padding.top -
+        padding.bottom;
+
+
+    const maxObservedCount =
+        decisionDistributionData.length
+            ? Math.max(
+                ...decisionDistributionData.map(
+                    item => item.count
+                )
+            )
+            : 0;
+
+    const maxCount =
+        Math.max(
+            4,
+            maxObservedCount
+        );
+
+
+    for (
+        let i = 0;
+        i <= 4;
+        i++
+    ) {
+
+        const y =
+            padding.top +
+            chartHeight -
+            (
+                chartHeight *
+                i /
+                maxCount
+            );
+
+
+        drawText(
+            ctx,
+            `${i}`,
+            padding.left - 10,
+            y + 4,
+            "#72869f",
+            "10px Arial",
+            "right"
+        );
+
+    }
+
+
+    const groupWidth =
+        chartWidth /
+        decisionDistributionData.length;
+
+
+    decisionDistributionData.forEach(
+        (item, index) => {
+
+            const barWidth =
+                Math.min(
+                    100,
+                    groupWidth *
+                    0.45
+                );
+
+
+            const barHeight =
+                (
+                    item.count /
+                    maxCount
+                )
+                *
+                chartHeight;
+
+
+            const x =
+                padding.left +
+                groupWidth *
+                index +
+                (
+                    groupWidth -
+                    barWidth
+                ) /
+                2;
+
+
+            const y =
+                padding.top +
+                chartHeight -
+                barHeight;
+
+
+            if (
+                item.decision ===
+                "ACCEPT"
+            ) {
+
+                ctx.fillStyle =
+                    "#67e59a";
+
+            }
+            else if (
+                item.decision ===
+                "MONITOR"
+            ) {
+
+                ctx.fillStyle =
+                    "#e8c75c";
+
+            }
+            else {
+
+                ctx.fillStyle =
+                    "#e86b6b";
+
+            }
+
+
+            ctx.fillRect(
+                x,
+                y,
+                barWidth,
+                barHeight
+            );
+
+
+            drawText(
+                ctx,
+                `${item.count}`,
+                x +
+                barWidth / 2,
+                y - 8,
+                "#dce6f2",
+                "12px Arial",
+                "center"
+            );
+
+
+            drawText(
+                ctx,
+                item.decision,
+                x +
+                barWidth / 2,
+                height - 18,
+                "#8296ae",
+                "10px Arial",
+                "center"
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   ALL CHARTS
+   ========================================================= */
+
+function drawAllCharts() {
+
+    drawQberNoiseChart();
+
+    drawQberEveChart();
+
+    drawThreatQberChart();
+
+    drawEvidenceComparisonChart();
+
+    drawDecisionDistributionChart();
+
+}
+
+
+/* =========================================================
+   RESIZE
+   ========================================================= */
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        clearTimeout(
+            window.qsafeResizeTimer
+        );
+
+
+        window.qsafeResizeTimer =
+            setTimeout(
+                () => {
+
+                    drawAllCharts();
+
+                },
+                120
+            );
+
+    }
+);
+
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        initializeTheme();
+
+        initializeDatasetUpload();
+
+        runScenario(
+            "normal"
+        );
+
+
+        setTimeout(
+            () => {
+
+                drawAllCharts();
+
+            },
+            100
+        );
+
+    }
+);

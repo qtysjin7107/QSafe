@@ -49,20 +49,22 @@ def _load_nsl_dataframe(file_bytes: bytes, filename: str) -> pd.DataFrame:
         raise ValueError("The uploaded file is empty.")
 
     suffix = filename.lower().rsplit(".", 1)[-1] if "." in filename else "txt"
-    if suffix not in {"csv", "txt"}:
-        raise ValueError("Upload a CSV or TXT file in NSL-KDD format.")
+    if suffix not in {"csv", "txt", "tsv"}:
+        raise ValueError("Upload a CSV, TXT or TSV file in NSL-KDD format.")
+
+    separator = "\t" if suffix == "tsv" else ","
 
     raw = io.BytesIO(file_bytes)
-    probe = pd.read_csv(raw, header=None, nrows=3)
+    probe = pd.read_csv(raw, header=None, nrows=3, sep=separator)
     first_row = _normalise_columns(probe.iloc[0].tolist())
     has_header = bool(first_row) and first_row[0] == "duration"
 
     raw.seek(0)
     if has_header:
-        df = pd.read_csv(raw)
+        df = pd.read_csv(raw, sep=separator)
         df.columns = _normalise_columns(df.columns.tolist())
     else:
-        df = pd.read_csv(raw, header=None)
+        df = pd.read_csv(raw, header=None, sep=separator)
 
     df = _drop_trailing_empty_columns(df)
 
