@@ -128,12 +128,8 @@ def run_bb84(
 
         # Does Eve attack this particular qubit?
         eve_attacks = (
-            random_bit() == 1
-            if eve_probability == 1.0
-            else (
-                randbelow(1_000_000) / 1_000_000
-                < eve_probability
-            )
+            randbelow(1_000_000) / 1_000_000
+            < eve_probability
         )
 
         if eve_attacks:
