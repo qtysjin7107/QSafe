@@ -227,9 +227,18 @@ def run_bb84(
             )
         )
 
+        sifted_errors = sum(
+            a != b
+            for a, b in zip(
+                sifted_alice_key,
+                sifted_bob_key
+            )
+        )
+
         qber = (
-            errors
-            / len(sifted_alice_key)
+            sifted_errors / len(sifted_alice_key)
+            if sifted_alice_key
+            else 0.0
         )
 
     return BB84Result(
